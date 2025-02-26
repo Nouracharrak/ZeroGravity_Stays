@@ -399,10 +399,8 @@ const CreateListing = () => {
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                               >
-                                <img
-                                  src={URL.createObjectURL(photo)}
-                                  alt="place"
-                                />
+                                <img src={window.URL.createObjectURL(photo)} alt="place" />
+                                
                                 <button
                                   type="button"
                                   onClick={() => handleRemovePhoto(index)}

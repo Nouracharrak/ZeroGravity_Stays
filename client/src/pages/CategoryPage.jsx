@@ -7,7 +7,7 @@ import ListingCard from '../componenets/ListingCard'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setListings } from '../redux/state'
-import URL from "../constants/api"
+// import URL from "../constants/api"
 
 const CategoriesPage = () => {
     const [laoding, setLoading] = useState(true)
