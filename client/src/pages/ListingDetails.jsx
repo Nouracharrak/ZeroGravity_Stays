@@ -142,7 +142,7 @@ const ListingDetails = () => {
               {/* <img
                 src={
                   listing.creator.profileImagePath
-                    ? `http://localhost:3001/public/uploads/${listing.creator.profileImagePath.replace(
+                    ? `http://localhost:3001/uploads/${listing.creator.profileImagePath.replace(
                         /\\/,
                         "/"
                       )}`
