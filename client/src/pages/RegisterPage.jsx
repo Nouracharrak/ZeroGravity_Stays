@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../styles/register.scss";
 
@@ -9,7 +9,7 @@ const RegisterPage = () => {
         email: "",
         password: "",
         confirmPassword: "",
-        profileImage: null
+        profileImagePath: null // Renommé en profileImage
     });
 
     const [passwordMatch, setPasswordMatch] = useState(true);
@@ -27,36 +27,31 @@ const RegisterPage = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData({ ...formData, profileImage: file });
+            setFormData({ ...formData, profileImagePath: file });
         }
     };
 
-    const handlePasswordChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-        if (name === "confirmPassword") {
-            setPasswordMatch(formData.password === value);
-        } else if (name === "password") {
-            setPasswordMatch(formData.confirmPassword === value || formData.confirmPassword === "");
-        }
-    };
+    useEffect(() => {
+        setPasswordMatch(formData.password === formData.confirmPassword || formData.confirmPassword === "");
+    }, [formData.password, formData.confirmPassword]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const register_form = new FormData();
             for (var key in formData) {
-                register_form.append(key, formData[key]);
+                if (key === "profileImagePath") {
+                    register_form.append("profileImage", formData[key]);
+                } else {
+                    register_form.append(key, formData[key]);
+                }
             }
-
+    
             const response = await fetch("https://zero-gravity-stays.vercel.app/auth/register", {
                 method: "POST",
                 body: register_form
             });
-
+    
             if (response.ok) {
                 navigate("/login");
             } else {
@@ -66,7 +61,7 @@ const RegisterPage = () => {
             console.log("registration failed", err.message);
         }
     };
-
+    
     return (
         <div className="register">
             <div className="register_content">
@@ -100,7 +95,7 @@ const RegisterPage = () => {
                         placeholder="Password"
                         name="password"
                         value={formData.password}
-                        onChange={handlePasswordChange}
+                        onChange={handleChange}
                         required
                     />
                     <input
@@ -108,16 +103,16 @@ const RegisterPage = () => {
                         placeholder="Confirm Password"
                         name="confirmPassword"
                         value={formData.confirmPassword}
-                        onChange={handlePasswordChange}
+                        onChange={handleChange}
                         required
                     />
-                    {formData.password !== "" && formData.confirmPassword !== "" && formData.password !== formData.confirmPassword && (
+                    {!passwordMatch && (
                         <p style={{ color: "red" }}>Passwords are not a match</p>
                     )}
                     <input
                         id="image"
                         type="file"
-                        name="profileImage"
+                        name="profileImagePath" // Correspond avec le backend
                         accept="image/*"
                         style={{ display: 'none' }}
                         onChange={handleImageChange}
@@ -126,14 +121,14 @@ const RegisterPage = () => {
                         <img src="/assets/addImage.png" alt="addPicture" />
                         <p style={{ color: "red" }}> Upload Profile Photo</p>
                     </label>
-                    {formData.profileImage && (
+                    {formData.profileImagePath && (
                         <img
-                            src={URL.createObjectURL(formData.profileImage)}
+                            src={URL.createObjectURL(formData.profileImagePath)}
                             alt="profilePhoto"
                             style={{ maxWidth: "80px" }}
                         />
                     )}
-                    <button type="submit" disabled={formData.password !== formData.confirmPassword || formData.password === "" || formData.confirmPassword === ""}>Register</button>
+                    <button type="submit" disabled={!passwordMatch}>Register</button>
                 </form>
                 <a href="/login">Already have an account? Log In Here</a>
             </div>
