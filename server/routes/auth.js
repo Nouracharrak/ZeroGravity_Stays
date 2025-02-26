@@ -26,43 +26,55 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+
 // ✅ Route d'enregistrement avec Cloudinary
-router.post("/register", upload.single("profileImage"), async (req, res) => {
-  try {
-    console.log("Requête reçue avec le body :", req.body);
-    console.log("Fichier reçu :", req.file);
+router.post('/register', upload.single("profileImage"), async (req, res) => {
+    try {
+        console.log("Requête reçue avec le body :", req.body); // Debug
+        console.log("Fichier reçu :", req.file); // Debug
 
-    const { firstName, lastName, email, password } = req.body;
-    const profileImage = req.file ? req.file.path : ""; // ✅ URL Cloudinary
+        const { firstName, lastName, email, password } = req.body;
+        if (!firstName || !lastName || !email || !password) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ message: "Missing required fields" });
+        // Vérifier si une image a bien été uploadée sur Cloudinary
+        if (!req.file || !req.file.path) {
+            return res.status(400).json({ message: "Image upload failed" });
+        }
+
+        // Vérification si l'utilisateur existe déjà
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ message: "User already exists" });
+        }
+
+        // Hashage du mot de passe
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Enregistrer l'URL Cloudinary de l'image
+        const profileImagePath = req.file.path; 
+
+        // Créer un nouvel utilisateur
+        const newUser = new User({
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            profileImagePath
+        });
+
+        await newUser.save();
+
+        res.status(201).json({ message: "User Registered successfully", user: newUser });
+    } catch (err) {
+        console.error("Error during registration:", err);
+
+        // S'assurer que l'erreur renvoyée est bien un JSON
+        res.status(500).json({ message: "Registration failed", error: err.message });
     }
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
-    }
-
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      profileImagePath: profileImage, // ✅ Stocke l'URL Cloudinary en base de données
-    });
-
-    await newUser.save();
-    res.status(200).json({ message: "User Registered successfully", user: newUser });
-  } catch (err) {
-    console.error("Error during registration:", err);
-    res.status(500).json({ message: "Registration failed", error: err.message });
-  }
 });
-
 // ✅ Route de connexion de l'utilisateur
 router.post("/login", async (req, res) => {
   try {
