@@ -7,8 +7,17 @@ const path = require('path');
 require('dotenv').config();
 
 
-// /* Configuration Multer for File Upload */
+// Configuration de Multer pour l'upload d'images
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads/"); // Enregistre les fichiers dans le dossier 'uploads'
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Nom unique
+    }
+});
 
+const upload = multer({ storage });
 
 // Route d'enregistrement de l'utilisateur
 router.post('/register', async (req, res) => {

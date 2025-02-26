@@ -40,19 +40,16 @@ const RegisterPage = () => {
         e.preventDefault();
         try {
             const register_form = new FormData();
-            for (var key in formData) {
-                if (key === "profileImagePath") {
-                    register_form.append("profileImagePath", formData[key]);
-                } else {
-                    register_form.append(key, formData[key]);
-                }
+            register_form.append("firstName", formData.firstName);
+            register_form.append("lastName", formData.lastName);
+            register_form.append("email", formData.email);
+            register_form.append("password", formData.password);
+            if (formData.profileImagePath instanceof File) {
+                register_form.append("profileImage", formData.profileImagePath); // Utilise "profileImage"
             }
     
             const response = await fetch(URL.REGISTER, {
                 method: "POST",
-                headers: {
-                    "Accept": "application/json"
-                },
                 body: register_form
             });
     
@@ -64,79 +61,81 @@ const RegisterPage = () => {
         } catch (err) {
             console.log("registration failed", err.message);
         }
-    };
-    
+    };    
     return (
-        <div className="register">
-            <div className="register_content">
-                <form className="register_content_form" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="First Name"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Last Name"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Confirm Password"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        required
-                    />
-                    {!passwordMatch && (
-                        <p style={{ color: "red" }}>Passwords are not a match</p>
-                    )}
-                    <input
-                        id="image"
-                        type="file"
-                        name="profileImagePath" // Correspond avec le backend
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={handleImageChange}
-                    />
-                    <label htmlFor="image">
-                        <img src="/assets/addImage.png" alt="addPicture" />
-                        <p style={{ color: "red" }}> Upload Profile Photo</p>
-                    </label>
-                    {formData.profileImagePath && (
-                        <img
-                            src={URL.createObjectURL(formData.profileImagePath)}
-                            alt="profilePhoto"
-                            style={{ maxWidth: "80px" }}
-                        />
-                    )}
-                    <button type="submit" disabled={!passwordMatch}>Register</button>
-                </form>
-                <a href="/login">Already have an account? Log In Here</a>
-            </div>
+      <div className="register">
+        <div className="register_content">
+          <form className="register_content_form" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+            {!passwordMatch && (
+              <p style={{ color: "red" }}>Passwords are not a match</p>
+            )}
+            <input
+              id="image"
+              type="file"
+              name="profileImagePath" // Correspond avec le backend
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageChange}
+            />
+            <label htmlFor="image">
+              <img src="/assets/addImage.png" alt="addPicture" />
+              <p style={{ color: "red" }}> Upload Profile Photo</p>
+            </label>
+            {formData.profileImagePath instanceof File && (
+              <img
+                src={window.URL.createObjectURL(formData.profileImagePath)}
+                alt="profilePhoto"
+                style={{ maxWidth: "80px" }}
+              />
+            )}
+
+            <button type="submit" disabled={!passwordMatch}>
+              Register
+            </button>
+          </form>
+          <a href="/login">Already have an account? Log In Here</a>
         </div>
+      </div>
     );
 };
 

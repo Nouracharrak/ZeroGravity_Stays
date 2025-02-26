@@ -19,7 +19,7 @@ app.use(cors({
   }));
 
   
-// app.use(express.static('uploads')); 
+app.use("/uploads", express.static("uploads"));
 
 // Serve files from the 'public/uploads' directory under the '/uploads' URL path
 // console.log('Serving static files from:', path.join(__dirname, '../../public/uploads'));
