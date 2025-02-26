@@ -13,7 +13,7 @@ const userRoutes = require('./routes/user.js');
 app.use(express.json()); 
 app.use(cors({
     origin: ['https://zero-gravity-stays.vercel.app', 'http://localhost:3001'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    // methods: ['GET', 'POST', 'PUT', 'DELETE'],
     // allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 3600
   }));  
