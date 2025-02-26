@@ -47,7 +47,7 @@ app.use("/users", userRoutes);
 // Gestion d'erreurs
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).send('Erreur interne du serveur');
+    res.status(500).send(err.stack);
 });
 
 // Route par défaut

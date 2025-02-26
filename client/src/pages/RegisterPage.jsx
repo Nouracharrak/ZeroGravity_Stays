@@ -10,7 +10,7 @@ const RegisterPage = () => {
         email: "",
         password: "",
         confirmPassword: "",
-        profileImagePath: null // Renommé en profileImage
+        profileImagePath: null
     });
 
     const [passwordMatch, setPasswordMatch] = useState(true);
