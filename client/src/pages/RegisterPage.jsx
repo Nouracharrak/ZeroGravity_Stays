@@ -45,6 +45,9 @@ const RegisterPage = () => {
 
             const response = await fetch("https://zero-gravity-stays.vercel.app/auth/register", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                  },
                 body: register_form
             });
 
