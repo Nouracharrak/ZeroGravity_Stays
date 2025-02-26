@@ -51,8 +51,13 @@ router.post("/create", upload.array("listingPhotos"), async (req, res) => {
       price,
     } = req.body;
 
+    // ✅ Vérifier si les fichiers sont bien reçus
+    console.log("🖼️ Photos reçues du front :", req.files);
+
     // ✅ Récupérer les URLs des images stockées sur Cloudinary
     const listingPhotosPaths = req.files.map((file) => file.path);
+    console.log("✅ URLs Cloudinary :", listingPhotosPaths);
+
 
     const newListing = new Listing({
       creator,

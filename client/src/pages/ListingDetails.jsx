@@ -128,11 +128,7 @@ const ListingDetails = () => {
           {listing.creator ? (
             <>
               <img
-                src={
-                  listing.creator.profileImagePath
-                    ? listing.creator.profileImagePath
-                    : "/assets/default_profile.png" // ✅ Image par défaut si pas de photo
-                }
+                src={listing.creator.profileImagePath ? listing.creator.profileImagePath : "/assets/default_profile.png"}
                 alt="Host Profile"
                 className="host-photo"
               />
