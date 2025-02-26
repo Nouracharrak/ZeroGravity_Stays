@@ -28,8 +28,6 @@ if (!fs.existsSync(uploadDir)) {
 }
 app.use("/uploads", express.static("uploads"));
 
-// Serve files from the 'public/uploads' directory under the '/uploads' URL path
-// console.log('Serving static files from:', path.join(__dirname, '../../public/uploads'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL, {

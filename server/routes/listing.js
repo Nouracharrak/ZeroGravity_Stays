@@ -1,39 +1,38 @@
 const router = require("express").Router();
 const multer = require("multer");
-const fs = require('fs');
-const path = require('path');
-const { verifyToken, router: userRoutes } = require('./auth');
-// Route to get details of a specific listing
-const mongoose = require('mongoose');
+const fs = require("fs");
+const path = require("path");
+const { verifyToken, router: userRoutes } = require("./auth");
+const mongoose = require("mongoose");
 const Listing = require("../models/Listing");
 const User = require("../models/user");
 
-// Configuration for file upload
-const uploadDir = path.join('/tmp', 'uploads');
+// ✅ Modifier le chemin du dossier pour stocker les fichiers de manière permanente
+const uploadDir = path.join(__dirname, "../uploads");
 
-// Check if upload directory exists, create if not
+// ✅ Vérifie si le dossier "uploads" existe, sinon le crée
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// File filter (accepts only images)
+// ✅ Vérifie que seuls les fichiers images sont acceptés
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
   if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); // Accept the file
+    cb(null, true); // Accepte le fichier
   } else {
-    cb(new Error('Invalid file type'), false); // Reject the file
+    cb(new Error("Invalid file type"), false); // Rejette le fichier
   }
 };
 
-// Configure storage
+// ✅ Configure Multer pour enregistrer les fichiers dans "/uploads/"
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir); // Set the destination folder
+    cb(null, uploadDir); // ✅ Stocke les images dans "uploads/"
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Unique file name
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname)); // Add unique suffix to avoid name collisions
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)); // ✅ Nom unique
   },
 });
 
