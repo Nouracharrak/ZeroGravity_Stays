@@ -1,17 +1,15 @@
-// ListingDetails.js
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { facilities } from "../data";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { DateRange } from "react-date-range";
-
 import "../styles/listingDetails.scss";
 import Navbar from "../componenets/Navbar";
 import Loader from "../componenets/Loader";
 import Footer from "../componenets/Footer";
 import { useSelector } from "react-redux";
-import URL from "../constants/api"
+import URL from "../constants/api";
 
 const ListingDetails = () => {
   const [loading, setLoading] = useState(true);
@@ -21,12 +19,9 @@ const ListingDetails = () => {
 
   const getListingDetails = async () => {
     try {
-      const response = await fetch(
-        `${URL.FETCH_LISTINGS}/${listingId}`,
-        {
-          method: "GET",
-        }
-      );
+      const response = await fetch(`${URL.FETCH_LISTINGS}/${listingId}`, {
+        method: "GET",
+      });
       const data = await response.json();
       console.log("Listing Data:", data); // Log de la réponse API pour vérifier
       setListing(data);
@@ -56,7 +51,7 @@ const ListingDetails = () => {
   const start = new Date(dateRange[0].startDate);
   const end = new Date(dateRange[0].endDate);
   const dayCount = Math.round(end - start) / (1000 * 60 * 60 * 24);
-  console.log("Calculated Days:", dayCount); // Log du calcul des jours
+  console.log("Calculated Days:", dayCount);
 
   const customerId = useSelector((state) => state?.user?._id);
   const navigate = useNavigate();
@@ -66,7 +61,7 @@ const ListingDetails = () => {
       console.log("Error: Missing required data for booking.");
       return;
     }
-  
+
     try {
       const bookingForm = {
         customerId,
@@ -76,15 +71,15 @@ const ListingDetails = () => {
         endDate: dateRange[0].endDate.toDateString(),
         totalPrice: listing.price * dayCount,
       };
-  
+
       const response = await fetch(URL.CREATE_BOOKINGS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingForm),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         navigate(`/${customerId}/trips`);
       } else if (response.status === 400 && data.message === "Les dates sont déjà réservées") {
@@ -96,9 +91,7 @@ const ListingDetails = () => {
       console.log("Submit booking failed, err.message");
     }
   };
-  
 
-  // Si les données sont en cours de chargement
   return loading ? (
     <Loader />
   ) : (
@@ -110,25 +103,19 @@ const ListingDetails = () => {
           <div></div>
         </div>
 
-        {/* Photos Section */}
+        {/* ✅ Correction des Photos */}
         <div className="photos">
-          {listing.listingPhotosPaths &&
-          listing.listingPhotosPaths.length > 0 ? (
-            listing.listingPhotosPaths.map((item, index) => (
-              <img
-                key={index}
-                src={`https://zero-gravity-stays-bevn.vercel.app${item}`}
-                alt={`Listing Photo ${index + 1}`}
-              />
+          {listing.listingPhotosPaths && listing.listingPhotosPaths.length > 0 ? (
+            listing.listingPhotosPaths.map((url, index) => (
+              <img key={index} src={url} alt="listing_photos" />
             ))
           ) : (
-            <p>No photos available</p> // Affiche un message si aucune photo n'est disponible
+            <p>No photos available</p>
           )}
         </div>
 
         <h2>
-          {listing.type} in {listing.city}, {listing.province},{" "}
-          {listing.country}
+          {listing.type} in {listing.city}, {listing.province}, {listing.country}
         </h2>
         <p>
           {listing.guestCount} guests - {listing.bedroomCount} bedroom(s) -{" "}
@@ -136,23 +123,19 @@ const ListingDetails = () => {
         </p>
         <hr />
 
-        {/* Host Info Section */}
+        {/* ✅ Correction de l'affichage de l'hôte */}
         <div className="profile">
           {listing.creator ? (
             <>
               <img
                 src={
                   listing.creator.profileImagePath
-                    ? `https://zero-gravity-stays-bevn.vercel.app/uploads/${listing.creator.profileImagePath.replace(
-                        /\\/,
-                        "/"
-                      )}`
-                    : "default_image_url"
+                    ? listing.creator.profileImagePath
+                    : "/assets/default_profile.png" // ✅ Image par défaut si pas de photo
                 }
                 alt="Host Profile"
                 className="host-photo"
               />
-
               <h3>
                 Hosted By {listing.creator.firstName} {listing.creator.lastName}
               </h3>
@@ -172,7 +155,7 @@ const ListingDetails = () => {
         <p>{listing.highlightDesc}</p>
         <hr />
 
-        {/* Amenities Section */}
+        {/* ✅ Correction des Commodités */}
         <div className="booking">
           <div>
             <h2>What this place Offers?</h2>
@@ -181,16 +164,13 @@ const ListingDetails = () => {
                 listing.amenities[0].split(",").map((item, index) => (
                   <div className="facility" key={index}>
                     <div className="facility_icon">
-                      {
-                        facilities.find((facility) => facility.name === item)
-                          ?.icon
-                      }
+                      {facilities.find((facility) => facility.name === item)?.icon}
                     </div>
                     <p>{item}</p>
                   </div>
                 ))
               ) : (
-                <p>No amenities available</p> // Affiche un message si aucune commodité n'est disponible
+                <p>No amenities available</p>
               )}
             </div>
           </div>
@@ -200,15 +180,9 @@ const ListingDetails = () => {
             <h2>How Long do you want to stay?</h2>
             <div className="date-range-calendar">
               <DateRange ranges={dateRange} onChange={handleSelect} />
-              {dayCount > 1 ? (
-                <h2>
-                  ${listing.price} x {dayCount} nights
-                </h2>
-              ) : (
-                <h2>
-                  ${listing.price} x {dayCount} night
-                </h2>
-              )}
+              <h2>
+                ${listing.price} x {dayCount} {dayCount > 1 ? "nights" : "night"}
+              </h2>
               <h2>Total price: {listing.price * dayCount}</h2>
               <p>Start Date: {dateRange[0].startDate.toDateString()}</p>
               <p>End Date: {dateRange[0].endDate.toDateString()}</p>
@@ -226,3 +200,4 @@ const ListingDetails = () => {
 };
 
 export default ListingDetails;
+

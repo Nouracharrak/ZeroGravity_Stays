@@ -10,34 +10,32 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    profileImagePath: null,
+    profileImage: null, // ✅ Correspond au champ envoyé au backend
   });
 
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [previewImage, setPreviewImage] = useState(null); // ✅ Pour l'aperçu de l'image
   const navigate = useNavigate();
 
   // 🔹 Met à jour les champs texte
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   // 🔹 Gestion de l’image sélectionnée
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({ ...formData, profileImagePath: file });
+      setFormData({ ...formData, profileImage: file });
+      setPreviewImage(URL.createObjectURL(file)); // ✅ Aperçu de l'image sélectionnée
     }
   };
 
-  // Vérifie si les mots de passe correspondent
+  // 🔹 Vérifie si les mots de passe correspondent
   useEffect(() => {
     setPasswordMatch(
-      formData.password === formData.confirmPassword ||
-        formData.confirmPassword === ""
+      formData.password === formData.confirmPassword || formData.confirmPassword === ""
     );
   }, [formData.password, formData.confirmPassword]);
 
@@ -51,13 +49,8 @@ const RegisterPage = () => {
       register_form.append("email", formData.email);
       register_form.append("password", formData.password);
 
-      if (formData.profileImagePath instanceof File) {
-        register_form.append("profileImage", formData.profileImagePath); // ✅ Correspond à `upload.single("profileImage")`
-      }
-
-      // 🔹 Vérification avant d'envoyer au backend
-      for (let pair of register_form.entries()) {
-        console.log(pair[0], pair[1]); // Affiche les données envoyées
+      if (formData.profileImage instanceof File) {
+        register_form.append("profileImage", formData.profileImage); // ✅ Correspond à `upload.single("profileImage")`
       }
 
       const response = await fetch(URL.REGISTER, {
@@ -71,10 +64,10 @@ const RegisterPage = () => {
       if (response.ok) {
         navigate("/login");
       } else {
-        console.log("Registration failed", data.message);
+        console.error("Registration failed", data.message);
       }
     } catch (err) {
-      console.log("Registration failed", err.message);
+      console.error("Registration failed", err.message);
     }
   };
 
@@ -122,15 +115,13 @@ const RegisterPage = () => {
             onChange={handleChange}
             required
           />
-          {!passwordMatch && (
-            <p style={{ color: "red" }}>Passwords do not match</p>
-          )}
+          {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
 
           {/* 🔹 Gestion du fichier image */}
           <input
             id="image"
             type="file"
-            name="profileImagePath"
+            name="profileImage"
             accept="image/*"
             style={{ display: "none" }}
             onChange={handleImageChange}
@@ -141,17 +132,17 @@ const RegisterPage = () => {
           </label>
 
           {/* 🔹 Affichage dynamique de l'image */}
-          {formData.profileImagePath instanceof File ? (
+          {previewImage ? (
             <img
-              src={window.URL.createObjectURL(formData.profileImagePath)}
+              src={previewImage}
               alt="Profile Preview"
-              style={{ maxWidth: "80px" }}
+              style={{ maxWidth: "80px", borderRadius: "50%" }}
             />
-          ) : formData.profileImagePath ? (
+          ) : formData.profileImage ? (
             <img
-              src={`https://zero-gravity-stays-bevn.vercel.app${formData.profileImagePath}`}
+              src={formData.profileImage} // ✅ L'URL Cloudinary renvoyée par le backend
               alt="Profile from Server"
-              style={{ maxWidth: "80px" }}
+              style={{ maxWidth: "80px", borderRadius: "50%" }}
             />
           ) : null}
 
