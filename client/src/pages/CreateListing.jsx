@@ -60,11 +60,12 @@ const CreateListing = () => {
   const handleUploadPhotos = (e) => {
     const files = Array.from(e.target.files);
     const previewPhotos = files.map((file) => ({
-        file,  
-        previewUrl: URL.createObjectURL(file) // 🔹 Affichage local avant upload
+        file,
+        previewUrl: window.URL.createObjectURL(file) // ✅ Correction ici
     }));
 
     setPhotos((prevPhotos) => [...prevPhotos, ...previewPhotos]);
+};
 };
   const handleDragPhoto = (result) => {
     if (!result.destination) return;
