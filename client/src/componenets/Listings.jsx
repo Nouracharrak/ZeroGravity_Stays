@@ -5,6 +5,7 @@ import ListingCard from './ListingCard';
 import Loader from './Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { setListings } from '../redux/state'; // Assurez-vous que cette action existe
+import URL from "../constants/api"
 
 const Listings = () => {
   const dispatch = useDispatch();
@@ -17,8 +18,8 @@ const Listings = () => {
     try {
       const response = await fetch(
         selectedCategory !== 'All'
-          ? `https://zero-gravity-stays.vercel.app/properties?category=${selectedCategory}`
-          : 'https://zero-gravity-stays.vercel.app/properties',
+          ? `${URL.FETCH_LISTINGS}?category=${selectedCategory}`
+          : URL.FETCH_LISTINGS,
         { method: 'GET' }
       );
       const data = await response.json();
