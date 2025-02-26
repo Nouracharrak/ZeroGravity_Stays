@@ -3,7 +3,7 @@ import "../styles/login.scss"; // Vérifiez que ce fichier existe et contient le
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setLogin } from "../redux/state"; // Vérifiez que setLogin est bien défini dans votre Redux
-
+import URL from "../constants/api"
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,7 +13,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Empêche le rechargement de la page
     try {
-      const response = await fetch("https://zero-gravity-stays.vercel.app/auth/login", {
+      const response = await fetch(URL.AUTHENTIFICATION, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

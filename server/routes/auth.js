@@ -7,31 +7,21 @@ const path = require('path');
 require('dotenv').config();
 
 
-/* Configuration Multer for File Upload */
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, "uploads/"); // Store uploaded files in the 'uploads' folder
-    },
-    filename: function (req, file, cb) {
-      cb(null, file.originalname); // Use the original file name
-    },
-  });
-  
-  const upload = multer({ storage });
+// /* Configuration Multer for File Upload */
+
 
 // Route d'enregistrement de l'utilisateur
-router.post('/register', upload.single('profileImagePath'), async (req, res) => {
+router.post('/register', async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
-        const profileImage = req.file; // L'image téléchargée
-
+       // const profileImage = req.file; // L'image téléchargée
         if (!firstName || !lastName || !email || !password) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        if (!profileImage) {
-            return res.status(400).json({ message: "No profile image uploaded" });
-        }
+       //if (!profileImage) {
+        //     return res.status(400).json({ message: "No profile image uploaded" });
+        // }
 
         // Vérification si l'utilisateur existe déjà
         const existingUser = await User.findOne({ email });
@@ -44,7 +34,7 @@ router.post('/register', upload.single('profileImagePath'), async (req, res) => 
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Récupérer le chemin de l'image téléchargée
-        const profileImagePath = profileImage.path;
+        // const profileImagePath = profileImage.path;
 
         // Créer un nouvel utilisateur
         const newUser = new User({
@@ -52,7 +42,7 @@ router.post('/register', upload.single('profileImagePath'), async (req, res) => 
             lastName,
             email,
             password: hashedPassword,
-            profileImagePath
+            profileImagePath: ''
         });
 
         // Sauvegarder l'utilisateur dans la base de données

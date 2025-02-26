@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../styles/register.scss";
+import URL from "../constants/api"
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ const RegisterPage = () => {
                 }
             }
     
-            const response = await fetch("https://zero-gravity-stays.vercel.app/auth/register", {
+            const response = await fetch(URL.REGISTER, {
                 method: "POST",
                 headers: {
                     "Accept": "application/json"
