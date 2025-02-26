@@ -13,6 +13,7 @@ const URL = {
     UPDATE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
     DELETE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
 
+
 // LISTING
     FETCH_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties",
     CREATE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/create",

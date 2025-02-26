@@ -47,7 +47,7 @@ router.post('/register', upload.single("profileImage"), async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Récupérer le chemin de l'image téléchargée
-        const profileImagePath = profileImage.path; 
+        const profileImagePath = profileImage ? `/uploads/${profileImage.filename}` : "";
 
         // Créer un nouvel utilisateur
         const newUser = new User({

@@ -18,7 +18,12 @@ app.use(cors({
     maxAge: 3600
   }));
 
-  
+
+// Vérifie si le dossier "uploads" existe, sinon le crée
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true }); // Crée le dossier s'il n'existe pas
+}
 app.use("/uploads", express.static("uploads"));
 
 // Serve files from the 'public/uploads' directory under the '/uploads' URL path
