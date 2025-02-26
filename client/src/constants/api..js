@@ -1,3 +1,4 @@
+// Bookings
 const URL = {
     FETCH_BOOKINGS: "https://zero-gravity-stays.vercel.app/api/properties",
     CREATE_BOOKINGS: "https://zero-gravity-stays.vercel.app/api/properties/create",
