@@ -15,7 +15,7 @@ const TripList = () => {
 
   const getTripList = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/users/${userId}/trips`, {
+      const response = await fetch(`https://zero-gravity-stays.vercel.app/users/${userId}/trips`, {
         method: 'GET',
       });
       const data = await response.json();

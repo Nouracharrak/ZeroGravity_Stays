@@ -18,7 +18,7 @@ const SearchPage = () => {
   const getSearchListings = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/properties/search/${search}`,
+        `https://zero-gravity-stays.vercel.app/properties/search/${search}`,
         {
           method: 'GET',
         }

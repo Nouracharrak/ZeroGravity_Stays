@@ -23,7 +23,7 @@ const ReservationList = () => {
       }
 
       const response = await fetch(
-        `http://localhost:3001/users/${userId}/reservations`,
+        `https://zero-gravity-stays.vercel.app/users/${userId}/reservations`,
         { method: "GET" }
       );
 

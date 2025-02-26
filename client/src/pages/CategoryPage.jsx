@@ -18,7 +18,7 @@ const CategoriesPage = () => {
   const getFeedListings = useCallback(async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/properties?category=${category}`,
+        `https://zero-gravity-stays.vercel.app/properties?category=${category}`,
         { method: 'GET' }
       );
       const data = await response.json();

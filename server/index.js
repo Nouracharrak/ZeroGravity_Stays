@@ -11,7 +11,10 @@ const userRoutes = require('./routes/user.js');
 
 // Middleware
 app.use(express.json()); 
-app.use(cors()); 
+app.use(cors({
+    origin: ['https://zero-gravity-stays.vercel.app','http://localhost:3001'],
+    credentials: true
+})); 
 app.use(express.static('uploads')); 
 
 // Serve files from the 'public/uploads' directory under the '/uploads' URL path
