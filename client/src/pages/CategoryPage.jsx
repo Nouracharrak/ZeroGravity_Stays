@@ -7,7 +7,7 @@ import ListingCard from '../componenets/ListingCard'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setListings } from '../redux/state'
-// import URL from "../constants/api"
+import URL from "../constants/api"
 
 const CategoriesPage = () => {
     const [laoding, setLoading] = useState(true)
@@ -20,7 +20,7 @@ const CategoriesPage = () => {
   const getFeedListings = useCallback(async () => {
     try {
       const response = await fetch(
-        `https://zero-gravity-stays.vercel.app/properties?category=${category}`,
+        `${URL.FETCH_LISTINGS}?category=${category}`,
         { method: 'GET' }
       );
       const data = await response.json();

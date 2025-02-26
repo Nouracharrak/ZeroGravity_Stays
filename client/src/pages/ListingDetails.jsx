@@ -77,7 +77,7 @@ const ListingDetails = () => {
         totalPrice: listing.price * dayCount,
       };
   
-      const response = await fetch("https://zero-gravity-stays.vercel.app/bookings/create", {
+      const response = await fetch(URL.CREATE_BOOKINGS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingForm),
@@ -117,7 +117,7 @@ const ListingDetails = () => {
             listing.listingPhotosPaths.map((item, index) => (
               <img
                 key={index}
-                src={`http://localhost:3001${item}`}
+                src={`https://zero-gravity-stays-bevn.vercel.app${item}`}
                 alt={`Listing Photo ${index + 1}`}
               />
             ))
@@ -140,10 +140,10 @@ const ListingDetails = () => {
         <div className="profile">
           {listing.creator ? (
             <>
-              {/* <img
+              <img
                 src={
                   listing.creator.profileImagePath
-                    ? `http://localhost:3001/uploads/${listing.creator.profileImagePath.replace(
+                    ? `https://zero-gravity-stays-bevn.vercel.app/uploads/${listing.creator.profileImagePath.replace(
                         /\\/,
                         "/"
                       )}`
@@ -151,7 +151,7 @@ const ListingDetails = () => {
                 }
                 alt="Host Profile"
                 className="host-photo"
-              /> */}
+              />
 
               <h3>
                 Hosted By {listing.creator.firstName} {listing.creator.lastName}
