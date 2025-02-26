@@ -12,10 +12,10 @@ const userRoutes = require('./routes/user.js');
 // Middleware
 app.use(express.json()); 
 app.use(cors()); 
-app.use(express.static('public')); 
+app.use(express.static('uploads')); 
 
 // Serve files from the 'public/uploads' directory under the '/uploads' URL path
-console.log('Serving static files from:', path.join(__dirname, '../../public/uploads'));
+// console.log('Serving static files from:', path.join(__dirname, '../../public/uploads'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL, {
