@@ -9,7 +9,7 @@ const Listing = require("../models/Listing");
 const User = require("../models/user");
 
 // Configuration for file upload
-const uploadDir = path.join(dirname, './uploads');
+const uploadDir = path.join(__dirname, '../uploads');
 
 // Check if upload directory exists, create if not
 if (!fs.existsSync(uploadDir)) {
