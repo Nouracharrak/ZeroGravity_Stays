@@ -20,17 +20,21 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Route d'enregistrement de l'utilisateur
-router.post('/register', async (req, res) => {
+router.post('/register', upload.single("profileImage"), async (req, res) => {
     try {
+        console.log("Requête reçue avec le body :", req.body); // Debug
+        console.log("Fichier reçu :", req.file); // Debug
+
         const { firstName, lastName, email, password } = req.body;
-       // const profileImage = req.file; // L'image téléchargée
+        const profileImage = req.file; // L'image téléchargée
+
         if (!firstName || !lastName || !email || !password) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-       //if (!profileImage) {
-        //     return res.status(400).json({ message: "No profile image uploaded" });
-        // }
+        if (!profileImage) {
+            return res.status(400).json({ message: "No profile image uploaded" });
+        }
 
         // Vérification si l'utilisateur existe déjà
         const existingUser = await User.findOne({ email });
@@ -43,7 +47,7 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Récupérer le chemin de l'image téléchargée
-        // const profileImagePath = profileImage.path;
+        const profileImagePath = profileImage.path; 
 
         // Créer un nouvel utilisateur
         const newUser = new User({
@@ -51,7 +55,7 @@ router.post('/register', async (req, res) => {
             lastName,
             email,
             password: hashedPassword,
-            profileImagePath: ''
+            profileImagePath
         });
 
         // Sauvegarder l'utilisateur dans la base de données
