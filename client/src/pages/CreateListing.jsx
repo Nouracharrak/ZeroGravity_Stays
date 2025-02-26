@@ -57,30 +57,14 @@ const CreateListing = () => {
   // Upload, drag and drop, remove photos
   const [photos, setPhotos] = useState([]);
 
-  const handleUploadPhotos = async (e) => {
+  const handleUploadPhotos = (e) => {
     const files = Array.from(e.target.files);
-    const uploadedPhotos = [];
+    const previewPhotos = files.map((file) => ({
+        file,  
+        previewUrl: URL.createObjectURL(file) // 🔹 Affichage local avant upload
+    }));
 
-    for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "ml_default");
-
-        try {
-            const response = await fetch(
-                URL.CLOUDINARY,
-                {
-                    method: "POST",
-                    body: formData,
-                }
-            );
-            const data = await response.json();
-            uploadedPhotos.push(data.secure_url); // Stocke l'URL de Cloudinary
-        } catch (err) {
-            console.error("Image upload failed", err);
-        }
-    }
-    setPhotos((prevPhotos) => [...prevPhotos, ...uploadedPhotos]);
+    setPhotos((prevPhotos) => [...prevPhotos, ...previewPhotos]);
 };
   const handleDragPhoto = (result) => {
     if (!result.destination) return;
@@ -119,45 +103,62 @@ const CreateListing = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      // Create a new FormData object to handle file uploads
-      const listingForm = new FormData();
-      listingForm.append("creator", creatorId);
-      listingForm.append("category", category);
-      listingForm.append("type", type);
-      listingForm.append("streetAddress", formLocation.streetAddress);
-      listingForm.append("aptSuite", formLocation.aptSuite);
-      listingForm.append("city", formLocation.city);
-      listingForm.append("province", formLocation.province);
-      listingForm.append("country", formLocation.country);
-      listingForm.append("guestCount", guestCount);
-      listingForm.append("bedroomCount", bedroomCount);
-      listingForm.append("bedCount", bedCount);
-      listingForm.append("bathroomCount", bathroomCount);
-      listingForm.append("amenities", amenities);
-      listingForm.append("title", formDescription.title);
-      listingForm.append("description", formDescription.description);
-      listingForm.append("highlight", formDescription.highlight);
-      listingForm.append("highlightDesc", formDescription.highlightDesc);
-      listingForm.append("price", formDescription.price);
+        // 🔹 Upload des images sur Cloudinary avant soumission
+        const uploadedPhotos = [];
+        for (const photo of photos) {
+            const formData = new FormData();
+            formData.append("file", photo.file);
+            formData.append("upload_preset", "ml_default");
 
-      // Append each selected photo to the FormData object
-      listingForm.append("listingPhotos", JSON.stringify(photos)); // On envoie les URLs sous forme de JSON
+            try {
+                const response = await fetch(URL.CLOUDINARY, {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await response.json();
+                uploadedPhotos.push(data.secure_url); // 🔹 Stockage des URLs Cloudinary
+            } catch (err) {
+                console.error("Image upload failed", err);
+            }
+        }
 
+        // Création de la requête avec les images uploadées
+        const listingForm = new FormData();
+        listingForm.append("creator", creatorId);
+        listingForm.append("category", category);
+        listingForm.append("type", type);
+        listingForm.append("streetAddress", formLocation.streetAddress);
+        listingForm.append("aptSuite", formLocation.aptSuite);
+        listingForm.append("city", formLocation.city);
+        listingForm.append("province", formLocation.province);
+        listingForm.append("country", formLocation.country);
+        listingForm.append("guestCount", guestCount);
+        listingForm.append("bedroomCount", bedroomCount);
+        listingForm.append("bedCount", bedCount);
+        listingForm.append("bathroomCount", bathroomCount);
+        listingForm.append("amenities", amenities);
+        listingForm.append("title", formDescription.title);
+        listingForm.append("description", formDescription.description);
+        listingForm.append("highlight", formDescription.highlight);
+        listingForm.append("highlightDesc", formDescription.highlightDesc);
+        listingForm.append("price", formDescription.price);
+        listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos)); // 🔹 Utilisation des URLs Cloudinary
 
-      /* Send a POST request to server */
-      const response = await fetch(URL.CREATE_LISTINGS, {
-        method: "POST",
-        body: listingForm,
-      });
+        // Envoi des données au backend
+        const response = await fetch(URL.CREATE_LISTINGS, {
+            method: "POST",
+            body: listingForm,
+        });
 
-      if (response.ok) {
-        navigate("/");
-      }
+        if (response.ok) {
+            navigate("/");
+        }
     } catch (err) {
-      console.log("Publish Listing failed", err.message);
+        console.log("Publish Listing failed", err.message);
     }
-  };
+};
   return (
     <div>
       <Navbar />
@@ -418,7 +419,8 @@ const CreateListing = () => {
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                               >
-                                <img src={photo} alt="place" />
+                                
+                                
                                 <button
                                   type="button"
                                   onClick={() => handleRemovePhoto(index)}
