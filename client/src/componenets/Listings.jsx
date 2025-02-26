@@ -17,8 +17,8 @@ const Listings = () => {
     try {
       const response = await fetch(
         selectedCategory !== 'All'
-          ? `http://localhost:3001/properties?category=${selectedCategory}`
-          : 'http://localhost:3001/properties',
+          ? `https://zero-gravity-stays.vercel.app/properties?category=${selectedCategory}`
+          : 'https://zero-gravity-stays.vercel.app/properties',
         { method: 'GET' }
       );
       const data = await response.json();

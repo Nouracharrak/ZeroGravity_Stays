@@ -16,7 +16,7 @@ const Navbar = () => {
 
   const profileImage =
     user && user.profileImagePath
-      ? `http://localhost:3001/${user.profileImagePath.replace('uploads', '')}`
+      ? `https://zero-gravity-stays.vercel.app/${user.profileImagePath.replace('uploads', '')}`
       : '/assets/default-profile.png'; // Image par défaut si profileImagePath est vide
 
   // Fonction pour lancer la recherche

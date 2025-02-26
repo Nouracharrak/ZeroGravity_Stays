@@ -43,7 +43,7 @@ const ListingCard = ({
   const isLiked = wishList.find((item) => item?._id === listingId)
   const patchWishList = async ()=> {
     if (user?._id !== creator._id) {
-    const response = await fetch(`http://localhost:3001/users/${user?._id}/${listingId}`, 
+    const response = await fetch(`https://zero-gravity-stays.vercel.app/users/${user?._id}/${listingId}`, 
       {method: 'PATCH',
        header: {'Content-Type': 'application/jason'} 
       }
