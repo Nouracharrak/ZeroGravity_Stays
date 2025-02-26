@@ -41,7 +41,7 @@ const RegisterPage = () => {
             const register_form = new FormData();
             for (var key in formData) {
                 if (key === "profileImagePath") {
-                    register_form.append("profileImage", formData[key]);
+                    register_form.append("profileImagePath", formData[key]);
                 } else {
                     register_form.append(key, formData[key]);
                 }
@@ -49,6 +49,9 @@ const RegisterPage = () => {
     
             const response = await fetch("https://zero-gravity-stays.vercel.app/auth/register", {
                 method: "POST",
+                headers: {
+                    "Accept": "application/json"
+                },
                 body: register_form
             });
     
