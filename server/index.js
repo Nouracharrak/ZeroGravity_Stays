@@ -8,6 +8,8 @@ const listingRoutes = require('./routes/listing.js');
 const path = require('path');
 const bookingRoutes = require('./routes/booking.js');  
 const userRoutes = require('./routes/user.js');
+const fs = require("fs");
+
 
 // Middleware
 app.use(express.json()); 
