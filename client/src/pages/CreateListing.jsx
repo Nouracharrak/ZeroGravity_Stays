@@ -10,7 +10,7 @@ import { IoIosImages } from "react-icons/io";
 import { BiTrash } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import URL from "../constants/api"
+import { CREATE_LISTINGS, CLOUDINARY } from '../constants/api';
 
 const CreateListing = () => {
   const [category, setCategory] = useState("");
@@ -60,13 +60,15 @@ const CreateListing = () => {
   const handleUploadPhotos = (e) => {
     const files = Array.from(e.target.files);
     const previewPhotos = files.map((file) => ({
-        file,
-        previewUrl: window.URL.createObjectURL(file) // ✅ Correction ici
+      file,
+      previewUrl: window.URL.createObjectURL(file) 
     }));
+  
 
     setPhotos((prevPhotos) => [...prevPhotos, ...previewPhotos]);
 };
-};
+
+
   const handleDragPhoto = (result) => {
     if (!result.destination) return;
     const items = Array.from(photos);
@@ -106,7 +108,7 @@ const CreateListing = () => {
     e.preventDefault();
 
     try {
-        // 🔹 Upload des images sur Cloudinary avant soumission
+        // Upload des images sur Cloudinary avant soumission
         const uploadedPhotos = [];
         for (const photo of photos) {
             const formData = new FormData();
@@ -114,12 +116,12 @@ const CreateListing = () => {
             formData.append("upload_preset", "ml_default");
 
             try {
-                const response = await fetch(URL.CLOUDINARY, {
+                const response = await fetch(CLOUDINARY, {
                     method: "POST",
                     body: formData,
                 });
                 const data = await response.json();
-                uploadedPhotos.push(data.secure_url); // 🔹 Stockage des URLs Cloudinary
+                uploadedPhotos.push(data.secure_url); 
             } catch (err) {
                 console.error("Image upload failed", err);
             }
@@ -145,10 +147,10 @@ const CreateListing = () => {
         listingForm.append("highlight", formDescription.highlight);
         listingForm.append("highlightDesc", formDescription.highlightDesc);
         listingForm.append("price", formDescription.price);
-        listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos)); // 🔹 Utilisation des URLs Cloudinary
+        listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos)); 
 
         // Envoi des données au backend
-        const response = await fetch(URL.CREATE_LISTINGS, {
+        const response = await fetch(CREATE_LISTINGS, {
             method: "POST",
             body: listingForm,
         });
@@ -160,6 +162,7 @@ const CreateListing = () => {
         console.log("Publish Listing failed", err.message);
     }
 };
+
   return (
     <div>
       <Navbar />
