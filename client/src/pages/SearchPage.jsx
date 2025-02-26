@@ -7,6 +7,7 @@ import ListingCard from '../componenets/ListingCard';
 import Navbar from '../componenets/Navbar';
 import Loader from '../componenets/Loader';
 import Footer from "../componenets/Footer"
+import URL from "../constants/api"
 
 const SearchPage = () => {
   const [loading, setLoading] = useState(true);
@@ -18,7 +19,7 @@ const SearchPage = () => {
   const getSearchListings = async () => {
     try {
       const response = await fetch(
-        `https://zero-gravity-stays.vercel.app/properties/search/${search}`,
+        `${URL.SEARCH_LISTINGS}/${search}`,
         {
           method: 'GET',
         }

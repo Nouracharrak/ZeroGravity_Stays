@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { setPropertyList } from "../redux/state";
 import Loader from "../componenets/Loader";
 import Footer from "../componenets/Footer"
+import URL from "../constants/api"
 
 const PropertyList = () => {
   const [loading, setLoading] = useState(true)
@@ -16,7 +17,7 @@ const PropertyList = () => {
   const dispatch = useDispatch()
   const getPropertyList = async () => {
     try {
-      const response = await fetch(`https://zero-gravity-stays.vercel.app/users/${user._id}/properties`, {
+      const response = await fetch(`${URL.FETCH_USERS}/${user._id}/properties`, {
         method: "GET"
       })
       const data = await response.json()

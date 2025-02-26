@@ -10,6 +10,7 @@ import { IoIosImages } from "react-icons/io";
 import { BiTrash } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import URL from "../constants/api"
 
 const CreateListing = () => {
   const [category, setCategory] = useState("");
@@ -126,7 +127,7 @@ const CreateListing = () => {
       });
 
       /* Send a POST request to server */
-      const response = await fetch("https://zero-gravity-stays.vercel.app/properties/create", {
+      const response = await fetch(URL.CREATE_LISTINGS, {
         method: "POST",
         body: listingForm,
       });

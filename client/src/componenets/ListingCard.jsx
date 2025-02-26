@@ -4,6 +4,7 @@ import "../styles/listingCard.scss";
 import { ArrowForwardIos, ArrowBackIosNew, Favorite } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import {setWishList} from '../redux/state'
+import URL from "../constants/api"
 
 const ListingCard = ({
   listingId,
@@ -43,7 +44,7 @@ const ListingCard = ({
   const isLiked = wishList.find((item) => item?._id === listingId)
   const patchWishList = async ()=> {
     if (user?._id !== creator._id) {
-    const response = await fetch(`https://zero-gravity-stays.vercel.app/users/${user?._id}/${listingId}`, 
+    const response = await fetch(`${URL.FETCH_USERS}/${user?._id}/${listingId}`, 
       {method: 'PATCH',
        header: {'Content-Type': 'application/jason'} 
       }

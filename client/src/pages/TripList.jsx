@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { setTripList } from '../redux/state';
 import { useDispatch, useSelector } from 'react-redux';
 import ListingCard from '../componenets/ListingCard';
+import URL from "../constants/api"
 
 const TripList = () => {
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ const TripList = () => {
 
   const getTripList = async () => {
     try {
-      const response = await fetch(`https://zero-gravity-stays.vercel.app/users/${userId}/trips`, {
+      const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`, {
         method: 'GET',
       });
       const data = await response.json();

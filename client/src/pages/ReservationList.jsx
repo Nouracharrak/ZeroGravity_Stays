@@ -6,6 +6,7 @@ import Footer from "../componenets/Footer"
 import { useDispatch, useSelector } from "react-redux";
 import { setReservationList } from "../redux/state";
 import ListingCard from "../componenets/ListingCard";
+import URL from "../constants/api"
 
 const ReservationList = () => {
   const [loading, setLoading] = useState(true);
@@ -22,8 +23,9 @@ const ReservationList = () => {
         return;
       }
 
+      
       const response = await fetch(
-        `https://zero-gravity-stays.vercel.app/users/${userId}/reservations`,
+        `${URL.FETCH_USERS}/${userId}/reservations`,
         { method: "GET" }
       );
 

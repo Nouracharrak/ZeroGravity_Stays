@@ -11,6 +11,7 @@ import Navbar from "../componenets/Navbar";
 import Loader from "../componenets/Loader";
 import Footer from "../componenets/Footer";
 import { useSelector } from "react-redux";
+import URL from "../constants/api"
 
 const ListingDetails = () => {
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ const ListingDetails = () => {
   const getListingDetails = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/properties/${listingId}`,
+        `${URL.FETCH_LISTINGS}/${listingId}`,
         {
           method: "GET",
         }
