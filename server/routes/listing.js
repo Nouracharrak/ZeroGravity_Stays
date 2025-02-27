@@ -26,12 +26,14 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+// create listing
+
 router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
     const listingPhotos = req.files.map((file) => file.location);
 
-    // Récupération des autres données
     const {
+      creator,
       category,
       type,
       streetAddress,
@@ -50,10 +52,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       highlightDesc,
       price,
     } = req.body;
-    
-    const creator = req.body.creator;
 
-    // Création du nouvel objet Listing
     const newListing = new Listing({
       creator,
       category,
@@ -76,22 +75,12 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       price,
     });
 
-    // Sauvegarde en base de données
-    await newListing.save();
-
-    // Mise à jour de l'utilisateur pour ajouter l'ID du listing
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    const savedListing = await newListing.save();
+    if (!savedListing) {
+      return res.status(500).json({ message: "Échec de la sauvegarde du listing" });
     }
-    user.propertyList.push(newListing._id);
-    await user.save();
 
-    // Réponse au client
-    res.status(200).json({
-      message: "Listing créé avec succès",
-      newListing,
-    });
+    res.status(200).json(savedListing);
   } catch (err) {
     console.error("Erreur lors de la création du listing :", err);
     res
@@ -99,6 +88,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       .json({ message: "Échec de la création du listing", error: err.message });
   }
 });
+
 
 // Route pour rechercher des annonces
 
