@@ -10,12 +10,12 @@ const listingRoutes = require("./routes/listing.js");
 const bookingRoutes = require("./routes/booking.js");
 const userRoutes = require("./routes/user.js");
 
-// ✅ Charger les variables d'environnement
+// Charger les variables d'environnement
 dotenv.config();
 
 const app = express();
 
-// ✅ Middleware
+// Middleware
 app.use(express.json());
 app.use(
   cors({
@@ -26,7 +26,7 @@ app.use(
   })
 );
 
-// ✅ Connexion à MongoDB
+// Connexion à MongoDB
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
@@ -41,19 +41,19 @@ mongoose
     console.error("MongoDB connection error:", err.message);
   });
 
-// ✅ Définir les routes
+// Définir les routes
 app.use("/auth", authRoutes);
 app.use("/properties", listingRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/users", userRoutes);
 
-// ✅ Gestion des erreurs globales
+// Gestion des erreurs globales
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Internal Server Error");
 });
 
-// ✅ Route par défaut pour les requêtes inconnues
+// Route par défaut pour les requêtes inconnues
 app.use((req, res) => {
   res.status(404).send("Page non trouvée");
 });

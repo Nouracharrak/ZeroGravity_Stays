@@ -7,48 +7,48 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config();
 
-// ✅ Configuration de Cloudinary
+// Configuration de Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ✅ Configuration de Multer pour Cloudinary
+// Configuration de Multer pour Cloudinary
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "profileImages", // ✅ Dossier où seront stockées les images sur Cloudinary
-    format: async () => "png", // ✅ Convertir en PNG
-    public_id: (req, file) => Date.now() + "-" + file.originalname, // ✅ Nom unique
+    folder: "profileImages", // Dossier où seront stockées les images sur Cloudinary
+    format: async () => "png", // Convertir en PNG
+    public_id: (req, file) => Date.now() + "-" + file.originalname, // Nom unique
   },
 });
 
 const upload = multer({ storage });
 
 
-// ✅ Route d'enregistrement avec Cloudinary
+// Route d'enregistrement avec Cloudinary
 router.post('/register', upload.single("profileImage"), async (req, res) => {
     try {
-        console.log("🟢 Requête reçue avec le body :", req.body);
-        console.log("🟢 Fichier reçu de Multer :", req.file);
+        console.log("Requête reçue avec le body :", req.body);
+        console.log("Fichier reçu de Multer :", req.file);
 
         const { firstName, lastName, email, password } = req.body;
         if (!firstName || !lastName || !email || !password) {
-            console.log("🔴 Erreur : Champs requis manquants !");
+            console.log("Erreur : Champs requis manquants !");
             return res.status(400).json({ message: "Missing required fields" });
         }
 
         if (!req.file || !req.file.path) {
-            console.log("🔴 Erreur : Image non reçue !");
+            console.log("Erreur : Image non reçue !");
             return res.status(400).json({ message: "Image upload failed" });
         }
 
-        console.log("🟢 Image envoyée sur Cloudinary :", req.file.path);
+        console.log("Image envoyée sur Cloudinary :", req.file.path);
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log("🔴 Erreur : Utilisateur déjà existant !");
+            console.log("Erreur : Utilisateur déjà existant !");
             return res.status(409).json({ message: "User already exists" });
         }
 
@@ -64,15 +64,15 @@ router.post('/register', upload.single("profileImage"), async (req, res) => {
         });
 
         await newUser.save();
-        console.log("🟢 Utilisateur enregistré :", newUser);
+        console.log("Utilisateur enregistré :", newUser);
 
         res.status(201).json({ message: "User Registered successfully", user: newUser });
     } catch (err) {
-        console.error("🔴 Erreur lors de l'inscription :", err);
+        console.error("Erreur lors de l'inscription :", err);
         res.status(500).json({ message: "Registration failed", error: err.message });
     }
 });
-// ✅ Route de connexion de l'utilisateur
+// Route de connexion de l'utilisateur
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -103,7 +103,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Middleware pour vérifier le token
+// Middleware pour vérifier le token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
