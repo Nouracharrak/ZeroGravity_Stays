@@ -10,7 +10,7 @@ import { IoIosImages } from "react-icons/io";
 import { BiTrash } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import URL from '../constants/api';
+import URL from "../constants/api";
 
 const CreateListing = () => {
   const [category, setCategory] = useState("");
@@ -59,15 +59,16 @@ const CreateListing = () => {
 
   const handleUploadPhotos = (e) => {
     const files = Array.from(e.target.files);
+  
+    // Stocker les fichiers avec leur URL locale pour la prévisualisation
     const previewPhotos = files.map((file) => ({
       file,
-      previewUrl: window.URL.createObjectURL(file) 
+      previewUrl: URL.createObjectURL(file), // Générer une prévisualisation
     }));
   
-
     setPhotos((prevPhotos) => [...prevPhotos, ...previewPhotos]);
-};
-
+  };
+  
 
   const handleDragPhoto = (result) => {
     if (!result.destination) return;
@@ -108,60 +109,60 @@ const CreateListing = () => {
     e.preventDefault();
 
     try {
-        // Upload des images sur Cloudinary avant soumission
-        const uploadedPhotos = [];
-        for (const photo of photos) {
-            const formData = new FormData();
-            formData.append("file", photo.file);
-            formData.append("upload_preset", "ml_default");
+      // Upload des images sur Cloudinary avant soumission
+      const uploadedPhotos = [];
+      for (const photo of photos) {
+        const formData = new FormData();
+        formData.append("file", photo.file);
+        formData.append("upload_preset", "ml_default");
 
-            try {
-                const response = await fetch(URL.CLOUDINARY, {
-                    method: "POST",
-                    body: formData,
-                });
-                const data = await response.json();
-                uploadedPhotos.push(data.secure_url); 
-            } catch (err) {
-                console.error("Image upload failed", err);
-            }
-        }
-
-        // Création de la requête avec les images uploadées
-        const listingForm = new FormData();
-        listingForm.append("creator", creatorId);
-        listingForm.append("category", category);
-        listingForm.append("type", type);
-        listingForm.append("streetAddress", formLocation.streetAddress);
-        listingForm.append("aptSuite", formLocation.aptSuite);
-        listingForm.append("city", formLocation.city);
-        listingForm.append("province", formLocation.province);
-        listingForm.append("country", formLocation.country);
-        listingForm.append("guestCount", guestCount);
-        listingForm.append("bedroomCount", bedroomCount);
-        listingForm.append("bedCount", bedCount);
-        listingForm.append("bathroomCount", bathroomCount);
-        listingForm.append("amenities", amenities);
-        listingForm.append("title", formDescription.title);
-        listingForm.append("description", formDescription.description);
-        listingForm.append("highlight", formDescription.highlight);
-        listingForm.append("highlightDesc", formDescription.highlightDesc);
-        listingForm.append("price", formDescription.price);
-        listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos)); 
-
-        // Envoi des données au backend
-        const response = await fetch(URL.CREATE_LISTINGS, {
+        try {
+          const response = await fetch(URL.CLOUDINARY, {
             method: "POST",
-            body: listingForm,
-        });
-
-        if (response.ok) {
-            navigate("/");
+            body: formData,
+          });
+          const data = await response.json();
+          uploadedPhotos.push(data.secure_url);
+        } catch (err) {
+          console.error("Image upload failed", err);
         }
+      }
+
+      // Création de la requête avec les images uploadées
+      const listingForm = new FormData();
+      listingForm.append("creator", creatorId);
+      listingForm.append("category", category);
+      listingForm.append("type", type);
+      listingForm.append("streetAddress", formLocation.streetAddress);
+      listingForm.append("aptSuite", formLocation.aptSuite);
+      listingForm.append("city", formLocation.city);
+      listingForm.append("province", formLocation.province);
+      listingForm.append("country", formLocation.country);
+      listingForm.append("guestCount", guestCount);
+      listingForm.append("bedroomCount", bedroomCount);
+      listingForm.append("bedCount", bedCount);
+      listingForm.append("bathroomCount", bathroomCount);
+      listingForm.append("amenities", amenities);
+      listingForm.append("title", formDescription.title);
+      listingForm.append("description", formDescription.description);
+      listingForm.append("highlight", formDescription.highlight);
+      listingForm.append("highlightDesc", formDescription.highlightDesc);
+      listingForm.append("price", formDescription.price);
+      listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos));
+
+      // Envoi des données au backend
+      const response = await fetch(URL.CREATE_LISTINGS, {
+        method: "POST",
+        body: listingForm,
+      });
+
+      if (response.ok) {
+        navigate("/");
+      }
     } catch (err) {
-        console.log("Publish Listing failed", err.message);
+      console.log("Publish Listing failed", err.message);
     }
-};
+  };
 
   return (
     <div>
@@ -423,8 +424,8 @@ const CreateListing = () => {
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                               >
-                                
-                                
+                                <img src={photo.previewUrl} alt="place" />{" "}
+                                {/* ✅ Correction ici */}
                                 <button
                                   type="button"
                                   onClick={() => handleRemovePhoto(index)}
@@ -526,9 +527,8 @@ const CreateListing = () => {
           </button>
         </form>
       </div>
-      <Footer/>
+      <Footer />
     </div>
-    
   );
 };
 export default CreateListing;
