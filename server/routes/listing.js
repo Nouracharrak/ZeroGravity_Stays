@@ -6,7 +6,6 @@ const Listing = require("../models/Listing");
 const User = require("../models/user");
 require("dotenv").config();
 const multer = require("multer");
-const { verifyToken } = require('./auth');
 
 // Configuration de Cloudinary
 cloudinary.config({
@@ -27,7 +26,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-router.post("/create", verifyToken, upload.array("listingPhotos", 10), async (req, res) => {
+router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
     const listingPhotos = req.files.map((file) => file.location);
 
@@ -54,7 +53,7 @@ router.post("/create", verifyToken, upload.array("listingPhotos", 10), async (re
 
     // Création du nouvel objet Listing
     const newListing = new Listing({
-      creator: req.user._id,
+      creator,
       category,
       type,
       streetAddress,
