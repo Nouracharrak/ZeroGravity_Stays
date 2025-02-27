@@ -13,18 +13,21 @@ const Navbar = () => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const profileImage =
-    user && user.profileImagePath
-      ? `https://zero-gravity-stays.vercel.app/${user.profileImagePath.replace('uploads', '')}`
-      : '/assets/default-profile.png'; // Image par défaut si profileImagePath est vide
+  user && user.profileImagePath
+    ? user.profileImagePath // Utilisation directe de l'URL Cloudinary
+    : "/assets/default-profile.png"; // Image par défaut si aucune photo
+
 
   // Fonction pour lancer la recherche
   const handleSearch = () => {
     if (search.trim()) {
-      navigate(`/properties/search/${search.trim()}`); // On passe la recherche via la query string
+      setError(""); // Réinitialise l'erreur si la recherche est valide
+      navigate(`/properties/search/${search.trim()}`);
     } else {
-      alert('Please enter a valid search term');
+      setError("Please enter a valid search term");
     }
   };
 
@@ -43,6 +46,8 @@ const Navbar = () => {
         <IconButton onClick={handleSearch}>
           <Search sx={{ color: variables.pinkred }} />
         </IconButton>
+        {/* Affichage de l'erreur si elle existe  */}
+        {error && <p className="error-message">{error}</p>}
       </div>
 
       <div className="navbar_right">

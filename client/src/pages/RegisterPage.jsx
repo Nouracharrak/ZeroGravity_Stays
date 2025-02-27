@@ -10,36 +10,36 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    profileImage: null, // ✅ Correspond au champ envoyé au backend
+    profileImage: null,
   });
 
   const [passwordMatch, setPasswordMatch] = useState(true);
-  const [previewImage, setPreviewImage] = useState(null); // ✅ Pour l'aperçu de l'image
+  const [previewImage, setPreviewImage] = useState(null);
   const navigate = useNavigate();
 
-  // 🔹 Met à jour les champs texte
+  // Met à jour les champs texte
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // 🔹 Gestion de l’image sélectionnée
+  // Gestion de l’image sélectionnée
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFormData({ ...formData, profileImage: file });
-      setPreviewImage(URL.createObjectURL(file)); // ✅ Aperçu de l'image sélectionnée
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
-  // 🔹 Vérifie si les mots de passe correspondent
+  // Vérifie si les mots de passe correspondent
   useEffect(() => {
     setPasswordMatch(
       formData.password === formData.confirmPassword || formData.confirmPassword === ""
     );
   }, [formData.password, formData.confirmPassword]);
 
-  // 🔹 Envoi du formulaire au backend
+  // Envoi du formulaire au backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -50,7 +50,7 @@ const RegisterPage = () => {
       register_form.append("password", formData.password);
 
       if (formData.profileImage instanceof File) {
-        register_form.append("profileImage", formData.profileImage); // ✅ Correspond à `upload.single("profileImage")`
+        register_form.append("profileImage", formData.profileImage);
       }
 
       const response = await fetch(URL.REGISTER, {
@@ -117,7 +117,7 @@ const RegisterPage = () => {
           />
           {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
 
-          {/* 🔹 Gestion du fichier image */}
+          {/* Gestion du fichier image */}
           <input
             id="image"
             type="file"
@@ -140,7 +140,7 @@ const RegisterPage = () => {
             />
           ) : formData.profileImage ? (
             <img
-              src={formData.profileImage} // ✅ L'URL Cloudinary renvoyée par le backend
+              src={formData.profileImage}
               alt="Profile from Server"
               style={{ maxWidth: "80px", borderRadius: "50%" }}
             />
