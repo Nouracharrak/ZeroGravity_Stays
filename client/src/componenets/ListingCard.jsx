@@ -110,6 +110,13 @@ const ListingCard = ({
         }}
       >
         <div className="slider-container">
+        <button
+            className="favorite"
+            onClick={patchWishList}
+            disabled={!user}
+          >
+            <Favorite sx={{ color: liked ? "red" : "white" }} />
+          </button>
           <div
             className="slider"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -164,13 +171,6 @@ const ListingCard = ({
             </>
           )}
           
-          <button
-            className="favorite"
-            onClick={patchWishList}
-            disabled={!user}
-          >
-            <Favorite sx={{ color: liked ? "red" : "white" }} />
-          </button>
         </div>
       </div>
     </div>
