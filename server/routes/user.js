@@ -115,7 +115,6 @@ router.get("/:userId/trips", async (req, res) => {
             res.status(404).json({ message: 'Cannot find the properties!', error: err.message });
         }
     });
-    // add Reservation
     // Récupérer les réservations pour un utilisateur en tant qu'hôte (hostId)
 router.get("/:userId/reservations", async (req, res) => {
     try {

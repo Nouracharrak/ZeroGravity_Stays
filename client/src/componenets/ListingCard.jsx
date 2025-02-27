@@ -46,11 +46,9 @@ const ListingCard = ({
   const user = useSelector((state) => state.user);
   const wishList = user?.wishList || [];
   const isLiked = wishList.find((item) => item?._id === listingId);
+  const [liked, setLiked] = useState(isLiked);
   const patchWishList = async () => {
     if (user?._id !== creator._id) {
-        console.log("👉 Sending PATCH request...");
-        console.log("URL:", `${URL.FETCH_USERS}/${user?._id}/${listingId}`);
-
         try {
             const response = await fetch(
                 `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
@@ -61,8 +59,10 @@ const ListingCard = ({
             );
 
             const data = await response.json();
-            console.log("✅ Response received:", data);
             dispatch(setWishList(data.wishList));
+
+            // Met à jour immédiatement l'état local pour refléter le changement
+            setLiked(!liked);
 
         } catch (error) {
             console.error("❌ Error in fetch:", error);

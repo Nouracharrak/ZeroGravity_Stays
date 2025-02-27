@@ -182,7 +182,9 @@ const CreateListing = () => {
       listingForm.append("bedroomCount", bedroomCount);
       listingForm.append("bedCount", bedCount);
       listingForm.append("bathroomCount", bathroomCount);
-      listingForm.append("amenities", JSON.stringify(amenities));
+      amenities.forEach((amenity) => {
+      listingForm.append("amenities", amenity);
+      });      
       listingForm.append("title", formDescription.title);
       listingForm.append("description", formDescription.description);
       listingForm.append("highlight", formDescription.highlight);

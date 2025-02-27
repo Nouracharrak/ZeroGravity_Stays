@@ -31,7 +31,10 @@ const upload = multer({ storage });
 router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
     const listingPhotos = JSON.parse(req.body.listingPhotos);
-    const parsedAmenities = JSON.parse(req.body.amenities || "[]");
+    const parsedAmenities = Array.isArray(req.body.amenities)
+  ? req.body.amenities
+  : JSON.parse(req.body.amenities || "[]");
+
     const {
       creator,
       category,
