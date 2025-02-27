@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/listingCard.scss";
-import { ArrowForwardIos, ArrowBackIosNew, Favorite } from "@mui/icons-material";
+import {
+  ArrowForwardIos,
+  ArrowBackIosNew,
+  Favorite,
+} from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
-import {setWishList} from '../redux/state'
-import URL from "../constants/api"
+import { setWishList } from "../redux/state";
+import URL from "../constants/api";
 
 const ListingCard = ({
   listingId,
@@ -39,20 +43,21 @@ const ListingCard = ({
   const dispatch = useDispatch();
 
   //  add the wishList
-  const user = useSelector((state) => state.user)
+  const user = useSelector((state) => state.user);
   const wishList = user?.wishList || [];
-  const isLiked = wishList.find((item) => item?._id === listingId)
-  const patchWishList = async ()=> {
+  const isLiked = wishList.find((item) => item?._id === listingId);
+  const patchWishList = async () => {
     if (user?._id !== creator._id) {
-    const response = await fetch(`${URL.FETCH_USERS}/${user?._id}/${listingId}`, 
-      {method: 'PATCH',
-       headers: {'Content-Type': 'application/jason'} 
-      }
-    );
-    const data = await response.json()
-    dispatch(setWishList(data.wishList))
-  } else {return }
-  }
+      const response = await fetch(
+        `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
+        { method: "PATCH", headers: { "Content-Type": "application/json" } }
+      );
+      const data = await response.json();
+      dispatch(setWishList(data.wishList));
+    } else {
+      return;
+    }
+  };
 
   return (
     <div className="listing-card">
@@ -70,7 +75,11 @@ const ListingCard = ({
             {listingPhotosPaths && listingPhotosPaths.length > 0 ? (
               listingPhotosPaths.map((photo, index) => (
                 <div key={index} className="slide">
-                 <img src={`${URL.BACK_LINK}/${listingPhotosPaths[0]}`} alt="listingPhoto" />
+                  <img
+                    src={`${URL.CLOUDINARY}/${photo}`}
+                    alt="photo_listing"
+                  />
+
                   <div
                     className="prev-button"
                     onClick={(e) => {
@@ -120,15 +129,19 @@ const ListingCard = ({
               </p>
             </>
           )}
-          <button className="favorite" onClick={(e) => {
-            e.stopPropagation();
-            patchWishList()}}
-            disabled={!user}>
+          <button
+            className="favorite"
+            onClick={(e) => {
+              e.stopPropagation();
+              patchWishList();
+            }}
+            disabled={!user}
+          >
             {isLiked ? (
-              <Favorite sx={{color: "red"}}/> 
-            ): (
-                <Favorite sx={{color: "white"}}/>
-              )}
+              <Favorite sx={{ color: "red" }} />
+            ) : (
+              <Favorite sx={{ color: "white" }} />
+            )}
           </button>
         </div>
       </div>
