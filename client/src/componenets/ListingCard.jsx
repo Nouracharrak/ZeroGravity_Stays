@@ -48,23 +48,30 @@ const ListingCard = ({
   const isLiked = wishList.find((item) => item?._id === listingId);
   const patchWishList = async () => {
     if (user?._id !== creator._id) {
-      console.log("Sending PATCH request...");
-      console.log("URL:", `${URL.FETCH_USERS}/${user?._id}/${listingId}`);
-  
-      const response = await fetch(
-        `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
-        { method: "PATCH", headers: { "Content-Type": "application/json" } }
-      );
-  
-      const data = await response.json();
-      console.log("Response:", data);
-  
-      dispatch(setWishList(data.wishList));
+        console.log("👉 Sending PATCH request...");
+        console.log("URL:", `${URL.FETCH_USERS}/${user?._id}/${listingId}`);
+
+        try {
+            const response = await fetch(
+                `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+
+            const data = await response.json();
+            console.log("✅ Response received:", data);
+            dispatch(setWishList(data.wishList));
+
+        } catch (error) {
+            console.error("❌ Error in fetch:", error);
+        }
     } else {
-      console.log("User is the creator, cannot add to wishlist.");
-      return;
+        console.log("User is the creator, cannot add to wishlist.");
     }
-  };
+};
+
   
 
   return (

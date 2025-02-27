@@ -103,7 +103,7 @@ const ListingDetails = () => {
           <div></div>
         </div>
 
-        {/* ✅ Correction des Photos */}
+        {/*Correction des Photos */}
         <div className="photos">
           {listing.listingPhotosPaths && listing.listingPhotosPaths.length > 0 ? (
             listing.listingPhotosPaths.map((url, index) => (
@@ -123,7 +123,7 @@ const ListingDetails = () => {
         </p>
         <hr />
 
-        {/* ✅ Correction de l'affichage de l'hôte */}
+        {/* Correction de l'affichage de l'hôte */}
         <div className="profile">
           {listing.creator ? (
             <>
@@ -151,7 +151,7 @@ const ListingDetails = () => {
         <p>{listing.highlightDesc}</p>
         <hr />
 
-        {/* ✅ Correction des Commodités */}
+        {/*Correction des Commodités */}
         <div className="booking">
           <div>
             <h2>What this place Offers?</h2>
@@ -177,7 +177,7 @@ const ListingDetails = () => {
             <div className="date-range-calendar">
               <DateRange ranges={dateRange} onChange={handleSelect} />
               <h2>
-                ${listing.price} x {dayCount} {dayCount > 1 ? "nights" : "night"}
+                €{listing.price} x {dayCount} {dayCount > 1 ? "nights" : "night"}
               </h2>
               <h2>Total price: {listing.price * dayCount}</h2>
               <p>Start Date: {dateRange[0].startDate.toDateString()}</p>
