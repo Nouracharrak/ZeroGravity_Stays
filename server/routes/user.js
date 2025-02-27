@@ -72,27 +72,30 @@ router.get("/:userId/trips", async (req, res) => {
     }
 });
   // add Listing to wishList
-router.patch('/:userId/:listingId', async (req, res) => {
+  router.patch('/:userId/:listingId', async (req, res) => {
     try {
         const { userId, listingId } = req.params;
         const user = await User.findById(userId);
-        const listing = await Listing.findById(listingId);
+        
+        if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
-        // Correction de la condition dans `find`
-        const favoriteListing = user.wishList.find((item) => item._id.toString() === listingId);
+        // Vérifier si l'annonce est déjà dans la wishlist (stockée sous forme d'ID)
+        const isInWishlist = user.wishList.includes(listingId);
 
-        if (favoriteListing) {
-            // Correction de `wishList` au lieu de `wishlist`
-            user.wishList = user.wishList.filter((item) => item._id.toString() !== listingId);
+        if (isInWishlist) {
+            // Supprimer de la wishlist
+            user.wishList = user.wishList.filter(id => id.toString() !== listingId);
             await user.save();
-            res.status(200).json({ message: "Listing is removed from your wishList", wishList: user.wishList });
+            return res.status(200).json({ message: "Listing retiré de votre wishList", wishList: user.wishList });
         } else {
-            user.wishList.push(listing);
+            // Ajouter à la wishlist
+            user.wishList.push(listingId);
             await user.save();
-            res.status(200).json({ message: "Listing is added to your wishList", wishList: user.wishList });
+            return res.status(200).json({ message: "Listing ajouté à votre wishList", wishList: user.wishList });
         }
     } catch (err) {
-        res.status(404).json({ error: err.message });
+        console.error("Erreur wishlist:", err);
+        return res.status(500).json({ error: err.message });
     }
 });
     // add listing to property
