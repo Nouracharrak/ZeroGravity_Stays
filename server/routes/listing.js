@@ -19,7 +19,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "ListingsImages",
-    format: async (req, file) => file.originalname.split('.').pop(), // Conserver le format d'origine de l'image
+    format: async (req, file) => file.originalname.split(".").pop(), // Conserver le format d'origine de l'image
     public_id: (req, file) => Date.now() + "-" + file.originalname,
   },
 });
@@ -34,11 +34,20 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
     let listingPhotosPaths = [];
     Object.keys(req.body).forEach((key) => {
       if (key.startsWith("listingPhotosPaths")) {
-        const index = key.replace("listingPhotosPaths[", "").replace("]", "");
+        const index = parseInt(
+          key.replace("listingPhotosPaths[", "").replace("]", "")
+        );
+        while (listingPhotosPaths.length <= index) {
+          listingPhotosPaths.push(null);
+        }
         listingPhotosPaths[index] = req.body[key];
       }
     });
-    if (listingPhotosPaths.length === 0) {
+
+    if (
+      listingPhotosPaths.length === 0 ||
+      listingPhotosPaths.every((path) => path === null)
+    ) {
       return res.status(400).json({ message: "Aucune image reçue !" });
     }
 
@@ -66,7 +75,9 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
 
     // Vérification si l'utilisateur est connecté et a les autorisations nécessaires
     if (!req.user) {
-      return res.status(401).json({ message: "Vous devez être connecté pour créer un listing" });
+      return res
+        .status(401)
+        .json({ message: "Vous devez être connecté pour créer un listing" });
     }
 
     // Création du nouvel objet Listing
@@ -110,7 +121,9 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
     });
   } catch (err) {
     console.error("Erreur lors de la création du listing :", err);
-    res.status(500).json({ message: "Échec de la création du listing", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Échec de la création du listing", error: err.message });
   }
 });
 // Route pour rechercher des annonces
@@ -141,10 +154,11 @@ router.get("/search/:search", async (req, res) => {
     res.status(200).json(listings);
   } catch (err) {
     console.error("Erreur recherche :", err);
-    res.status(500).json({ message: "Failed to retrieve listings", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve listings", error: err.message });
   }
 });
-
 
 // Route pour récupérer toutes les annonces par catégorie
 router.get("/", async (req, res) => {
@@ -152,13 +166,17 @@ router.get("/", async (req, res) => {
   try {
     let listings;
     if (qCategory) {
-      listings = await Listing.find({ category: qCategory }).populate("creator");
+      listings = await Listing.find({ category: qCategory }).populate(
+        "creator"
+      );
     } else {
       listings = await Listing.find().populate("creator");
     }
     res.status(200).json(listings);
   } catch (err) {
-    res.status(500).json({ message: "Failed to retrieve listings", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve listings", error: err.message });
     console.log(err);
   }
 });
@@ -173,7 +191,9 @@ router.get("/:listingId", async (req, res) => {
     }
     res.status(200).json(listing);
   } catch (err) {
-    res.status(500).json({ message: "Failed to get listing", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to get listing", error: err.message });
   }
 });
 
@@ -181,13 +201,19 @@ router.get("/:listingId", async (req, res) => {
 router.put("/:listingId", async (req, res) => {
   try {
     const { listingId } = req.params;
-    const listing = await Listing.findByIdAndUpdate(listingId, { $set: req.body }, { new: true });
+    const listing = await Listing.findByIdAndUpdate(
+      listingId,
+      { $set: req.body },
+      { new: true }
+    );
     if (!listing) {
       return res.status(404).json({ message: "Listing not found" });
     }
     res.status(200).json(listing);
   } catch (err) {
-    res.status(500).json({ message: "Failed to update listing", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update listing", error: err.message });
   }
 });
 
@@ -201,9 +227,10 @@ router.delete("/:listingId", async (req, res) => {
     }
     res.status(200).json({ message: "Listing deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete listing", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete listing", error: err.message });
   }
 });
 
 module.exports = router;
-
