@@ -12,21 +12,35 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Configuration de Multer pour Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "ListingsImages",
+    format: async (req, file) => file.originalname.split('.').pop(), // Conserver le format d'origine de l'image
+    public_id: (req, file) => Date.now() + "-" + file.originalname,
+  },
+});
+
+const upload = multer({ storage });
+
 // Route pour créer une annonce avec des images déjà uploadées sur Cloudinary
 router.post("/create", async (req, res) => {
   try {
     console.log("Requête reçue avec le body :", req.body);
+
     // Vérification et récupération des URLs Cloudinary envoyées par le front
     let listingPhotosPaths = [];
     Object.keys(req.body).forEach((key) => {
-    if (key.startsWith("listingPhotosPaths")) {
-    const index = key.replace("listingPhotosPaths[", "").replace("]", "");
-    listingPhotosPaths[index] = req.body[key];
-    }
+      if (key.startsWith("listingPhotosPaths")) {
+        const index = key.replace("listingPhotosPaths[", "").replace("]", "");
+        listingPhotosPaths[index] = req.body[key];
+      }
     });
     if (listingPhotosPaths.length === 0) {
       return res.status(400).json({ message: "Aucune image reçue !" });
-    }    
+    }
+
     // Récupération des autres données
     const {
       creator,
@@ -49,9 +63,14 @@ router.post("/create", async (req, res) => {
       price,
     } = req.body;
 
+    // Vérification si l'utilisateur est connecté et a les autorisations nécessaires
+    if (!req.user) {
+      return res.status(401).json({ message: "Vous devez être connecté pour créer un listing" });
+    }
+
     // Création du nouvel objet Listing
     const newListing = new Listing({
-      creator,
+      creator: req.user._id,
       category,
       type,
       streetAddress,
@@ -64,7 +83,7 @@ router.post("/create", async (req, res) => {
       bedCount,
       bathroomCount,
       amenities,
-      listingPhotosPaths, // Stocke les URLs ici
+      photos: listingPhotosPaths, // Stocker les URLs dans un tableau de champs "photos"
       title,
       description,
       highlight,
@@ -76,7 +95,7 @@ router.post("/create", async (req, res) => {
     await newListing.save();
 
     // Mise à jour de l'utilisateur pour ajouter l'ID du listing
-    const user = await User.findById(creator);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
@@ -93,8 +112,6 @@ router.post("/create", async (req, res) => {
     res.status(500).json({ message: "Échec de la création du listing", error: err.message });
   }
 });
-
-
 // Route pour rechercher des annonces
 
 router.get("/search/:search", async (req, res) => {

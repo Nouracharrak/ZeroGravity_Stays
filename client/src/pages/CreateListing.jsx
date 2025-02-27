@@ -59,20 +59,18 @@ const CreateListing = () => {
 
   const handleUploadPhotos = (e) => {
     const files = Array.from(e.target.files);
-  
+
     console.log("Images sélectionnées :", files);
-  
+
     const previewPhotos = files.map((file) => ({
       file,
-      previewUrl: window.URL.createObjectURL(file), 
+      previewUrl: window.URL.createObjectURL(file),
     }));
-  
+
     setPhotos((prevPhotos) => [...prevPhotos, ...previewPhotos]);
-  
+
     console.log("Prévisualisation des images :", previewPhotos);
   };
-  
-  
 
   const handleDragPhoto = (result) => {
     if (!result.destination) return;
@@ -111,7 +109,42 @@ const CreateListing = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    if (!category) {
+      alert("Veuillez sélectionner une catégorie");
+      return;
+    }
+
+    if (!type) {
+      alert("Veuillez sélectionner un type");
+      return;
+    }
+
+    if (!formLocation.streetAddress || !formLocation.city || !formLocation.province || !formLocation.country) {
+      alert("Veuillez remplir les informations de localisation");
+      return;
+    }
+
+    if (!guestCount || !bedroomCount || !bedCount || !bathroomCount) {
+      alert("Veuillez remplir les informations sur les équipements");
+      return;
+    }
+
+    if (!amenities.length) {
+      alert("Veuillez sélectionner au moins une commodité");
+      return;
+    }
+
+    if (!formDescription.title || !formDescription.description || !formDescription.highlight || !formDescription.highlightDesc || !formDescription.price) {
+      alert("Veuillez remplir les informations de description");
+      return;
+    }
+
+    if (photos.length === 0) {
+      alert("Veuillez ajouter au moins une photo");
+      return;
+    }
+
     try {
       // Upload des images sur Cloudinary avant soumission
       const uploadedPhotos = [];
@@ -120,7 +153,7 @@ const CreateListing = () => {
         const formData = new FormData();
         formData.append("file", photo.file);
         formData.append("upload_preset", "ml_default");
-  
+
         try {
           const response = await fetch(URL.CLOUDINARY, {
             method: "POST",
@@ -132,9 +165,8 @@ const CreateListing = () => {
           console.error("Image upload failed", err);
         }
       }
-  
-      console.log("Images uploadées :", uploadedPhotos); 
 
+      console.log("Images uploadées :", uploadedPhotos);
 
       // Création de la requête avec les images uploadées
       const listingForm = new FormData();
@@ -150,7 +182,7 @@ const CreateListing = () => {
       listingForm.append("bedroomCount", bedroomCount);
       listingForm.append("bedCount", bedCount);
       listingForm.append("bathroomCount", bathroomCount);
-      listingForm.append("amenities", amenities);
+      listingForm.append("amenities", JSON.stringify(amenities));
       listingForm.append("title", formDescription.title);
       listingForm.append("description", formDescription.description);
       listingForm.append("highlight", formDescription.highlight);
@@ -158,22 +190,29 @@ const CreateListing = () => {
       listingForm.append("price", formDescription.price);
       // Ajout des images sous forme de tableau dans FormData
       uploadedPhotos.forEach((photo, index) => {
-      listingForm.append(`listingPhotosPaths[${index}]`, photo);
-});
-      // Envoi des données au backend
-      const response = await fetch(URL.CREATE_LISTINGS, {
-        method: "POST",
-        body: listingForm,
+        listingForm.append(`listingPhotosPaths[${index}]`, photo);
       });
 
-      if (response.ok) {
-        navigate("/");
+      // Envoi des données au backend
+      try {
+        const response = await fetch(URL.CREATE_LISTINGS, {
+          method: "POST",
+          body: listingForm,
+        });
+
+        if (response.ok) {
+          navigate("/");
+        } else {
+          const error = await response.text();
+          console.log("Erreur lors de la création du listing :", error);
+        }
+      } catch (err) {
+        console.log("Erreur lors de la création du listing :", err);
       }
     } catch (err) {
-      console.log("Publish Listing failed", err.message);
+      console.log("Erreur lors de la création du listing :", err);
     }
   };
-
   return (
     <div>
       <Navbar />
