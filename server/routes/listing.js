@@ -17,17 +17,19 @@ router.post("/create", async (req, res) => {
   try {
     console.log("Requête reçue avec le body :", req.body);
     // Vérification et récupération des URLs Cloudinary envoyées par le front
-let listingPhotosPaths = [];
+    let listingPhotosPaths = [];
 
-for (const key in req.body) {
-  if (key.startsWith("listingPhotosPaths[")) {
-    const index = key.replace("listingPhotosPaths[", "").replace("]", "");
-    listingPhotosPaths.push(req.body[key]);
-  }
-}
-if (listingPhotosPaths.length === 0) {
-  return res.status(400).json({ message: "Aucune image reçue !" });
-}
+    for (let i = 0; ; i++) {
+      const key = `listingPhotosPaths[${i}]`;
+      if (req.body[key]) {
+        listingPhotosPaths.push(req.body[key]);
+      } else {
+        break;
+      }
+    }
+    if (listingPhotosPaths.length === 0) {
+      return res.status(400).json({ message: "Aucune image reçue !" });
+    }    
     // Récupération des autres données
     const {
       creator,
