@@ -11,7 +11,7 @@ const Listings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const listings = useSelector((state) => state.listings); // Correction de 'listing' en 'listings'
+  const listings = useSelector((state) => state.listings);
 
   // Utiliser useCallback pour mémoriser la fonction getFeedListings
   const getFeedListings = useCallback(async () => {
