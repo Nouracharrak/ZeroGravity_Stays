@@ -70,12 +70,11 @@ const ListingCard = ({
             {listingPhotosPaths && listingPhotosPaths.length > 0 ? (
               listingPhotosPaths.map((photo, index) => (
                 <div key={index} className="slide">
-                  <img
-                    src={`http://localhost:3001${listingPhotosPaths[currentIndex]}`}
-                    alt={`ListingPhoto ${currentIndex}`}
-                  />
-
-                  <div
+                <img
+                  src={`https://zero-gravity-stays-bevn.vercel.app${listingPhotosPaths[currentIndex]}`}
+                  alt={`ListingPhoto ${currentIndex}`}
+                />
+                <div
                     className="prev-button"
                     onClick={(e) => {
                       e.stopPropagation();
