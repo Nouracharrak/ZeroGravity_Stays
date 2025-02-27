@@ -31,6 +31,7 @@ const upload = multer({ storage });
 router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
     const listingPhotos = JSON.parse(req.body.listingPhotos);
+    const parsedAmenities = JSON.parse(req.body.amenities || "[]");
     const {
       creator,
       category,
@@ -44,7 +45,6 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       bedroomCount,
       bedCount,
       bathroomCount,
-      amenities,
       title,
       description,
       highlight,
@@ -65,7 +65,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       bedroomCount,
       bedCount,
       bathroomCount,
-      amenities,
+      amenities: parsedAmenities,
       listingPhotosPaths: listingPhotos,
       title,
       description,

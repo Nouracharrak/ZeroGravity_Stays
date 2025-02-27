@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: ["https://zero-gravity-stays.vercel.app", "http://localhost:3001"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
     maxAge: 3600,
   })
