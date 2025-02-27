@@ -32,18 +32,29 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
 
     // Vérification et récupération des URLs Cloudinary envoyées par le front
     let listingPhotosPaths = [];
-Object.keys(req.body).forEach((key) => {
-  if (key.startsWith("listingPhotosPaths")) {
-    const index = parseInt(key.replace("listingPhotosPaths[", "").replace("]", ""));
-    while (listingPhotosPaths.length < index + 1) {
-      listingPhotosPaths.push(null);
-    }
-    listingPhotosPaths[index] = req.body[key];
-  } else {
-    listingData[key] = req.body[key];
-  }
-});
+    let listingData = {}; // Définir listingData comme un objet
 
+    Object.keys(req.body).forEach((key) => {
+      if (key.startsWith("listingPhotosPaths")) {
+        const index = parseInt(
+          key.replace("listingPhotosPaths[", "").replace("]", "")
+        );
+        while (listingPhotosPaths.length < index + 1) {
+          listingPhotosPaths.push(null);
+        }
+        listingPhotosPaths[index] = req.body[key];
+      } else {
+        listingData[key] = req.body[key]; // Ajouter les données du listing à listingData
+      }
+    });
+
+    if (listingPhotosPaths.every((path) => path === null)) {
+      return res.status(400).json({ message: "Aucune image reçue !" });
+    }
+
+    // Maintenant, vous pouvez utiliser listingData et listingPhotosPaths
+    console.log(listingData);
+    console.log(listingPhotosPaths);
 
     if (
       listingPhotosPaths.length === 0 ||
