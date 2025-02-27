@@ -1,9 +1,11 @@
 const router = require("express").Router();
 const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const mongoose = require("mongoose");
 const Listing = require("../models/Listing");
 const User = require("../models/user");
 require("dotenv").config();
+const multer = require("multer");
 
 // Configuration de Cloudinary
 cloudinary.config({
@@ -24,8 +26,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-// Route pour créer une annonce avec des images déjà uploadées sur Cloudinary
-router.post("/create", async (req, res) => {
+router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
     console.log("Requête reçue avec le body :", req.body);
 
