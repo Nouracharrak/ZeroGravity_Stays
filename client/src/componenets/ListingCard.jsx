@@ -152,11 +152,13 @@ const ListingCard = ({
             }}
             disabled={!user}
           >
-            {isLiked ? (
-              <Favorite sx={{ color: "red" }} />
-            ) : (
-              <Favorite sx={{ color: "white" }} />
-            )}
+            
+{liked ? (
+  <Favorite sx={{ color: "red" }} />
+) : (
+  <Favorite sx={{ color: "white" }} />
+)}
+
           </button>
         </div>
       </div>
