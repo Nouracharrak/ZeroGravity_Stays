@@ -135,6 +135,7 @@ const CreateListing = () => {
   
       console.log("Images uploadées :", uploadedPhotos); 
 
+
       // Création de la requête avec les images uploadées
       const listingForm = new FormData();
       listingForm.append("creator", creatorId);
@@ -155,7 +156,7 @@ const CreateListing = () => {
       listingForm.append("highlight", formDescription.highlight);
       listingForm.append("highlightDesc", formDescription.highlightDesc);
       listingForm.append("price", formDescription.price);
-      listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos));
+      listingForm.append("listingPhotosPaths", JSON.stringify(uploadedPhotos));
 
       // Envoi des données au backend
       const response = await fetch(URL.CREATE_LISTINGS, {
