@@ -48,16 +48,24 @@ const ListingCard = ({
   const isLiked = wishList.find((item) => item?._id === listingId);
   const patchWishList = async () => {
     if (user?._id !== creator._id) {
+      console.log("Sending PATCH request...");
+      console.log("URL:", `${URL.FETCH_USERS}/${user?._id}/${listingId}`);
+  
       const response = await fetch(
         `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
         { method: "PATCH", headers: { "Content-Type": "application/json" } }
       );
+  
       const data = await response.json();
+      console.log("Response:", data);
+  
       dispatch(setWishList(data.wishList));
     } else {
+      console.log("User is the creator, cannot add to wishlist.");
       return;
     }
   };
+  
 
   return (
     <div className="listing-card">
@@ -75,10 +83,10 @@ const ListingCard = ({
             {listingPhotosPaths && listingPhotosPaths.length > 0 ? (
               listingPhotosPaths.map((photo, index) => (
                 <div key={index} className="slide">
-                  <img
-                    src={`${URL.BACK_LINK}/${photo}`}
-                    alt="photo_listing"
-                  />
+                  <img src={photo}
+                   alt={`photo ${index + 1}`}
+                   />
+
 
                   <div
                     className="prev-button"
