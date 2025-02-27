@@ -156,7 +156,10 @@ const CreateListing = () => {
       listingForm.append("highlight", formDescription.highlight);
       listingForm.append("highlightDesc", formDescription.highlightDesc);
       listingForm.append("price", formDescription.price);
-      listingForm.append("listingPhotosPaths", JSON.stringify(uploadedPhotos));
+      uploadedPhotos.forEach((photo) => {
+        listingForm.append("listingPhotosPaths", photo);
+      });
+      
 
       // Envoi des données au backend
       const response = await fetch(URL.CREATE_LISTINGS, {
