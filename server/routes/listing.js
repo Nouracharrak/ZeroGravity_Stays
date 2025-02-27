@@ -6,6 +6,7 @@ const Listing = require("../models/Listing");
 const User = require("../models/user");
 require("dotenv").config();
 const multer = require("multer");
+const { verifyToken } = require('./auth');
 
 // Configuration de Cloudinary
 cloudinary.config({
@@ -26,7 +27,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
+router.post("/create", verifyToken, upload.array("listingPhotos", 10), async (req, res) => {
   try {
     const listingPhotos = req.files.map((file) => file.location);
 
@@ -50,13 +51,6 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       highlightDesc,
       price,
     } = req.body;
-
-    // Vérification si l'utilisateur est connecté et a les autorisations nécessaires
-    if (!req.user) {
-      return res
-        .status(401)
-        .json({ message: "Vous devez être connecté pour créer un listing" });
-    }
 
     // Création du nouvel objet Listing
     const newListing = new Listing({
@@ -104,6 +98,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       .json({ message: "Échec de la création du listing", error: err.message });
   }
 });
+
 // Route pour rechercher des annonces
 
 router.get("/search/:search", async (req, res) => {
