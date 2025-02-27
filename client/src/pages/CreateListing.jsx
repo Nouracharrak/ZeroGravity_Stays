@@ -60,14 +60,18 @@ const CreateListing = () => {
   const handleUploadPhotos = (e) => {
     const files = Array.from(e.target.files);
   
-    // Stocker les fichiers avec leur URL locale pour la prévisualisation
+    console.log("Images sélectionnées :", files);
+  
     const previewPhotos = files.map((file) => ({
       file,
-      previewUrl: URL.createObjectURL(file), // Générer une prévisualisation
+      previewUrl: window.URL.createObjectURL(file), 
     }));
   
     setPhotos((prevPhotos) => [...prevPhotos, ...previewPhotos]);
+  
+    console.log("Prévisualisation des images :", previewPhotos);
   };
+  
   
 
   const handleDragPhoto = (result) => {
