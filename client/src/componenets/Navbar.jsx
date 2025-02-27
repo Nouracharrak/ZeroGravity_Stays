@@ -25,11 +25,19 @@ const Navbar = () => {
   const handleSearch = () => {
     if (search.trim()) {
       setError(""); // Réinitialise l'erreur si la recherche est valide
-      navigate(`/properties/search/${search.trim()}`);
+      navigate(`/properties/search/${search.trim()}`)
+        .then(() => {
+          console.log("Recherche réussie");
+        })
+        .catch((err) => {
+          console.error("Erreur de recherche :", err);
+          setError("Erreur de recherche");
+        });
     } else {
       setError("Please enter a valid search term");
     }
   };
+  
 
   return (
     <div className="navbar">

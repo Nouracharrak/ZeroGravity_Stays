@@ -90,12 +90,9 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
 
 
 // Route pour rechercher des annonces
-
 router.get("/search/:search", async (req, res) => {
   let { search } = req.params;
   search = search.trim(); // Nettoie les espaces
-
-  console.log("Recherche reçue :", search);
 
   if (!search || search.toLowerCase() === "all") {
     console.warn("'all' détecté, réponse vide.");
@@ -105,11 +102,11 @@ router.get("/search/:search", async (req, res) => {
   try {
     const listings = await Listing.find({
       $or: [
-        { category: { $regex: `^${search}$`, $options: "i" } },
-        { title: { $regex: `^${search}$`, $options: "i" } },
-        { city: { $regex: `^${search}$`, $options: "i" } },
-        { province: { $regex: `^${search}$`, $options: "i" } },
-        { country: { $regex: `^${search}$`, $options: "i" } },
+        { category: { $regex: `.*${search}.*`, $options: "i" } },
+        { title: { $regex: `.*${search}.*`, $options: "i" } },
+        { city: { $regex: `.*${search}.*`, $options: "i" } },
+        { province: { $regex: `.*${search}.*`, $options: "i" } },
+        { country: { $regex: `.*${search}.*`, $options: "i" } },
       ],
     }).populate("creator");
 
@@ -122,7 +119,6 @@ router.get("/search/:search", async (req, res) => {
       .json({ message: "Failed to retrieve listings", error: err.message });
   }
 });
-
 // Route pour récupérer toutes les annonces par catégorie
 router.get("/", async (req, res) => {
   const qCategory = req.query.category;
