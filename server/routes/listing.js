@@ -18,15 +18,12 @@ router.post("/create", async (req, res) => {
     console.log("Requête reçue avec le body :", req.body);
     // Vérification et récupération des URLs Cloudinary envoyées par le front
     let listingPhotosPaths = [];
-
-    for (let i = 0; ; i++) {
-      const key = `listingPhotosPaths[${i}]`;
-      if (req.body[key]) {
-        listingPhotosPaths.push(req.body[key]);
-      } else {
-        break;
-      }
+    Object.keys(req.body).forEach((key) => {
+    if (key.startsWith("listingPhotosPaths")) {
+    const index = key.replace("listingPhotosPaths[", "").replace("]", "");
+    listingPhotosPaths[index] = req.body[key];
     }
+    });
     if (listingPhotosPaths.length === 0) {
       return res.status(400).json({ message: "Aucune image reçue !" });
     }    
