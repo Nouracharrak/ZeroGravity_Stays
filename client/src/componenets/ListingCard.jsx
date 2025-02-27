@@ -46,7 +46,7 @@ const ListingCard = ({
     if (user?._id !== creator._id) {
     const response = await fetch(`${URL.FETCH_USERS}/${user?._id}/${listingId}`, 
       {method: 'PATCH',
-       header: {'Content-Type': 'application/jason'} 
+       headers: {'Content-Type': 'application/jason'} 
       }
     );
     const data = await response.json()
@@ -70,10 +70,7 @@ const ListingCard = ({
             {listingPhotosPaths && listingPhotosPaths.length > 0 ? (
               listingPhotosPaths.map((photo, index) => (
                 <div key={index} className="slide">
-                 <img
-                        src={`${URL.BACK_LINK}/${photo}`}
-                        alt="listingPhoto"
-                      />
+                 <img src={`${URL.BACK_LINK}/${listingPhotosPaths[0]}`} alt="listingPhoto" />
                   <div
                     className="prev-button"
                     onClick={(e) => {
