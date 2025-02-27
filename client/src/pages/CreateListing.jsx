@@ -189,7 +189,8 @@ const CreateListing = () => {
       listingForm.append("highlightDesc", formDescription.highlightDesc);
       listingForm.append("price", formDescription.price);
       // Ajout des images sous forme de tableau dans FormData
-      listingForm.append("listingPhotos", photos); 
+      listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos));
+
 
       // Envoi des données au backend
       try {

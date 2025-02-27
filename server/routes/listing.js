@@ -30,8 +30,7 @@ const upload = multer({ storage });
 
 router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
-    const listingPhotos = req.files.map((file) => file.location);
-
+    const listingPhotos = JSON.parse(req.body.listingPhotos);
     const {
       creator,
       category,
