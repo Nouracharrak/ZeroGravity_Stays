@@ -153,24 +153,23 @@ const ListingDetails = () => {
 
         {/*Correction des Commodités */}
         <div className="booking">
-          <div>
-            <h2>What this place Offers?</h2>
-            <div className="amenities">
-              {listing.amenities && listing.amenities.length > 0 ? (
-                listing.amenities[0].split(",").map((item, index) => (
-                  <div className="facility" key={index}>
-                    <div className="facility_icon">
-                      {facilities.find((facility) => facility.name === item)?.icon}
-                    </div>
-                    <p>{item}</p>
-                  </div>
-                ))
-              ) : (
-                <p>No amenities available</p>
-              )}
+  <div>
+    <h2>What this place Offers?</h2>
+    <div className="amenities">
+      {listing.amenities && listing.amenities.length > 0 ? (
+        listing.amenities.map((item, index) => (
+          <div className="facility" key={index}>
+            <div className="facility_icon">
+              {facilities.find((facility) => facility.name === item)?.icon}
             </div>
+            <p>{item}</p>
           </div>
-
+        ))
+      ) : (
+        <p>No amenities available</p>
+      )}
+    </div>
+  </div>
           {/* Booking Section */}
           <div>
             <h2>How Long do you want to stay?</h2>
