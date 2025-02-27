@@ -13,7 +13,7 @@ import URL from "../constants/api";
 const ListingCard = ({
   listingId,
   creator,
-  listingPhotos,
+  listingPhotosPaths,
   city,
   province,
   country,
@@ -31,12 +31,12 @@ const ListingCard = ({
   const goToPrevSlide = () => {
     setCurrentIndex(
       (prevIndex) =>
-        (prevIndex - 1 + listingPhotos.length) % listingPhotos.length
+        (prevIndex - 1 + listingPhotosPaths.length) % listingPhotosPaths.length
     );
   };
 
   const goToNextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % listingPhotos.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % listingPhotosPaths.length);
   };
 
   const navigate = useNavigate();
@@ -72,10 +72,13 @@ const ListingCard = ({
             className="slider"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
-            {listingPhotos && listingPhotos.length > 0 ? (
-              listingPhotos.map((photo, index) => (
+            {listingPhotosPaths && listingPhotosPaths.length > 0 ? (
+              listingPhotosPaths.map((photo, index) => (
                 <div key={index} className="slide">
-                  <img src={photo} alt="photo_listing" />
+                  <img
+                    src={`${URL.BACK_LINK}/${photo}`}
+                    alt="photo_listing"
+                  />
 
                   <div
                     className="prev-button"
