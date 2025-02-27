@@ -1,7 +1,5 @@
 const router = require("express").Router();
 const cloudinary = require("cloudinary").v2;
-const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const mongoose = require("mongoose");
 const Listing = require("../models/Listing");
 const User = require("../models/user");
@@ -14,34 +12,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-//  Configuration de Multer pour Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "listingsPhotos", //Dossier où seront stockées les images
-    public_id: (req, file) => Date.now() + "-" + file.originalname, //Nom unique
-  },
-});
-
-//  Initialisation de Multer
-const upload = multer({ storage });
-
-//  Route pour créer une annonce avec upload sur Cloudinary
-router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
+// Route pour créer une annonce avec des images déjà uploadées sur Cloudinary
+router.post("/create", async (req, res) => {
   try {
-    console.log(" Requête reçue avec le body :", req.body);
-    console.log(" Photos reçues par Multer :", req.files);
+    console.log("Requête reçue avec le body :", req.body);
 
-    // Vérification si les fichiers sont bien reçus
-    if (!req.files || req.files.length === 0) {
+    // Vérification et récupération des URLs Cloudinary envoyées par le front
+    let listingPhotosPaths = [];
+    if (req.body.listingPhotosPaths) {
+      try {
+        listingPhotosPaths = JSON.parse(req.body.listingPhotosPaths);
+      } catch (error) {
+        console.warn("Erreur de parsing des URLs :", error.message);
+        return res.status(400).json({ message: "Format des URLs invalide" });
+      }
+    }
+
+    if (!Array.isArray(listingPhotosPaths) || listingPhotosPaths.length === 0) {
       return res.status(400).json({ message: "Aucune image reçue !" });
     }
 
-    // Récupérer les URLs Cloudinary
-    const listingPhotosPaths = req.files.map((file) => file.secure_url || file.path);
-    console.log(" URLs Cloudinary :", listingPhotosPaths);
-
-    //  Récupération des données du body
+    // Récupération des autres données
     const {
       creator,
       category,
@@ -78,7 +69,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       bedCount,
       bathroomCount,
       amenities,
-      listingPhotosPaths, //  Stocke les URLs ici
+      listingPhotosPaths, // Stocke les URLs ici
       title,
       description,
       highlight,
@@ -103,17 +94,10 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       newListing,
     });
   } catch (err) {
-    console.error(" Erreur lors de la création du listing :", err);
+    console.error("Erreur lors de la création du listing :", err);
     res.status(500).json({ message: "Échec de la création du listing", error: err.message });
   }
 });
-
-// Route de test pour voir si Multer reçoit bien les fichiers
-router.post("/test-upload", upload.array("listingPhotos", 10), (req, res) => {
-  console.log(" Test Upload - Fichiers reçus :", req.files);
-  res.status(200).json({ files: req.files });
-});
-
 
 
 // Route pour rechercher des annonces
