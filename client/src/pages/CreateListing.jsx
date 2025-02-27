@@ -160,10 +160,6 @@ const CreateListing = () => {
       uploadedPhotos.forEach((photo, index) => {
       listingForm.append(`listingPhotosPaths[${index}]`, photo);
 });
-
-     
-      
-
       // Envoi des données au backend
       const response = await fetch(URL.CREATE_LISTINGS, {
         method: "POST",
