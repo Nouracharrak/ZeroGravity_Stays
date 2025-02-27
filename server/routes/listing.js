@@ -32,17 +32,18 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
 
     // Vérification et récupération des URLs Cloudinary envoyées par le front
     let listingPhotosPaths = [];
-    Object.keys(req.body).forEach((key) => {
-      if (key.startsWith("listingPhotosPaths")) {
-        const index = parseInt(
-          key.replace("listingPhotosPaths[", "").replace("]", "")
-        );
-        while (listingPhotosPaths.length <= index) {
-          listingPhotosPaths.push(null);
-        }
-        listingPhotosPaths[index] = req.body[key];
-      }
-    });
+Object.keys(req.body).forEach((key) => {
+  if (key.startsWith("listingPhotosPaths")) {
+    const index = parseInt(key.replace("listingPhotosPaths[", "").replace("]", ""));
+    while (listingPhotosPaths.length < index + 1) {
+      listingPhotosPaths.push(null);
+    }
+    listingPhotosPaths[index] = req.body[key];
+  } else {
+    listingData[key] = req.body[key];
+  }
+});
+
 
     if (
       listingPhotosPaths.length === 0 ||
