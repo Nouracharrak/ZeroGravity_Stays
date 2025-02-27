@@ -18,8 +18,8 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "listingsPhotos", // 📂 Dossier où seront stockées les images
-    public_id: (req, file) => Date.now() + "-" + file.originalname, // 🏷️ Nom unique
+    folder: "listingsPhotos", //Dossier où seront stockées les images
+    public_id: (req, file) => Date.now() + "-" + file.originalname, //Nom unique
   },
 });
 
@@ -114,7 +114,6 @@ router.post("/test-upload", upload.array("listingPhotos", 10), (req, res) => {
   res.status(200).json({ files: req.files });
 });
 
-module.exports = router;
 
 
 // Route pour rechercher des annonces

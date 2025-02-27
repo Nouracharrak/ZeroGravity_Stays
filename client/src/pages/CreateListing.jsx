@@ -111,15 +111,16 @@ const CreateListing = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       // Upload des images sur Cloudinary avant soumission
       const uploadedPhotos = [];
       for (const photo of photos) {
+        console.log("Fichier envoyé :", photo.file);
         const formData = new FormData();
         formData.append("file", photo.file);
         formData.append("upload_preset", "ml_default");
-
+  
         try {
           const response = await fetch(URL.CLOUDINARY, {
             method: "POST",
@@ -131,6 +132,8 @@ const CreateListing = () => {
           console.error("Image upload failed", err);
         }
       }
+  
+      console.log("Images uploadées :", uploadedPhotos); 
 
       // Création de la requête avec les images uploadées
       const listingForm = new FormData();
