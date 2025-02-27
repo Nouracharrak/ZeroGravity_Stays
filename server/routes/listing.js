@@ -18,19 +18,18 @@ router.post("/create", async (req, res) => {
     console.log("Requête reçue avec le body :", req.body);
 
     // Vérification et récupération des URLs Cloudinary envoyées par le front
-    let listingPhotosPaths = [];
-    if (req.body.listingPhotosPaths) {
-      try {
-        listingPhotosPaths = JSON.parse(req.body.listingPhotosPaths);
-      } catch (error) {
-        console.warn("Erreur de parsing des URLs :", error.message);
-        return res.status(400).json({ message: "Format des URLs invalide" });
-      }
-    }
+let listingPhotosPaths = [];
 
-    if (!Array.isArray(listingPhotosPaths) || listingPhotosPaths.length === 0) {
-      return res.status(400).json({ message: "Aucune image reçue !" });
-    }
+if (Array.isArray(req.body.listingPhotosPaths)) {
+  listingPhotosPaths = req.body.listingPhotosPaths; // Directement sous forme de tableau
+} else if (typeof req.body.listingPhotosPaths === "string") {
+  listingPhotosPaths = [req.body.listingPhotosPaths]; // Convertir en tableau si une seule image est envoyée
+}
+
+if (listingPhotosPaths.length === 0) {
+  return res.status(400).json({ message: "Aucune image reçue !" });
+}
+
 
     // Récupération des autres données
     const {
