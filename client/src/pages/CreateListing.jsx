@@ -10,7 +10,7 @@ import { IoIosImages } from "react-icons/io";
 import { BiTrash } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { CREATE_LISTINGS, CLOUDINARY } from '../constants/api';
+import URL from '../constants/api';
 
 const CreateListing = () => {
   const [category, setCategory] = useState("");
@@ -116,7 +116,7 @@ const CreateListing = () => {
             formData.append("upload_preset", "ml_default");
 
             try {
-                const response = await fetch(CLOUDINARY, {
+                const response = await fetch(URL.CLOUDINARY, {
                     method: "POST",
                     body: formData,
                 });
@@ -150,7 +150,7 @@ const CreateListing = () => {
         listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos)); 
 
         // Envoi des données au backend
-        const response = await fetch(CREATE_LISTINGS, {
+        const response = await fetch(URL.CREATE_LISTINGS, {
             method: "POST",
             body: listingForm,
         });
