@@ -53,7 +53,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
 
     // Création du nouvel objet Listing
     const newListing = new Listing({
-      creator,
+      creator: null,
       category,
       type,
       streetAddress,
