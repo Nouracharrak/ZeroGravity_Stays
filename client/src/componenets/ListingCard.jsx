@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/listingCard.scss";
 import {
@@ -25,59 +25,86 @@ const ListingCard = ({
   endDate,
   booking,
 }) => {
-  // Slider pour les images
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Sélectionner la wishList depuis Redux
+  const user = useSelector((state) => state.user);
+  const wishList = user?.wishList || [];
 
-  const goToPrevSlide = () => {
+  // Fonction pour vérifier si cet élément est dans la wishList
+  const checkIsInWishlist = () => {
+    if (!wishList || !listingId || !user) return false;
+    
+    // Si wishList contient des objets complets
+    if (wishList.length > 0 && typeof wishList[0] === 'object') {
+      return wishList.some(item => item?._id === listingId);
+    } 
+    // Si wishList contient juste des IDs (strings)
+    else {
+      return wishList.some(id => id === listingId);
+    }
+  };
+
+  // État local pour l'affichage du cœur
+  const [liked, setLiked] = useState(checkIsInWishlist());
+
+  // Mettre à jour l'état liked quand la wishList change
+  useEffect(() => {
+    setLiked(checkIsInWishlist());
+  }, [wishList, listingId, user]);
+  
+  // Ajouter/retirer de la wishlist
+  const patchWishList = async (e) => {
+    e.stopPropagation(); // Empêcher la propagation pour ne pas naviguer
+    
+    if (!user || user?._id === creator._id) {
+      console.log("Utilisateur non connecté ou créateur du listing");
+      return;
+    }
+    
+    try {
+      const response = await fetch(
+        `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Wishlist update response:", data);
+        
+        // Mettre à jour Redux avec les nouvelles données
+        dispatch(setWishList(data.wishList));
+      } else {
+        console.error("Erreur lors de la mise à jour de la wishlist:", response.statusText);
+      }
+    } catch (error) {
+      console.error("❌ Error in fetch:", error);
+    }
+  };
+
+  // Fonctions pour le slider
+  const goToPrevSlide = (e) => {
+    e.stopPropagation();
     setCurrentIndex(
       (prevIndex) =>
         (prevIndex - 1 + listingPhotosPaths.length) % listingPhotosPaths.length
     );
   };
 
-  const goToNextSlide = () => {
+  const goToNextSlide = (e) => {
+    e.stopPropagation();
     setCurrentIndex((prevIndex) => (prevIndex + 1) % listingPhotosPaths.length);
   };
-
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  //  add the wishList
-  const user = useSelector((state) => state.user);
-  const wishList = user?.wishList || [];
-  const isLiked = wishList.find((item) => item?._id === listingId);
-  const [liked, setLiked] = useState(isLiked);
-  const patchWishList = async () => {
-    if (user?._id !== creator._id) {
-        try {
-            const response = await fetch(
-                `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
-                {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-
-            const data = await response.json();
-            dispatch(setWishList(data.wishList));
-
-            // Met à jour immédiatement l'état local pour refléter le changement
-            setLiked(!liked);
-
-        } catch (error) {
-            console.error("❌ Error in fetch:", error);
-        }
-    } else {
-        console.log("User is the creator, cannot add to wishlist.");
-    }
-};
-
-  
 
   return (
     <div className="listing-card">
       <div
-        className="listing-card"
+        className="listing-card-inner"
         onClick={() => {
           navigate(`/properties/${listingId}`);
         }}
@@ -90,26 +117,17 @@ const ListingCard = ({
             {listingPhotosPaths && listingPhotosPaths.length > 0 ? (
               listingPhotosPaths.map((photo, index) => (
                 <div key={index} className="slide">
-                  <img src={photo}
-                   alt={`photo ${index + 1}`}
-                   />
-
+                  <img src={photo} alt={`photo ${index + 1}`} />
 
                   <div
                     className="prev-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goToPrevSlide(e);
-                    }}
+                    onClick={goToPrevSlide}
                   >
                     <ArrowBackIosNew sx={{ fontSize: "15px" }} />
                   </div>
                   <div
                     className="next-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goToNextSlide(e);
-                    }}
+                    onClick={goToNextSlide}
                   >
                     <ArrowForwardIos sx={{ fontSize: "15px" }} />
                   </div>
@@ -122,7 +140,8 @@ const ListingCard = ({
             )}
           </div>
         </div>
-        <div>
+        
+        <div className="listing-info">
           <h3>
             {city}, {province}, {country}
           </h3>
@@ -144,21 +163,13 @@ const ListingCard = ({
               </p>
             </>
           )}
+          
           <button
             className="favorite"
-            onClick={(e) => {
-              e.stopPropagation();
-              patchWishList();
-            }}
+            onClick={patchWishList}
             disabled={!user}
           >
-            
-{liked ? (
-  <Favorite sx={{ color: "red" }} />
-) : (
-  <Favorite sx={{ color: "white" }} />
-)}
-
+            <Favorite sx={{ color: liked ? "red" : "white" }} />
           </button>
         </div>
       </div>
@@ -167,3 +178,4 @@ const ListingCard = ({
 };
 
 export default ListingCard;
+
