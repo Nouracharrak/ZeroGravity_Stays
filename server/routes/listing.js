@@ -50,10 +50,12 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       highlightDesc,
       price,
     } = req.body;
+    
+    const creator = req.body.creator;
 
     // Création du nouvel objet Listing
     const newListing = new Listing({
-      creator: null,
+      creator,
       category,
       type,
       streetAddress,
