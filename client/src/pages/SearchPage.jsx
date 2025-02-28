@@ -62,19 +62,19 @@ const SearchPage = () => {
       <h1 className="title-list">Résultats pour : {search}</h1>
       <div className="list">
         {Array.isArray(listings) && listings.length > 0 ? (
-          listings.map(({ _id, creator, listingPhotosPaths, city, province, country, category, type, price, booking = false }) => (
+          listings.map((listing) => (
             <ListingCard
-              key={_id}
-              listingId={_id}
-              creator={creator}
-              listingPhotoPaths={listingPhotosPaths}
-              city={city}
-              province={province}
-              country={country}
-              category={category}
-              type={type}
-              price={price}
-              booking={booking}
+              key={listing._id}
+              listingId={listing._id}
+              creator={listing.creator}
+              listingPhotosPaths={listing.listingPhotosPaths} // Correction ici: utilisation du nom correct de la propriété
+              city={listing.city}
+              province={listing.province}
+              country={listing.country}
+              category={listing.category}
+              type={listing.type}
+              price={listing.price}
+              booking={listing.booking || false}
             />
           ))
         ) : (
@@ -87,4 +87,5 @@ const SearchPage = () => {
 };
 
 export default SearchPage;
+
 
