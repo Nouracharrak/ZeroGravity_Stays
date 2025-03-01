@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";  // Ajout de useEffect
 import "../styles/login.scss";
 import { useDispatch } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";  // Ajout de useLocation
+import { useNavigate, useLocation } from "react-router-dom"; 
 import { setLogin } from "../redux/state";
-import API_URL from "../constants/api";  // Renommé pour éviter le conflit avec l'objet global URL
+import URL from "../constants/api";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -52,7 +52,7 @@ const LoginPage = () => {
     setError("");
     
     try {
-      const response = await fetch(`${API_URL.VERIFY}/${token}`, {
+      const response = await fetch(`${URL.VERIFY}/${token}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch(API_URL.AUTHENTIFICATION, {
+      const response = await fetch(URL.AUTHENTIFICATION, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +125,7 @@ const LoginPage = () => {
     setVerificationMessage("");
     
     try {
-      const response = await fetch(API_URL.RESEND_VERIFICATION, {
+      const response = await fetch(URL.RESEND_VERIFICATION, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

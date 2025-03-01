@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/register.scss";
-import API_URL from "../constants/api";  // Renommé pour éviter le conflit avec l'objet global URL
+import URL from "../constants/api";  // Renommé pour éviter le conflit avec l'objet global URL
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -106,7 +106,7 @@ const RegisterPage = () => {
         register_form.append("profileImage", formData.profileImage);
       }
 
-      const response = await fetch(API_URL.REGISTER, {
+      const response = await fetch(URL.REGISTER, {
         method: "POST",
         body: register_form,
       });
