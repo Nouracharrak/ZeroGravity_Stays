@@ -15,10 +15,7 @@ const RegisterPage = () => {
 
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [registrationStatus, setRegistrationStatus] = useState(""); // Pour suivre l'état de l'inscription
+  const [registrationStatus, setRegistrationStatus] = useState('');
   const navigate = useNavigate();
 
   // Met à jour les champs texte
@@ -27,32 +24,11 @@ const RegisterPage = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Gestion de l'image sélectionnée avec validation
+  // Gestion de l'image sélectionnée
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    
-    // Réinitialiser les erreurs
-    setError("");
-    
     if (file) {
-      // Vérification de la taille du fichier (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image trop volumineuse (max: 5MB)");
-        return;
-      }
-      
-      // Vérification du type de fichier
-      if (!file.type.match('image.*')) {
-        setError("Le fichier doit être une image");
-        return;
-      }
-      
       setFormData({ ...formData, profileImage: file });
-      
-      // Créer une URL d'aperçu
-      if (previewImage) {
-        URL.revokeObjectURL(previewImage); // Nettoyer l'URL précédente
-      }
       setPreviewImage(URL.createObjectURL(file));
     }
   };
@@ -64,33 +40,10 @@ const RegisterPage = () => {
     );
   }, [formData.password, formData.confirmPassword]);
 
-  // Nettoyage de l'URL de prévisualisation lorsque le composant est démonté
-  useEffect(() => {
-    return () => {
-      if (previewImage) {
-        URL.revokeObjectURL(previewImage);
-      }
-    };
-  }, [previewImage]);
-
-  // Envoi du formulaire au backend avec gestion améliorée
+  // Envoi du formulaire au backend
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validation finale
-    if (!formData.profileImage) {
-      setError("Veuillez télécharger une photo de profil");
-      return;
-    }
-    
-    if (!passwordMatch) {
-      setError("Les mots de passe ne correspondent pas");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setError("");
-    setRegistrationStatus("submitting");
+    setRegistrationStatus('pending'); // Indique que l'inscription est en cours
     
     try {
       const register_form = new FormData();
@@ -112,201 +65,125 @@ const RegisterPage = () => {
       console.log("Réponse du serveur :", data);
 
       if (response.ok) {
-        setRegistrationStatus("success");
-        setSuccessMessage(
-          "Inscription réussie ! Vérifiez votre boîte mail pour confirmer votre compte."
-        );
-        
-        // Réinitialiser le formulaire
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          profileImage: null,
-        });
-        setPreviewImage(null);
-        
-        // Rediriger vers la page d'attente de vérification après un délai
+        setRegistrationStatus('success');
+        // Au lieu de rediriger immédiatement vers login, on informe l'utilisateur
+        // qu'il doit vérifier son email
         setTimeout(() => {
-          navigate("/verify-pending", { 
-            state: { 
-              email: formData.email,
-              isNewRegistration: true 
-            } 
+          navigate("/verification-sent", { 
+            state: { email: formData.email } 
           });
-        }, 3000);
+        }, 2000);
       } else {
-        setRegistrationStatus("error");
-        setError(data.message || "Échec de l'inscription");
+        setRegistrationStatus('error');
+        console.error("Registration failed", data.message);
       }
     } catch (err) {
-      setRegistrationStatus("error");
-      setError("Erreur de connexion au serveur : " + err.message);
-    } finally {
-      setIsSubmitting(false);
+      setRegistrationStatus('error');
+      console.error("Registration failed", err.message);
     }
   };
 
   return (
     <div className="register">
       <div className="register_content">
-        {registrationStatus === "success" && (
-          <div className="success-message" style={{ 
-            color: "green", 
-            backgroundColor: "#e8f5e9", 
-            padding: "15px", 
-            borderRadius: "5px",
-            marginBottom: "15px",
-            textAlign: "center"
-          }}>
-            <h3>Inscription réussie ! ✓</h3>
-            <p>{successMessage}</p>
+        {registrationStatus === 'success' ? (
+          <div className="registration-success">
+            <h2>Registration Successful!</h2>
+            <p>A verification email has been sent to {formData.email}.</p>
+            <p>Please check your inbox and verify your email address to complete the registration.</p>
           </div>
-        )}
-        
-        {error && (
-          <div className="error-message" style={{ 
-            color: "white", 
-            backgroundColor: "#d32f2f", 
-            padding: "15px", 
-            borderRadius: "5px",
-            marginBottom: "15px" 
-          }}>
-            {error}
-          </div>
-        )}
-        
-        <form className="register_content_form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="First Name"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting || registrationStatus === "success"}
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting || registrationStatus === "success"}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting || registrationStatus === "success"}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting || registrationStatus === "success"}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            disabled={isSubmitting || registrationStatus === "success"}
-          />
-          {!passwordMatch && <p style={{ color: "red" }}>Les mots de passe ne correspondent pas</p>}
-
-          {/* Gestion du fichier image avec indication de chargement obligatoire */}
-          <input
-            id="image"
-            type="file"
-            name="profileImage"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleImageChange}
-            disabled={isSubmitting || registrationStatus === "success"}
-          />
-          <label 
-            htmlFor="image" 
-            style={{ 
-              cursor: (isSubmitting || registrationStatus === "success") ? 'not-allowed' : 'pointer',
-              opacity: (isSubmitting || registrationStatus === "success") ? 0.5 : 1
-            }}
-          >
-            <img 
-              src="/assets/addImage.png" 
-              alt="Add Profile"
+        ) : (
+          <form className="register_content_form" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
             />
-            <p style={{ color: formData.profileImage ? "green" : "red" }}>
-              {formData.profileImage 
-                ? "✓ Photo téléchargée" 
-                : "* Photo de profil (obligatoire)"}
-            </p>
-          </label>
+            <input
+              type="text"
+              placeholder="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+            {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
 
-          {/* Affichage dynamique de l'image avec indicateur de chargement */}
-          {previewImage && (
-            <div className="image-preview">
+            {/* Gestion du fichier image */}
+            <input
+              id="image"
+              type="file"
+              name="profileImage"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageChange}
+            />
+            <label htmlFor="image">
+              <img src="/assets/addImage.png" alt="Add Profile" />
+              <p style={{ color: "red" }}> Upload Profile Photo</p>
+            </label>
+
+            {/* Affichage dynamique de l'image */}
+            {previewImage ? (
               <img
                 src={previewImage}
                 alt="Profile Preview"
-                style={{ 
-                  maxWidth: "80px", 
-                  maxHeight: "80px", 
-                  borderRadius: "50%",
-                  border: "2px solid #4CAF50" 
-                }}
+                style={{ maxWidth: "80px", borderRadius: "50%" }}
               />
-            </div>
-          )}
+            ) : formData.profileImage ? (
+              <img
+                src={formData.profileImage}
+                alt="Profile from Server"
+                style={{ maxWidth: "80px", borderRadius: "50%" }}
+              />
+            ) : null}
 
-          {registrationStatus !== "success" && (
+            {/* Message d'erreur d'inscription */}
+            {registrationStatus === 'error' && (
+              <p style={{ color: "red" }}>
+                Registration failed. Please check your information and try again.
+              </p>
+            )}
+
             <button 
               type="submit" 
-              disabled={isSubmitting || !passwordMatch}
-              style={{ 
-                opacity: isSubmitting ? 0.7 : 1,
-                backgroundColor: isSubmitting ? "#cccccc" : "#4CAF50" 
-              }}
+              disabled={!passwordMatch || registrationStatus === 'pending'}
             >
-              {isSubmitting ? "Inscription en cours..." : "S'inscrire"}
+              {registrationStatus === 'pending' ? 'Processing...' : 'Register'}
             </button>
-          )}
-        </form>
-        
-        {registrationStatus === "success" ? (
-          <button 
-            onClick={() => navigate("/login")} 
-            style={{ 
-              padding: "10px 15px", 
-              backgroundColor: "#2196F3", 
-              color: "white", 
-              border: "none", 
-              borderRadius: "4px",
-              cursor: "pointer",
-              marginTop: "15px",
-              width: "100%"
-            }}
-          >
-            Aller à la page de connexion
-          </button>
-        ) : (
-          <a href="/login">Déjà inscrit ? Connectez-vous ici</a>
+          </form>
         )}
+        <a href="/login">Already have an account? Log In Here</a>
       </div>
     </div>
   );
 };
 
 export default RegisterPage;
-
