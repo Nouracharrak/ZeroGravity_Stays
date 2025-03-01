@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";  // Ajout de useEffect
 import "../styles/login.scss";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";  // Ajout de useLocation
 import { setLogin } from "../redux/state";
-import URL from "../constants/api";
+import API_URL from "../constants/api";  // Renommé pour éviter le conflit avec l'objet global URL
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -15,9 +15,64 @@ const LoginPage = () => {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendStatus, setResendStatus] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState("");
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();  // Pour accéder aux paramètres d'URL
+
+  // Gestion des paramètres d'URL pour vérification et inscription
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    
+    // Vérifier si l'utilisateur vient de s'inscrire
+    const registered = params.get('registered');
+    const registeredEmail = params.get('email');
+    
+    if (registered === 'true' && registeredEmail) {
+      setEmail(registeredEmail);
+      setRegistrationSuccess(true);
+      setVerificationMessage("Votre compte a été créé avec succès. Veuillez vérifier votre boîte mail pour activer votre compte.");
+    }
+    
+    // Vérifier si l'utilisateur a cliqué sur un lien de vérification
+    const verifyToken = params.get('verify');
+    const verifyEmail = params.get('email');
+    
+    if (verifyToken && verifyEmail) {
+      setEmail(verifyEmail);
+      handleVerifyEmail(verifyToken);
+    }
+  }, [location]);
+
+  // Fonction pour vérifier le token d'email
+  const handleVerifyEmail = async (token) => {
+    setVerificationStatus("pending");
+    setError("");
+    
+    try {
+      const response = await fetch(`${API_URL.VERIFY}/${token}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setVerificationStatus("success");
+        setVerificationMessage("Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.");
+      } else {
+        setVerificationStatus("error");
+        setError(data.message || "Échec de la vérification de l'email");
+      }
+    } catch (err) {
+      setVerificationStatus("error");
+      setError("Problème de connexion au serveur");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +80,7 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch(URL.AUTHENTIFICATION, {
+      const response = await fetch(API_URL.AUTHENTIFICATION, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +125,7 @@ const LoginPage = () => {
     setVerificationMessage("");
     
     try {
-      const response = await fetch(URL.RESEND_VERIFICATION, {
+      const response = await fetch(API_URL.RESEND_VERIFICATION, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,78 +151,53 @@ const LoginPage = () => {
   return (
     <div className="login">
       <div className="login_content">
+        {/* Afficher les messages de succès/erreur de vérification */}
+        {verificationStatus === "success" && (
+          <div className="verification-success">
+            <h3>Email vérifié avec succès !</h3>
+            <p>Vous pouvez maintenant vous connecter avec vos identifiants.</p>
+          </div>
+        )}
+        
+        {registrationSuccess && (
+          <div className="registration-success-message">
+            <h3>Inscription réussie !</h3>
+            <p>{verificationMessage}</p>
+          </div>
+        )}
+        
         {/* Afficher les erreurs générales */}
         {error && (
-          <div 
-            style={{ 
-              color: "white", 
-              backgroundColor: "#d32f2f", 
-              padding: "10px", 
-              borderRadius: "4px", 
-              marginBottom: "15px" 
-            }}
-          >
-            {error}
-          </div>
+          <div className="error-message">{error}</div>
         )}
         
         {needsVerification ? (
           // Section de vérification d'email
           <div className="verification-section">
-            <div 
-              style={{ 
-                backgroundColor: "#f0f4c3", 
-                border: "1px solid #cddc39", 
-                padding: "15px", 
-                borderRadius: "4px", 
-                marginBottom: "20px" 
-              }}
-            >
-              <h3 style={{ margin: "0 0 10px 0", color: "#827717" }}>Vérification requise</h3>
-              <p style={{ margin: "0 0 10px 0" }}>{verificationMessage}</p>
+            <div className="verification-info">
+              <h3>Vérification requise</h3>
+              <p>{verificationMessage}</p>
             </div>
             
-            <div style={{ marginBottom: "20px" }}>
+            <div className="verification-actions">
               <input
                 type="email"
                 placeholder="Confirmez votre email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={resendStatus === "sending"}
-                style={{ 
-                  width: "100%", 
-                  padding: "10px", 
-                  marginBottom: "10px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc" 
-                }}
+                className="verification-email-input"
               />
               
               {resendStatus === "success" ? (
-                <div 
-                  style={{ 
-                    color: "#2e7d32", 
-                    backgroundColor: "#e8f5e9", 
-                    padding: "10px", 
-                    borderRadius: "4px"
-                  }}
-                >
+                <div className="resend-success">
                   Email de vérification envoyé avec succès !
                 </div>
               ) : (
                 <button
                   onClick={handleResendVerification}
                   disabled={!email || resendStatus === "sending"}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    backgroundColor: "#4caf50",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: resendStatus === "sending" ? "wait" : "pointer",
-                    opacity: !email || resendStatus === "sending" ? 0.7 : 1
-                  }}
+                  className="resend-button"
                 >
                   {resendStatus === "sending" ? "Envoi en cours..." : "Renvoyer l'email de vérification"}
                 </button>
@@ -175,16 +205,7 @@ const LoginPage = () => {
               
               <button
                 onClick={() => setNeedsVerification(false)}
-                style={{
-                  width: "100%",
-                  padding: "10px", 
-                  marginTop: "10px",
-                  backgroundColor: "transparent",
-                  color: "#2196f3", 
-                  border: "1px solid #2196f3",
-                  borderRadius: "4px",
-                  cursor: "pointer"
-                }}
+                className="back-button"
               >
                 Retour à la connexion
               </button>
@@ -213,7 +234,7 @@ const LoginPage = () => {
               <button 
                 type="submit"
                 disabled={isLoading}
-                style={{ opacity: isLoading ? 0.7 : 1 }}
+                className={isLoading ? "loading" : ""}
               >
                 {isLoading ? "Connexion..." : "Log In"}
               </button>

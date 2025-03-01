@@ -17,8 +17,8 @@ const sendConfirmationEmail = async (user, token) => {
     console.log("  - EMAIL_USER:", process.env.EMAIL_USER);
     console.log("  - FRONTEND_URL:", process.env.FRONTEND_URL);
     
-    // Construire le lien de vérification
-    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}&userId=${user._id}`;
+    // Construire le lien de vérification - MODIFIÉ POUR POINTER VERS /login
+    const verificationLink = `${process.env.FRONTEND_URL}/login?verify=${token}&email=${encodeURIComponent(user.email)}`;
     
     // Options de l'email
     const mailOptions = {
@@ -72,3 +72,4 @@ const sendConfirmationEmail = async (user, token) => {
 };
 
 module.exports = { sendConfirmationEmail };
+

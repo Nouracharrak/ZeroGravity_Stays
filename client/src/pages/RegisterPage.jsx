@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/register.scss";
-import URL from "../constants/api";
+import API_URL from "../constants/api";  // Renommé pour éviter le conflit avec l'objet global URL
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ const RegisterPage = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [registrationComplete, setRegistrationComplete] = useState(false);
   const navigate = useNavigate();
 
   // Met à jour les champs texte
@@ -50,9 +50,9 @@ const RegisterPage = () => {
       
       // Créer une URL d'aperçu
       if (previewImage) {
-        URL.revokeObjectURL(previewImage); // Nettoyer l'URL précédente
+        window.URL.revokeObjectURL(previewImage); // Utiliser window.URL pour éviter les conflits
       }
-      setPreviewImage(URL.createObjectURL(file));
+      setPreviewImage(window.URL.createObjectURL(file));
     }
   };
 
@@ -67,10 +67,15 @@ const RegisterPage = () => {
   useEffect(() => {
     return () => {
       if (previewImage) {
-        URL.revokeObjectURL(previewImage);
+        window.URL.revokeObjectURL(previewImage);
       }
     };
   }, [previewImage]);
+
+  // Redirection vers la page de login après l'inscription
+  const redirectToLogin = () => {
+    navigate(`/login?registered=true&email=${encodeURIComponent(formData.email)}`);
+  };
 
   // Envoi du formulaire au backend avec gestion améliorée
   const handleSubmit = async (e) => {
@@ -101,19 +106,15 @@ const RegisterPage = () => {
         register_form.append("profileImage", formData.profileImage);
       }
 
-      const response = await fetch(URL.REGISTER, {
+      const response = await fetch(API_URL.REGISTER, {
         method: "POST",
         body: register_form,
       });
 
       const data = await response.json();
-      console.log("Réponse du serveur :", data);
 
       if (response.ok) {
-        setSuccessMessage("Inscription réussie ! Vérifiez votre boîte mail pour confirmer votre compte.");
-        setTimeout(() => {
-          navigate("/login");
-        }, 3000);
+        setRegistrationComplete(true);
       } else {
         setError(data.message || "Échec de l'inscription");
       }
@@ -124,17 +125,42 @@ const RegisterPage = () => {
     }
   };
 
+  // Si l'inscription est terminée, afficher l'écran de confirmation
+  if (registrationComplete) {
+    return (
+      <div className="register">
+        <div className="register_content">
+          <div className="registration-success">
+            <div className="success-message">
+              <h2>Inscription réussie !</h2>
+              <p>Votre compte a été créé avec succès, mais vous devez vérifier votre adresse email pour l'activer.</p>
+              
+              <div className="steps-info">
+                <h3>Prochaines étapes :</h3>
+                <ol>
+                  <li>Vérifiez votre boîte mail <strong>{formData.email}</strong> pour trouver notre email de confirmation.</li>
+                  <li>Cliquez sur le lien de vérification dans cet email.</li>
+                  <li>Une fois votre email vérifié, vous pourrez vous connecter à votre compte.</li>
+                </ol>
+              </div>
+              
+              <p className="note">Si vous ne trouvez pas l'email, vérifiez votre dossier spam ou demandez un nouvel email de vérification sur la page de connexion.</p>
+            </div>
+            
+            <button onClick={redirectToLogin}>
+              Aller à la page de connexion
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="register">
       <div className="register_content">
-        {successMessage && (
-          <div className="success-message" style={{ color: "green", marginBottom: "15px" }}>
-            {successMessage}
-          </div>
-        )}
-        
         {error && (
-          <div className="error-message" style={{ color: "red", marginBottom: "15px" }}>
+          <div className="error-message">
             {error}
           </div>
         )}
@@ -185,8 +211,12 @@ const RegisterPage = () => {
             required
             disabled={isSubmitting}
           />
-          {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
+          {!passwordMatch && <p className="password-mismatch">Passwords do not match</p>}
 
+          <div className="verification-info">
+            <p>Après l'inscription, vous recevrez un email de vérification pour activer votre compte.</p>
+          </div>
+          
           {/* Gestion du fichier image avec indication de chargement obligatoire */}
           <input
             id="image"
@@ -203,7 +233,7 @@ const RegisterPage = () => {
               alt="Add Profile" 
               style={{ opacity: isSubmitting ? 0.5 : 1 }} 
             />
-            <p style={{ color: formData.profileImage ? "green" : "red" }}>
+            <p className={formData.profileImage ? "image-uploaded" : "image-required"}>
               {formData.profileImage 
                 ? "✓ Photo téléchargée" 
                 : "* Photo de profil (obligatoire)"}
@@ -216,12 +246,6 @@ const RegisterPage = () => {
               <img
                 src={previewImage}
                 alt="Profile Preview"
-                style={{ 
-                  maxWidth: "80px", 
-                  maxHeight: "80px", 
-                  borderRadius: "50%",
-                  border: "2px solid #4CAF50" 
-                }}
               />
             </div>
           )}
@@ -229,7 +253,7 @@ const RegisterPage = () => {
           <button 
             type="submit" 
             disabled={isSubmitting || !passwordMatch}
-            style={{ opacity: isSubmitting ? 0.7 : 1 }}
+            className={isSubmitting ? "loading" : ""}
           >
             {isSubmitting ? "Inscription en cours..." : "Register"}
           </button>
@@ -241,4 +265,5 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
+
 

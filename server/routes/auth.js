@@ -143,93 +143,85 @@ router.post("/login", async (req, res) => {
 });
 
 // Route pour vérifier l'email
-router.get('/verify-email', async (req, res) => {
+// Dans votre fichier routes/auth.js ou controllers/auth.js
+
+// Route pour vérifier un email
+router.get('/verify/:token', async (req, res) => {
   try {
-    const { token, userId } = req.query;
+    const { token } = req.params;
     
-    if (!token || !userId) {
-      return res.status(400).json({ message: "Missing token or userId" });
-    }
-    
+    // Rechercher l'utilisateur avec ce token
     const user = await User.findOne({ 
-      _id: userId, 
       verificationToken: token,
-      verificationTokenExpires: { $gt: new Date() } // Token non expiré
+      verificationTokenExpires: { $gt: Date.now() } // Vérifier que le token n'a pas expiré
     });
     
     if (!user) {
       return res.status(400).json({ 
-        message: "Invalid or expired verification link" 
+        message: 'Le lien de vérification est invalide ou a expiré.' 
       });
     }
     
-    // Mettre à jour le statut de vérification de l'utilisateur
-    user.isVerified = true;
+    // Marquer l'utilisateur comme vérifié
+    user.emailVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
     await user.save();
     
     return res.status(200).json({ 
-      message: "Email verified successfully. You can now log in." 
+      message: 'Votre email a été vérifié avec succès.' 
     });
   } catch (error) {
-    console.error("Error verifying email:", error);
+    console.error('Erreur lors de la vérification de l\'email:', error);
     return res.status(500).json({ 
-      message: "Email verification failed", 
-      error: error.message 
+      message: 'Une erreur est survenue lors de la vérification de votre email.' 
     });
   }
 });
 
-// Route pour renvoyer l'email de vérification
+// Ajoutez aussi une route pour renvoyer l'email de vérification
 router.post('/resend-verification', async (req, res) => {
   try {
     const { email } = req.body;
     
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
-    
+    // Rechercher l'utilisateur
     const user = await User.findOne({ email });
     
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(400).json({ 
+        message: 'Aucun compte avec cet email n\'a été trouvé.' 
+      });
     }
     
-    if (user.isVerified) {
-      return res.status(400).json({ message: "This account is already verified" });
+    if (user.emailVerified) {
+      return res.status(400).json({ 
+        message: 'Ce compte est déjà vérifié.' 
+      });
     }
     
-    // Générer un nouveau token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpiration = new Date();
-    tokenExpiration.setHours(tokenExpiration.getHours() + 24);
+    // Générer un nouveau token de vérification
+    const token = crypto.randomBytes(20).toString('hex');
+    const tokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 heures
     
-    user.verificationToken = verificationToken;
-    user.verificationTokenExpires = tokenExpiration;
+    // Mettre à jour l'utilisateur avec le nouveau token
+    user.verificationToken = token;
+    user.verificationTokenExpires = tokenExpires;
     await user.save();
     
-    // Envoyer l'email
-    try {
-      await sendConfirmationEmail(user, verificationToken);
-      return res.status(200).json({ 
-        message: "Verification email has been sent" 
-      });
-    } catch (emailError) {
-      console.error("Erreur lors de l'envoi de l'email :", emailError);
-      return res.status(500).json({ 
-        message: "Failed to send verification email", 
-        error: emailError.message 
-      });
-    }
+    // Envoyer l'email de vérification
+    await sendConfirmationEmail(user, token);
+    
+    return res.status(200).json({ 
+      message: 'Un nouvel email de vérification a été envoyé.' 
+    });
   } catch (error) {
-    console.error("Error resending verification email:", error);
+    console.error('Erreur lors du renvoi de l\'email de vérification:', error);
     return res.status(500).json({ 
-      message: "Failed to resend verification email", 
-      error: error.message 
+      message: 'Une erreur est survenue lors de l\'envoi de l\'email de vérification.' 
     });
   }
 });
+
 
 // Middleware pour vérifier le token
 const verifyToken = (req, res, next) => {

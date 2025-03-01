@@ -9,6 +9,8 @@ const URL = {
 // USER
     AUTHENTIFICATION: "https://zero-gravity-stays-bevn.vercel.app/auth/login",
     REGISTER: "https://zero-gravity-stays-bevn.vercel.app/auth/register",
+    RESEND_VERIFICATION: "https://zero-gravity-stays-bevn.vercel.app/auth/resend-verification",
+    VERIFY_EMAIL: "https://zero-gravity-stays-bevn.vercel.app/auth/verify",
     FETCH_USERS: "https://zero-gravity-stays-bevn.vercel.app/users",
     UPDATE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
     DELETE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
