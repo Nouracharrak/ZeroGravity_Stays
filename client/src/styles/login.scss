@@ -129,7 +129,7 @@
           }
           
           &:hover:not(:disabled) {
-            background-color: darken(#4CAF50, 10%);
+            background-color: #3d8b40; /* Version plus foncée de #4CAF50 */
             box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
           }
         }
@@ -189,7 +189,7 @@
         }
         
         &.loading {
-          background-color: darken($primary-color, 15%);
+          background-color: #111;
           cursor: wait;
         }
       }
