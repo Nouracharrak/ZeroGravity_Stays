@@ -2,12 +2,18 @@ const nodemailer = require('nodemailer');
 
 // Configuration du transporteur d'email
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
+    host: 'charrak.nora95@gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
+  
 // Fonction pour envoyer un email de confirmation
 const sendConfirmationEmail = async (user) => {
   try {
@@ -34,6 +40,7 @@ const sendConfirmationEmail = async (user) => {
     };
 
     // Envoyer l'email
+    console.log(" Envoi en cours...");
     const info = await transporter.sendMail(mailOptions);
     console.log('Email envoyé: %s', info.messageId);
     return true;
