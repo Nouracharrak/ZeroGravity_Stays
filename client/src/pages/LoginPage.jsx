@@ -52,7 +52,7 @@ const LoginPage = () => {
     setError("");
     
     try {
-      const response = await fetch(`${URL.VERIFY}/${token}`, {
+      const response = await fetch(`${URL.VERIFY_EMAIL}/${token}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
