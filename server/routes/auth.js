@@ -5,7 +5,9 @@ const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const { sendConfirmationEmail } = require('../config/mailer');
 require("dotenv").config();
+
 
 // Configuration de Cloudinary
 cloudinary.config({
@@ -29,48 +31,60 @@ const upload = multer({ storage });
 
 // Route d'enregistrement avec Cloudinary
 router.post('/register', upload.single("profileImage"), async (req, res) => {
-    try {
-        console.log("Requête reçue avec le body :", req.body);
-        console.log("Fichier reçu de Multer :", req.file);
+  try {
+      console.log("Requête reçue avec le body :", req.body);
+      console.log("Fichier reçu de Multer :", req.file);
 
-        const { firstName, lastName, email, password } = req.body;
-        if (!firstName || !lastName || !email || !password) {
-            console.log("Erreur : Champs requis manquants !");
-            return res.status(400).json({ message: "Missing required fields" });
-        }
+      const { firstName, lastName, email, password } = req.body;
+      if (!firstName || !lastName || !email || !password) {
+          console.log("Erreur : Champs requis manquants !");
+          return res.status(400).json({ message: "Missing required fields" });
+      }
 
-        if (!req.file || !req.file.path) {
-            console.log("Erreur : Image non reçue !");
-            return res.status(400).json({ message: "Image upload failed" });
-        }
+      if (!req.file || !req.file.path) {
+          console.log("Erreur : Image non reçue !");
+          return res.status(400).json({ message: "Image upload failed" });
+      }
 
-        console.log("Image envoyée sur Cloudinary :", req.file.path);
+      console.log("Image envoyée sur Cloudinary :", req.file.path);
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            console.log("Erreur : Utilisateur déjà existant !");
-            return res.status(409).json({ message: "User already exists" });
-        }
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+          console.log("Erreur : Utilisateur déjà existant !");
+          return res.status(409).json({ message: "User already exists" });
+      }
 
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt);
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = new User({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            profileImagePath: req.file.path,
-        });
+      const newUser = new User({
+          firstName,
+          lastName,
+          email,
+          password: hashedPassword,
+          profileImagePath: req.file.path,
+      });
 
-        await newUser.save();
-        console.log("Utilisateur enregistré :", newUser);
+      await newUser.save();
+      console.log("Utilisateur enregistré :", newUser);
 
-        res.status(201).json({ message: "User Registered successfully", user: newUser });
-    } catch (err) {
-        console.error("Erreur lors de l'inscription :", err);
-        res.status(500).json({ message: "Registration failed", error: err.message });
-    }
+      // Envoyer l'email de confirmation
+      try {
+          await sendConfirmationEmail(newUser);
+          console.log("Email de confirmation envoyé à :", email);
+      } catch (emailError) {
+          console.error("Erreur lors de l'envoi de l'email de confirmation :", emailError);
+          // Notez que nous continuons malgré l'erreur d'email, car l'utilisateur est déjà enregistré
+      }
+
+      res.status(201).json({ 
+          message: "User Registered successfully. A confirmation email has been sent.", 
+          user: newUser 
+      });
+  } catch (err) {
+      console.error("Erreur lors de l'inscription :", err);
+      res.status(500).json({ message: "Registration failed", error: err.message });
+  }
 });
 // Route de connexion de l'utilisateur
 router.post("/login", async (req, res) => {

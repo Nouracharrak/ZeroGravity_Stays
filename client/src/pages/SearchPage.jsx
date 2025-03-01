@@ -67,7 +67,7 @@ const SearchPage = () => {
               key={listing._id}
               listingId={listing._id}
               creator={listing.creator}
-              listingPhotosPaths={listing.listingPhotosPaths} // Correction ici: utilisation du nom correct de la propriété
+              listingPhotosPaths={listing.listingPhotosPaths}
               city={listing.city}
               province={listing.province}
               country={listing.country}
