@@ -18,6 +18,7 @@ const RegisterPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [registrationStatus, setRegistrationStatus] = useState(""); // Pour suivre l'état de l'inscription
   const navigate = useNavigate();
 
   // Met à jour les champs texte
@@ -89,6 +90,7 @@ const RegisterPage = () => {
     
     setIsSubmitting(true);
     setError("");
+    setRegistrationStatus("submitting");
     
     try {
       const register_form = new FormData();
@@ -110,14 +112,37 @@ const RegisterPage = () => {
       console.log("Réponse du serveur :", data);
 
       if (response.ok) {
-        setSuccessMessage("Inscription réussie ! Vérifiez votre boîte mail pour confirmer votre compte.");
+        setRegistrationStatus("success");
+        setSuccessMessage(
+          "Inscription réussie ! Vérifiez votre boîte mail pour confirmer votre compte."
+        );
+        
+        // Réinitialiser le formulaire
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          profileImage: null,
+        });
+        setPreviewImage(null);
+        
+        // Rediriger vers la page d'attente de vérification après un délai
         setTimeout(() => {
-          navigate("/login");
+          navigate("/verify-pending", { 
+            state: { 
+              email: formData.email,
+              isNewRegistration: true 
+            } 
+          });
         }, 3000);
       } else {
+        setRegistrationStatus("error");
         setError(data.message || "Échec de l'inscription");
       }
     } catch (err) {
+      setRegistrationStatus("error");
       setError("Erreur de connexion au serveur : " + err.message);
     } finally {
       setIsSubmitting(false);
@@ -127,14 +152,28 @@ const RegisterPage = () => {
   return (
     <div className="register">
       <div className="register_content">
-        {successMessage && (
-          <div className="success-message" style={{ color: "green", marginBottom: "15px" }}>
-            {successMessage}
+        {registrationStatus === "success" && (
+          <div className="success-message" style={{ 
+            color: "green", 
+            backgroundColor: "#e8f5e9", 
+            padding: "15px", 
+            borderRadius: "5px",
+            marginBottom: "15px",
+            textAlign: "center"
+          }}>
+            <h3>Inscription réussie ! ✓</h3>
+            <p>{successMessage}</p>
           </div>
         )}
         
         {error && (
-          <div className="error-message" style={{ color: "red", marginBottom: "15px" }}>
+          <div className="error-message" style={{ 
+            color: "white", 
+            backgroundColor: "#d32f2f", 
+            padding: "15px", 
+            borderRadius: "5px",
+            marginBottom: "15px" 
+          }}>
             {error}
           </div>
         )}
@@ -147,7 +186,7 @@ const RegisterPage = () => {
             value={formData.firstName}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || registrationStatus === "success"}
           />
           <input
             type="text"
@@ -156,7 +195,7 @@ const RegisterPage = () => {
             value={formData.lastName}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || registrationStatus === "success"}
           />
           <input
             type="email"
@@ -165,7 +204,7 @@ const RegisterPage = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || registrationStatus === "success"}
           />
           <input
             type="password"
@@ -174,7 +213,7 @@ const RegisterPage = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || registrationStatus === "success"}
           />
           <input
             type="password"
@@ -183,9 +222,9 @@ const RegisterPage = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || registrationStatus === "success"}
           />
-          {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
+          {!passwordMatch && <p style={{ color: "red" }}>Les mots de passe ne correspondent pas</p>}
 
           {/* Gestion du fichier image avec indication de chargement obligatoire */}
           <input
@@ -195,13 +234,18 @@ const RegisterPage = () => {
             accept="image/*"
             style={{ display: "none" }}
             onChange={handleImageChange}
-            disabled={isSubmitting}
+            disabled={isSubmitting || registrationStatus === "success"}
           />
-          <label htmlFor="image" style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+          <label 
+            htmlFor="image" 
+            style={{ 
+              cursor: (isSubmitting || registrationStatus === "success") ? 'not-allowed' : 'pointer',
+              opacity: (isSubmitting || registrationStatus === "success") ? 0.5 : 1
+            }}
+          >
             <img 
               src="/assets/addImage.png" 
-              alt="Add Profile" 
-              style={{ opacity: isSubmitting ? 0.5 : 1 }} 
+              alt="Add Profile"
             />
             <p style={{ color: formData.profileImage ? "green" : "red" }}>
               {formData.profileImage 
@@ -226,18 +270,43 @@ const RegisterPage = () => {
             </div>
           )}
 
-          <button 
-            type="submit" 
-            disabled={isSubmitting || !passwordMatch}
-            style={{ opacity: isSubmitting ? 0.7 : 1 }}
-          >
-            {isSubmitting ? "Inscription en cours..." : "Register"}
-          </button>
+          {registrationStatus !== "success" && (
+            <button 
+              type="submit" 
+              disabled={isSubmitting || !passwordMatch}
+              style={{ 
+                opacity: isSubmitting ? 0.7 : 1,
+                backgroundColor: isSubmitting ? "#cccccc" : "#4CAF50" 
+              }}
+            >
+              {isSubmitting ? "Inscription en cours..." : "S'inscrire"}
+            </button>
+          )}
         </form>
-        <a href="/login">Already have an account? Log In Here</a>
+        
+        {registrationStatus === "success" ? (
+          <button 
+            onClick={() => navigate("/login")} 
+            style={{ 
+              padding: "10px 15px", 
+              backgroundColor: "#2196F3", 
+              color: "white", 
+              border: "none", 
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginTop: "15px",
+              width: "100%"
+            }}
+          >
+            Aller à la page de connexion
+          </button>
+        ) : (
+          <a href="/login">Déjà inscrit ? Connectez-vous ici</a>
+        )}
       </div>
     </div>
   );
 };
 
 export default RegisterPage;
+
