@@ -15,7 +15,9 @@ const RegisterPage = () => {
 
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
-  const [registrationStatus, setRegistrationStatus] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   // Met à jour les champs texte
@@ -24,11 +26,32 @@ const RegisterPage = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Gestion de l'image sélectionnée
+  // Gestion de l'image sélectionnée avec validation
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    
+    // Réinitialiser les erreurs
+    setError("");
+    
     if (file) {
+      // Vérification de la taille du fichier (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image trop volumineuse (max: 5MB)");
+        return;
+      }
+      
+      // Vérification du type de fichier
+      if (!file.type.match('image.*')) {
+        setError("Le fichier doit être une image");
+        return;
+      }
+      
       setFormData({ ...formData, profileImage: file });
+      
+      // Créer une URL d'aperçu
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage); // Nettoyer l'URL précédente
+      }
       setPreviewImage(URL.createObjectURL(file));
     }
   };
@@ -40,10 +63,32 @@ const RegisterPage = () => {
     );
   }, [formData.password, formData.confirmPassword]);
 
-  // Envoi du formulaire au backend
+  // Nettoyage de l'URL de prévisualisation lorsque le composant est démonté
+  useEffect(() => {
+    return () => {
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+      }
+    };
+  }, [previewImage]);
+
+  // Envoi du formulaire au backend avec gestion améliorée
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setRegistrationStatus('pending'); // Indique que l'inscription est en cours
+    
+    // Validation finale
+    if (!formData.profileImage) {
+      setError("Veuillez télécharger une photo de profil");
+      return;
+    }
+    
+    if (!passwordMatch) {
+      setError("Les mots de passe ne correspondent pas");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setError("");
     
     try {
       const register_form = new FormData();
@@ -65,121 +110,130 @@ const RegisterPage = () => {
       console.log("Réponse du serveur :", data);
 
       if (response.ok) {
-        setRegistrationStatus('success');
-        // Au lieu de rediriger immédiatement vers login, on informe l'utilisateur
-        // qu'il doit vérifier son email
+        setSuccessMessage("Inscription réussie ! Vérifiez votre boîte mail pour confirmer votre compte.");
         setTimeout(() => {
-          navigate("/verification-sent", { 
-            state: { email: formData.email } 
-          });
-        }, 2000);
+          navigate("/login");
+        }, 3000);
       } else {
-        setRegistrationStatus('error');
-        console.error("Registration failed", data.message);
+        setError(data.message || "Échec de l'inscription");
       }
     } catch (err) {
-      setRegistrationStatus('error');
-      console.error("Registration failed", err.message);
+      setError("Erreur de connexion au serveur : " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="register">
       <div className="register_content">
-        {registrationStatus === 'success' ? (
-          <div className="registration-success">
-            <h2>Registration Successful!</h2>
-            <p>A verification email has been sent to {formData.email}.</p>
-            <p>Please check your inbox and verify your email address to complete the registration.</p>
+        {successMessage && (
+          <div className="success-message" style={{ color: "green", marginBottom: "15px" }}>
+            {successMessage}
           </div>
-        ) : (
-          <form className="register_content_form" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="First Name"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-            {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
+        )}
+        
+        {error && (
+          <div className="error-message" style={{ color: "red", marginBottom: "15px" }}>
+            {error}
+          </div>
+        )}
+        
+        <form className="register_content_form" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="First Name"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            required
+            disabled={isSubmitting}
+          />
+          <input
+            type="text"
+            placeholder="Last Name"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+            disabled={isSubmitting}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            disabled={isSubmitting}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            disabled={isSubmitting}
+          />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+            disabled={isSubmitting}
+          />
+          {!passwordMatch && <p style={{ color: "red" }}>Passwords do not match</p>}
 
-            {/* Gestion du fichier image */}
-            <input
-              id="image"
-              type="file"
-              name="profileImage"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleImageChange}
+          {/* Gestion du fichier image avec indication de chargement obligatoire */}
+          <input
+            id="image"
+            type="file"
+            name="profileImage"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleImageChange}
+            disabled={isSubmitting}
+          />
+          <label htmlFor="image" style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+            <img 
+              src="/assets/addImage.png" 
+              alt="Add Profile" 
+              style={{ opacity: isSubmitting ? 0.5 : 1 }} 
             />
-            <label htmlFor="image">
-              <img src="/assets/addImage.png" alt="Add Profile" />
-              <p style={{ color: "red" }}> Upload Profile Photo</p>
-            </label>
+            <p style={{ color: formData.profileImage ? "green" : "red" }}>
+              {formData.profileImage 
+                ? "✓ Photo téléchargée" 
+                : "* Photo de profil (obligatoire)"}
+            </p>
+          </label>
 
-            {/* Affichage dynamique de l'image */}
-            {previewImage ? (
+          {/* Affichage dynamique de l'image avec indicateur de chargement */}
+          {previewImage && (
+            <div className="image-preview">
               <img
                 src={previewImage}
                 alt="Profile Preview"
-                style={{ maxWidth: "80px", borderRadius: "50%" }}
+                style={{ 
+                  maxWidth: "80px", 
+                  maxHeight: "80px", 
+                  borderRadius: "50%",
+                  border: "2px solid #4CAF50" 
+                }}
               />
-            ) : formData.profileImage ? (
-              <img
-                src={formData.profileImage}
-                alt="Profile from Server"
-                style={{ maxWidth: "80px", borderRadius: "50%" }}
-              />
-            ) : null}
+            </div>
+          )}
 
-            {/* Message d'erreur d'inscription */}
-            {registrationStatus === 'error' && (
-              <p style={{ color: "red" }}>
-                Registration failed. Please check your information and try again.
-              </p>
-            )}
-
-            <button 
-              type="submit" 
-              disabled={!passwordMatch || registrationStatus === 'pending'}
-            >
-              {registrationStatus === 'pending' ? 'Processing...' : 'Register'}
-            </button>
-          </form>
-        )}
+          <button 
+            type="submit" 
+            disabled={isSubmitting || !passwordMatch}
+            style={{ opacity: isSubmitting ? 0.7 : 1 }}
+          >
+            {isSubmitting ? "Inscription en cours..." : "Register"}
+          </button>
+        </form>
         <a href="/login">Already have an account? Log In Here</a>
       </div>
     </div>
@@ -187,3 +241,4 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
+
