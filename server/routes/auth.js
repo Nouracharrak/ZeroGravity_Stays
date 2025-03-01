@@ -104,81 +104,101 @@ router.post('/register', upload.single("profileImage"), async (req, res) => {
 });
 
 // Route de connexion de l'utilisateur - mise à jour pour vérifier le statut de vérification
-router.post("/login", async (req, res) => {
+// Route de connexion
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const existingUser = await User.findOne({ email }).select("+password");
-    if (!existingUser) {
-      return res.status(404).json({ message: "User does not exist!" });
-    }
-
-    // Vérifier si l'email est vérifié
-    if (!existingUser.isVerified) {
-      return res.status(403).json({ 
-        message: "Please verify your email before logging in",
-        needsVerification: true 
+    
+    console.log(`[DEBUG] Tentative de connexion pour: ${email}`);
+    
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      console.log(`[INFO] Utilisateur non trouvé: ${email}`);
+      return res.status(400).json({
+        success: false,
+        message: "Email ou mot de passe incorrect"
       });
     }
-
-    const isMatch = await bcrypt.compare(password, existingUser.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials!" });
+    
+    // Log important pour vérifier l'état de verification
+    console.log(`[DEBUG] Statut de vérification pour ${email}: isVerified = ${user.isVerified}`);
+    
+    // Vérifier si l'email est confirmé
+    if (!user.isVerified) {
+      console.log(`[INFO] Email non vérifié pour: ${email}`);
+      return res.status(403).json({
+        success: false,
+        message: "Votre email n'a pas été vérifié. Vérifiez votre boîte de réception ou demandez un nouveau lien.",
+        needsVerification: true
+      });
     }
+    
+    // Suite du code de vérification du mot de passe...
 
-    const token = jwt.sign(
-      { id: existingUser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    const user = existingUser.toObject();
-    delete user.password;
-
-    res.status(200).json({ token, user });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ error: "An unexpected error occurred!" });
+  } catch (error) {
+    console.error(`[ERROR] Erreur connexion: ${error.message}`, error);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur lors de la connexion"
+    });
   }
 });
 
-// Route pour vérifier l'email
-// Dans votre fichier routes/auth.js ou controllers/auth.js
-
-// Route pour vérifier un email
+// Route pour vérifier l'email (auth/verify/:token)
 router.get('/verify/:token', async (req, res) => {
   try {
     const { token } = req.params;
     
-    // Rechercher l'utilisateur avec ce token
-    const user = await User.findOne({ 
-      verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() } // Vérifier que le token n'a pas expiré
-    });
+    // Ajouter des logs détaillés
+    console.log(`[DEBUG] Tentative de vérification avec token: ${token}`);
+    
+    // Recherche d'un utilisateur avec ce token de vérification
+    const user = await User.findOne({ verificationToken: token });
     
     if (!user) {
+      console.log(`[ERROR] Aucun utilisateur trouvé avec token: ${token}`);
       return res.status(400).json({ 
-        message: 'Le lien de vérification est invalide ou a expiré.' 
+        success: false, 
+        message: "Token de vérification invalide ou expiré"
       });
     }
     
-    // Marquer l'utilisateur comme vérifié
-    user.emailVerified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpires = undefined;
+    // Vérifier si le token n'a pas expiré (si vous avez implémenté l'expiration)
+    if (user.verificationTokenExpires && user.verificationTokenExpires < new Date()) {
+      console.log(`[ERROR] Token expiré pour utilisateur: ${user.email}`);
+      return res.status(400).json({
+        success: false,
+        message: "Le lien de vérification a expiré, veuillez en demander un nouveau"
+      });
+    }
+    
+    console.log(`[DEBUG] Utilisateur trouvé: ${user.email}, isVerified avant: ${user.isVerified}`);
+    
+    // Mise à jour de l'état de vérification
+    user.isVerified = true;
+    user.verificationToken = undefined; // Supprimer le token après utilisation
+    user.verificationTokenExpires = undefined; // Supprimer la date d'expiration
+    
+    // Sauvegarde de l'utilisateur
     await user.save();
     
-    return res.status(200).json({ 
-      message: 'Votre email a été vérifié avec succès.' 
+    // Vérifier que la sauvegarde a fonctionné
+    const updatedUser = await User.findById(user._id);
+    console.log(`[DEBUG] Utilisateur mis à jour: ${updatedUser.email}, isVerified après: ${updatedUser.isVerified}`);
+    
+    return res.status(200).json({
+      success: true,
+      message: "Email vérifié avec succès"
     });
   } catch (error) {
-    console.error('Erreur lors de la vérification de l\'email:', error);
-    return res.status(500).json({ 
-      message: 'Une erreur est survenue lors de la vérification de votre email.' 
+    console.error(`[ERROR] Erreur de vérification d'email: ${error.message}`, error);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur lors de la vérification de l'email"
     });
   }
 });
-
 // Ajoutez aussi une route pour renvoyer l'email de vérification
 router.post('/resend-verification', async (req, res) => {
   try {
