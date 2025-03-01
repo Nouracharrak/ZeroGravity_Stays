@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 
 // Configuration du transporteur d'email
 const transporter = nodemailer.createTransport({
-    host: 'charrak.nora95@gmail.com',
+    host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
