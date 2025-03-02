@@ -70,8 +70,30 @@ const LoginPage = () => {
 
   // Fonction pour vérifier le token d'email (existante)
   const handleVerifyEmail = async (token) => {
-    // Votre code existant
-    // ...
+    setVerificationStatus("pending");
+    setError("");
+    
+    try {
+      const response = await fetch(`${URL.VERIFY_EMAIL}/${token}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setVerificationStatus("success");
+        setVerificationMessage("Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.");
+      } else {
+        setVerificationStatus("error");
+        setError(data.message || "Échec de la vérification de l'email");
+      }
+    } catch (err) {
+      setVerificationStatus("error");
+      setError("Problème de connexion au serveur");
+    }
   };
 
   // NOUVEAU: Fonction pour gérer la demande de réinitialisation de mot de passe
@@ -167,14 +189,77 @@ const LoginPage = () => {
 
   // Fonction de connexion existante
   const handleSubmit = async (e) => {
-    // Votre code existant
-    // ...
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(URL.AUTHENTIFICATION, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        dispatch(
+          setLogin({
+            user: data.user,
+            token: data.token,
+          })
+        );
+        navigate("/");
+      } else {
+        // Vérifier si l'email n'est pas vérifié
+        if (response.status === 403 && data.needsVerification) {
+          setNeedsVerification(true);
+          setVerificationMessage("Votre email n'a pas été vérifié. Vérifiez votre boîte de réception ou demandez un nouveau lien.");
+        } else {
+          setError(data.message || "Échec de la connexion. Vérifiez vos identifiants.");
+        }
+      }
+    } catch (err) {
+      setError("Problème de connexion au serveur");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Fonction pour renvoyer l'email de vérification (existante)
+  // Fonction pour renvoyer l'email de vérification
   const handleResendVerification = async () => {
-    // Votre code existant
-    // ...
+    if (!email) {
+      setError("Veuillez saisir votre email");
+      return;
+    }
+    
+    setResendStatus("sending");
+    setVerificationMessage("");
+    
+    try {
+      const response = await fetch(URL.RESEND_VERIFICATION, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setResendStatus("success");
+        setVerificationMessage("Email de vérification envoyé ! Veuillez vérifier votre boîte de réception.");
+      } else {
+        setResendStatus("error");
+        setError(data.message || "Échec de l'envoi de l'email");
+      }
+    } catch (err) {
+      setResendStatus("error");
+      setError("Problème de connexion au serveur");
+    }
   };
 
   return (
@@ -287,8 +372,42 @@ const LoginPage = () => {
         ) : needsVerification ? (
           // Section de vérification d'email (existante)
           <div className="verification-section">
-            {/* Votre code existant */}
-            {/* ... */}
+            <div className="verification-info">
+              <h3>Vérification requise</h3>
+              <p>{verificationMessage}</p>
+            </div>
+            
+            <div className="verification-actions">
+              <input
+                type="email"
+                placeholder="Confirmez votre email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={resendStatus === "sending"}
+                className="verification-email-input"
+              />
+              
+              {resendStatus === "success" ? (
+                <div className="resend-success">
+                  Email de vérification envoyé avec succès !
+                </div>
+              ) : (
+                <button
+                  onClick={handleResendVerification}
+                  disabled={!email || resendStatus === "sending"}
+                  className="resend-button"
+                >
+                  {resendStatus === "sending" ? "Envoi en cours..." : "Renvoyer l'email de vérification"}
+                </button>
+              )}
+              
+              <button
+                onClick={() => setNeedsVerification(false)}
+                className="back-button"
+              >
+                Retour à la connexion
+              </button>
+            </div>
           </div>
         ) : (
           // Formulaire de connexion normal (avec ajout du lien "Mot de passe oublié")
@@ -339,3 +458,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
