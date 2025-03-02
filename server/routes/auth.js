@@ -103,13 +103,21 @@ router.post('/register', upload.single("profileImage"), async (req, res) => {
   }
 });
 
-// Route de connexion de l'utilisateur - mise à jour pour vérifier le statut de vérification
 // Route de connexion
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
     console.log(`[DEBUG] Tentative de connexion pour: ${email}`);
+    console.log(`[DEBUG] Corps de la requête:`, req.body);
+    
+    if (!email || !password) {
+      console.log(`[ERROR] Données manquantes: email=${!!email}, password=${!!password}`);
+      return res.status(400).json({
+        success: false,
+        message: "Veuillez fournir un email et un mot de passe"
+      });
+    }
     
     const user = await User.findOne({ email });
     
@@ -134,8 +142,37 @@ router.post('/login', async (req, res) => {
       });
     }
     
-    // Suite du code de vérification du mot de passe...
-
+    // Vérifier le mot de passe
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
+      console.log(`[INFO] Mot de passe invalide pour: ${email}`);
+      return res.status(400).json({
+        success: false,
+        message: "Email ou mot de passe incorrect"
+      });
+    }
+    
+    // Créer un token JWT
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    console.log(`[DEBUG] Connexion réussie pour: ${email}`);
+    
+    // Retourner le token et les informations de l'utilisateur
+    return res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        // Autres champs que vous voulez renvoyer
+      }
+    });
   } catch (error) {
     console.error(`[ERROR] Erreur connexion: ${error.message}`, error);
     return res.status(500).json({
@@ -144,7 +181,6 @@ router.post('/login', async (req, res) => {
     });
   }
 });
-
 // Route pour vérifier l'email (auth/verify/:token)
 router.get('/verify/:token', async (req, res) => {
   try {
