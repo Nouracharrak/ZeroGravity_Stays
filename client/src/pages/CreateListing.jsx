@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import variables from "../styles/variables.scss";
 import "../styles/createListing.scss";
 import Navbar from "../componenets/Navbar";
@@ -42,7 +42,7 @@ const CreateListing = () => {
 
   // Amenities section:
   const [amenities, setAmenities] = useState([]);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSelectAmenities = (facility) => {
     if (amenities.includes(facility)) {
@@ -105,7 +105,17 @@ const CreateListing = () => {
   };
   console.log(formDescription);
 
-  const { _id } = useSelector((state) => state.user);
+  // Récupération plus robuste de l'ID utilisateur
+  const user = useSelector((state) => state.user);
+  const _id = user?._id || user?.user?._id || null;
+
+  // Débogage pour comprendre la structure
+  console.log(
+    "État Redux complet:",
+    useSelector((state) => state)
+  );
+  console.log("État user:", user);
+  console.log("ID utilisateur trouvé:", _id);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,7 +130,12 @@ const CreateListing = () => {
       return;
     }
 
-    if (!formLocation.streetAddress || !formLocation.city || !formLocation.province || !formLocation.country) {
+    if (
+      !formLocation.streetAddress ||
+      !formLocation.city ||
+      !formLocation.province ||
+      !formLocation.country
+    ) {
       alert("Veuillez remplir les informations de localisation");
       return;
     }
@@ -135,7 +150,13 @@ const CreateListing = () => {
       return;
     }
 
-    if (!formDescription.title || !formDescription.description || !formDescription.highlight || !formDescription.highlightDesc || !formDescription.price) {
+    if (
+      !formDescription.title ||
+      !formDescription.description ||
+      !formDescription.highlight ||
+      !formDescription.highlightDesc ||
+      !formDescription.price
+    ) {
       alert("Veuillez remplir les informations de description");
       return;
     }
@@ -170,8 +191,11 @@ const CreateListing = () => {
 
       // Création de la requête avec les images uploadées
       const listingForm = new FormData();
-      listingForm.append("userId", _id);
-      console.log("ID créateur ajouté au FormData:", listingForm.get("creator"));
+      listingForm.append("creator", _id);
+      console.log(
+        "ID créateur ajouté au FormData:",
+        listingForm.get("creator")
+      );
       listingForm.append("category", category);
       listingForm.append("type", type);
       listingForm.append("streetAddress", formLocation.streetAddress);
@@ -185,7 +209,7 @@ const CreateListing = () => {
       listingForm.append("bathroomCount", bathroomCount);
       amenities.forEach((amenity) => {
         listingForm.append("amenities", amenity);
-      });      
+      });
       listingForm.append("title", formDescription.title);
       listingForm.append("description", formDescription.description);
       listingForm.append("highlight", formDescription.highlight);
@@ -207,7 +231,12 @@ const CreateListing = () => {
           // MODIFICATION ICI: Meilleure gestion des erreurs
           const errorData = await response.json();
           console.error("Erreur lors de la création du listing :", errorData);
-          alert(`Erreur: ${errorData.message || "Une erreur est survenue lors de la création de l'annonce"}`);
+          alert(
+            `Erreur: ${
+              errorData.message ||
+              "Une erreur est survenue lors de la création de l'annonce"
+            }`
+          );
         }
       } catch (err) {
         console.error("Erreur lors de la création du listing :", err);
