@@ -105,8 +105,14 @@ const CreateListing = () => {
   console.log(formDescription);
 
   // MODIFICATION ICI: Correction de l'accès à l'ID du créateur
-  const creatorId = useSelector((state) => state.user?.user?._id);
-  console.log("ID créateur trouvé:", creatorId);
+  const creatorId = useSelector((state) => {
+    if (state.user?.user?._id) return state.user.user._id;
+  // Débogage pour voir la structure exacte
+  console.log("Structure Redux complète:", state);
+  if (state.user) console.log("Contenu user:", state.user);
+  
+  return null;
+});
   
   // Vérification du state complet (à des fins de débogage)
   const reduxState = useSelector(state => state);
