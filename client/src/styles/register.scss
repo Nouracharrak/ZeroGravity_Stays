@@ -2,32 +2,33 @@
 @import "./breakpoints.scss";
 
 .register {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
   background: url("../../public/assets/register.jpg") center;
   background-size: cover;
+  background-attachment: fixed; // Garde l'image fixe pendant le défilement
+  padding: 20px;
+  box-sizing: border-box;
 
   &_content {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
     width: 40%;
-    padding: 40px;
+    max-width: 500px; // Limite la largeur maximale
+    margin: 20px auto;
+    padding: 30px;
     background-color: rgba(0, 0, 0, 0.8);
     border-radius: 20px;
-
+    
     @include lg {
       width: 60%;
     }
 
     @include mm {
-      width: 80%;
+      width: 90%; // Plus étroit sur mobile
+      padding: 20px; // Padding réduit sur mobile
     }
-
     // Styles pour les messages d'erreur
     .error-message {
       color: white;

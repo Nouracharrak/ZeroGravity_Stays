@@ -168,9 +168,10 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
-        // Autres champs que vous voulez renvoyer
+        profileImagePath: user.profileImagePath,
       }
     });
   } catch (error) {
