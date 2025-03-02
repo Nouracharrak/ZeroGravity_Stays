@@ -27,13 +27,24 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 // create listing
-
 router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
   try {
+    // Vérification explicite de l'existence du creator dans req.body
+    if (!req.body.creator) {
+      return res.status(400).json({ message: "ID du créateur manquant" });
+    }
+
+    // Vérifier si l'ID est un ObjectId MongoDB valide
+    if (!mongoose.Types.ObjectId.isValid(req.body.creator)) {
+      return res.status(400).json({ message: "Format d'ID du créateur invalide" });
+    }
+
+    console.log("ID créateur reçu:", req.body.creator);
+
     const listingPhotos = JSON.parse(req.body.listingPhotos);
     const parsedAmenities = Array.isArray(req.body.amenities)
-  ? req.body.amenities
-  : JSON.parse(req.body.amenities || "[]");
+      ? req.body.amenities
+      : JSON.parse(req.body.amenities || "[]");
 
     const {
       creator,
@@ -55,6 +66,7 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       price,
     } = req.body;
 
+    // Le reste de votre code reste inchangé
     const newListing = new Listing({
       creator,
       category,
@@ -90,8 +102,6 @@ router.post("/create", upload.array("listingPhotos", 10), async (req, res) => {
       .json({ message: "Échec de la création du listing", error: err.message });
   }
 });
-
-
 // Route pour rechercher des annonces
 router.get("/search/:search", async (req, res) => {
   let { search } = req.params;
