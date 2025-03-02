@@ -1,11 +1,12 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/user.js");
+const PasswordReset = require('../models/PasswordReset.js');
 const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const { sendConfirmationEmail } = require('../config/mailer.js');
+const { sendConfirmationEmail, sendPasswordResetEmail} = require('../config/mailer.js');
 const crypto = require('crypto'); // Ajout de crypto pour la génération de tokens
 require("dotenv").config();
 
@@ -279,7 +280,97 @@ router.post('/resend-verification', async (req, res) => {
   }
 });
 
+// 1. Route pour demander un lien de réinitialisation
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // Vérifier si l'utilisateur existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Pour des raisons de sécurité, ne pas indiquer si l'email existe
+      return res.status(200).json({ 
+        success: true, 
+        message: "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé." 
+      });
+    }
 
+    // Générer un token aléatoire
+    const token = crypto.randomBytes(32).toString('hex');
+    
+    // Supprimer tout ancien token existant pour cet utilisateur
+    await PasswordReset.deleteMany({ email });
+    
+    // Créer un nouveau document de réinitialisation
+    await PasswordReset.create({
+      email: user.email,
+      token: token
+    });
+
+    // Envoyer l'email de réinitialisation
+    await sendPasswordResetEmail(user, token);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé." 
+    });
+  } catch (error) {
+    console.error('Erreur lors de la demande de réinitialisation:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Une erreur est survenue. Veuillez réessayer plus tard." 
+    });
+  }
+});
+
+// 2. Route pour vérifier le token et réinitialiser le mot de passe
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, token, newPassword } = req.body;
+    
+    // Vérifier si la demande de réinitialisation est valide
+    const passwordReset = await PasswordReset.findOne({
+      email,
+      token
+    });
+    
+    if (!passwordReset) {
+      return res.status(400).json({
+        success: false,
+        message: "Ce lien est invalide ou a expiré."
+      });
+    }
+    
+    // Trouver l'utilisateur
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Utilisateur non trouvé."
+      });
+    }
+    
+    // Mettre à jour le mot de passe
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+    
+    // Supprimer le token de réinitialisation
+    await PasswordReset.deleteOne({ _id: passwordReset._id });
+    
+    res.status(200).json({
+      success: true,
+      message: "Votre mot de passe a été réinitialisé avec succès."
+    });
+  } catch (error) {
+    console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+    res.status(500).json({
+      success: false,
+      message: "Une erreur est survenue. Veuillez réessayer plus tard."
+    });
+  }
+});
 // Middleware pour vérifier le token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;

@@ -14,8 +14,9 @@ const URL = {
     FETCH_USERS: "https://zero-gravity-stays-bevn.vercel.app/users",
     UPDATE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
     DELETE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
-
-
+    FORGOT_PASSWORD: "https://zero-gravity-stays-bevn.vercel.app/password/forgot-password",
+    RESET_PASSWORD: "https://zero-gravity-stays-bevn.vercel.app/password/reset-password",
+ 
 // LISTING
     FETCH_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties",
     CREATE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/create",

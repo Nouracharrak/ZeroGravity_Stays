@@ -27,7 +27,131 @@
     @include mm {
       width: 80%
     }
+     // Lien "Mot de passe oublié" dans le formulaire de connexion
+     .forgot-password-link {
+      background: transparent;
+      border: none;
+      color: white;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 5px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+      }
+    }
 
+    .login-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    // Section mot de passe oublié
+    .forgot-password-section,
+    .reset-password-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      
+      h3 {
+        color: white;
+        font-size: 18px;
+        text-align: center;
+        margin: 0 0 5px;
+      }
+      
+      p {
+        color: white;
+        text-align: center;
+        font-size: 14px;
+        margin: 0 0 15px;
+      }
+      
+      .forgot-form,
+      .reset-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+        
+        input {
+          width: 100%;
+          padding: 7px 15px;
+          background-color: transparent;
+          border: none;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+          outline: none;
+          text-align: center;
+          color: white;
+          
+          &::placeholder {
+            color: white;
+          }
+        }
+        
+        button {
+          @include buttonStyle;
+          width: 100%;
+          transition: all 0.3s ease;
+          margin-top: 10px;
+          
+          &:hover:not(:disabled) {
+            box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.3);
+          }
+          
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+          
+          &.loading {
+            background-color: #111;
+            cursor: wait;
+          }
+          
+          &.back-button {
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            
+            &:hover {
+              background-color: rgba(255, 255, 255, 0.1);
+              box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            }
+          }
+        }
+      }
+    }
+
+    .forgot-success,
+    .reset-success {
+      color: white;
+      background-color: rgba(76, 175, 80, 0.3);
+      border: 1px solid rgba(76, 175, 80, 0.5);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 5px;
+      text-align: center;
+
+      h3 {
+        color: #4CAF50;
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        color: white;
+      }
+    }
     // Styles pour les messages d'erreur et de succès
     .error-message {
       color: white;
