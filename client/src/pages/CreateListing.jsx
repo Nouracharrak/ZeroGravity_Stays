@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import variables from "../styles/variables.scss";
 import "../styles/createListing.scss";
 import Navbar from "../componenets/Navbar";
@@ -104,11 +104,40 @@ const CreateListing = () => {
   };
   console.log(formDescription);
 
-  const creatorId = useSelector((state) => state.user._id);
+  // MODIFICATION ICI: Correction de l'accès à l'ID du créateur
+  const creatorId = useSelector((state) => state.user?.user?._id);
+  console.log("ID créateur trouvé:", creatorId);
+  
+  // Vérification du state complet (à des fins de débogage)
+  const reduxState = useSelector(state => state);
+  console.log("État Redux complet:", reduxState);
+  
   const navigate = useNavigate();
+
+  // Effet pour vérifier la présence d'un ID valide
+  useEffect(() => {
+    if (!creatorId) {
+      console.warn("ID créateur non disponible. État Redux:", reduxState);
+    }
+  }, [creatorId, reduxState]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Vérification de l'ID créateur avant tout traitement
+    if (!creatorId) {
+      alert("Vous devez être connecté pour créer une annonce. Veuillez vous connecter à nouveau.");
+      navigate("/login");
+      return;
+    }
+
+    // Vérification que l'ID est au bon format
+    if (typeof creatorId !== 'string' || !creatorId.match(/^[0-9a-fA-F]{24}$/)) {
+      console.error("ID créateur invalide:", creatorId);
+      alert("Problème d'identification. Veuillez vous reconnecter.");
+      navigate("/login");
+      return;
+    }
 
     if (!category) {
       alert("Veuillez sélectionner une catégorie");
@@ -170,7 +199,11 @@ const CreateListing = () => {
 
       // Création de la requête avec les images uploadées
       const listingForm = new FormData();
+      
+      // MODIFICATION ICI: Ajout de l'ID créateur avec log de vérification
       listingForm.append("creator", creatorId);
+      console.log("ID créateur ajouté au FormData:", listingForm.get("creator"));
+      
       listingForm.append("category", category);
       listingForm.append("type", type);
       listingForm.append("streetAddress", formLocation.streetAddress);
@@ -183,7 +216,7 @@ const CreateListing = () => {
       listingForm.append("bedCount", bedCount);
       listingForm.append("bathroomCount", bathroomCount);
       amenities.forEach((amenity) => {
-      listingForm.append("amenities", amenity);
+        listingForm.append("amenities", amenity);
       });      
       listingForm.append("title", formDescription.title);
       listingForm.append("description", formDescription.description);
@@ -192,7 +225,6 @@ const CreateListing = () => {
       listingForm.append("price", formDescription.price);
       // Ajout des images sous forme de tableau dans FormData
       listingForm.append("listingPhotos", JSON.stringify(uploadedPhotos));
-
 
       // Envoi des données au backend
       try {
@@ -204,14 +236,17 @@ const CreateListing = () => {
         if (response.ok) {
           navigate("/");
         } else {
-          const error = await response.text();
-          console.log("Erreur lors de la création du listing :", error);
+          // MODIFICATION ICI: Meilleure gestion des erreurs
+          const errorData = await response.json();
+          console.error("Erreur lors de la création du listing :", errorData);
+          alert(`Erreur: ${errorData.message || "Une erreur est survenue lors de la création de l'annonce"}`);
         }
       } catch (err) {
-        console.log("Erreur lors de la création du listing :", err);
+        console.error("Erreur lors de la création du listing :", err);
+        alert("Une erreur de connexion est survenue. Veuillez réessayer.");
       }
     } catch (err) {
-      console.log("Erreur lors de la création du listing :", err);
+      console.error("Erreur lors de la création du listing :", err);
     }
   };
   return (
