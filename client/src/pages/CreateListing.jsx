@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import variables from "../styles/variables.scss";
 import "../styles/createListing.scss";
 import Navbar from "../componenets/Navbar";
@@ -42,6 +42,7 @@ const CreateListing = () => {
 
   // Amenities section:
   const [amenities, setAmenities] = useState([]);
+  const navigate = useNavigate()
 
   const handleSelectAmenities = (facility) => {
     if (amenities.includes(facility)) {
@@ -104,46 +105,10 @@ const CreateListing = () => {
   };
   console.log(formDescription);
 
-  // MODIFICATION ICI: Correction de l'accès à l'ID du créateur
-  const creatorId = useSelector((state) => {
-    if (state.user?.user?._id) return state.user.user._id;
-  // Débogage pour voir la structure exacte
-  console.log("Structure Redux complète:", state);
-  if (state.user) console.log("Contenu user:", state.user);
-  
-  return null;
-});
-  
-  // Vérification du state complet (à des fins de débogage)
-  const reduxState = useSelector(state => state);
-  console.log("État Redux complet:", reduxState);
-  
-  const navigate = useNavigate();
-
-  // Effet pour vérifier la présence d'un ID valide
-  useEffect(() => {
-    if (!creatorId) {
-      console.warn("ID créateur non disponible. État Redux:", reduxState);
-    }
-  }, [creatorId, reduxState]);
+  const { _id } = useSelector((state) => state.user);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Vérification de l'ID créateur avant tout traitement
-    if (!creatorId) {
-      alert("Vous devez être connecté pour créer une annonce. Veuillez vous connecter à nouveau.");
-      navigate("/login");
-      return;
-    }
-
-    // Vérification que l'ID est au bon format
-    if (typeof creatorId !== 'string' || !creatorId.match(/^[0-9a-fA-F]{24}$/)) {
-      console.error("ID créateur invalide:", creatorId);
-      alert("Problème d'identification. Veuillez vous reconnecter.");
-      navigate("/login");
-      return;
-    }
 
     if (!category) {
       alert("Veuillez sélectionner une catégorie");
@@ -205,11 +170,8 @@ const CreateListing = () => {
 
       // Création de la requête avec les images uploadées
       const listingForm = new FormData();
-      
-      // MODIFICATION ICI: Ajout de l'ID créateur avec log de vérification
-      listingForm.append("creator", creatorId);
+      listingForm.append("userId", _id);
       console.log("ID créateur ajouté au FormData:", listingForm.get("creator"));
-      
       listingForm.append("category", category);
       listingForm.append("type", type);
       listingForm.append("streetAddress", formLocation.streetAddress);
