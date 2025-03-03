@@ -36,6 +36,44 @@ const ProfileSettings = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
+  // CORS pre-check utility - version améliorée
+  const checkCorsAccess = async (url, targetMethod = 'PUT') => {
+    try {
+      console.log(`Testing CORS for ${url}...`);
+      
+      // First, try an OPTIONS request to simulate preflight
+      const preflightResponse = await fetch(url, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': window.location.origin,
+          'Access-Control-Request-Method': targetMethod,
+          'Access-Control-Request-Headers': 'Content-Type, Authorization'
+        },
+        mode: 'cors'
+      });
+      
+      // Log the response headers
+      console.log('CORS Preflight Response:', {
+        status: preflightResponse.status,
+        statusText: preflightResponse.statusText,
+        allowOrigin: preflightResponse.headers.get('access-control-allow-origin'),
+        allowMethods: preflightResponse.headers.get('access-control-allow-methods'),
+        allowCredentials: preflightResponse.headers.get('access-control-allow-credentials'),
+        allowHeaders: preflightResponse.headers.get('access-control-allow-headers')
+      });
+      
+      return {
+        ok: preflightResponse.ok,
+        status: preflightResponse.status,
+        allowOrigin: preflightResponse.headers.get('access-control-allow-origin'),
+        allowCredentials: preflightResponse.headers.get('access-control-allow-credentials') === 'true'
+      };
+    } catch (err) {
+      console.error("CORS Error during preflight check:", err);
+      return { ok: false, error: err.message };
+    }
+  };
+
   // Function to fetch user data
   const fetchUserData = async () => {
     try {
@@ -56,13 +94,19 @@ const ProfileSettings = () => {
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
-        },
-        credentials: 'include'
+        }
+        // Supprimer 'credentials: include' pour éviter les problèmes CORS
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Server error" }));
-        throw new Error(errorData.message || "Error retrieving data");
+        let errorMessage = "Error retrieving data";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -78,8 +122,8 @@ const ProfileSettings = () => {
       console.error("Error type:", err.constructor.name);
       console.error("Error message:", err.message);
       
-      if (err instanceof TypeError && err.message.includes('cors')) {
-        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
+        setError("CORS Error: Unable to communicate with the server. Please try again later.");
       } else {
         setError(err.message || "An error occurred");
       }
@@ -113,28 +157,9 @@ const ProfileSettings = () => {
       const file = e.target.files[0];
       setImageFile(file);
       
-      
       // Create URL for image preview
       const previewURL = window.URL.createObjectURL(file);
-    setImagePreview(previewURL);
-  }
-};
-  
-  // CORS pre-check utility
-  const checkCorsAccess = async (url, method = 'OPTIONS') => {
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Access-Control-Request-Method': 'PUT',
-          'Access-Control-Request-Headers': 'Content-Type, Authorization'
-        },
-        mode: 'cors'
-      });
-      return response.ok;
-    } catch (err) {
-      console.error("CORS Error:", err);
-      return false;
+      setImagePreview(previewURL);
     }
   };
   
@@ -145,11 +170,13 @@ const ProfileSettings = () => {
     setSuccess(null);
     
     try {
+      const corsCheck = await checkCorsAccess(URL.UPDATE_PROFILE, 'PUT');
+      console.log("Info update - CORS Check Result:", corsCheck);
+      
       const authToken = token || localStorage.getItem('token');
       
       console.log("Sending request to", URL.UPDATE_PROFILE);
       console.log("Data sent:", infoForm);
-      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
       
       const response = await fetch(URL.UPDATE_PROFILE, {
         method: 'PUT',
@@ -158,15 +185,21 @@ const ProfileSettings = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        credentials: 'include',
+        // Retirer credentials: 'include'
         body: JSON.stringify(infoForm)
       });
       
       console.log("Response status:", response.status);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Server error" }));
-        throw new Error(errorData.message || "Error updating information");
+        let errorMessage = "Error updating information";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -190,11 +223,10 @@ const ProfileSettings = () => {
       // Hide success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
+      console.error("Info update - Error:", err.message);
       
-      if (err instanceof TypeError && err.message.includes('cors')) {
-        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
+        setError("CORS Error: Unable to communicate with the server. Please try again later.");
       } else {
         setError(err.message || "An error occurred while updating");
       }
@@ -214,20 +246,18 @@ const ProfileSettings = () => {
     }
     
     try {
-      // CORS pre-check
-      const corsOk = await checkCorsAccess(URL.UPDATE_PASSWORD);
-      if (!corsOk) {
-        console.warn("Potential CORS issue - attempting workaround...");
+      // CORS pre-check avec plus d'informations
+      const corsCheck = await checkCorsAccess(URL.UPDATE_PASSWORD, 'PUT');
+      console.log("Password update - CORS Check Result:", corsCheck);
+      
+      // Si problème CORS détecté, essayez une approche alternative
+      if (!corsCheck.ok || !corsCheck.allowCredentials) {
+        console.warn("CORS issues detected - trying alternative approach");
       }
       
       const authToken = token || localStorage.getItem('token');
       
-      console.log("Sending request to", URL.UPDATE_PASSWORD);
-      console.log("Data sent:", {
-        currentPassword: "***", // masked for security
-        newPassword: "***" // masked for security
-      });
-      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
+      console.log("Password update - sending request to", URL.UPDATE_PASSWORD);
       
       const response = await fetch(URL.UPDATE_PASSWORD, {
         method: 'PUT',
@@ -236,18 +266,25 @@ const ProfileSettings = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        credentials: 'include',
+        // Retirer credentials: 'include'
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword
         })
       });
       
-      console.log("Response status:", response.status);
+      console.log("Password update - Response status:", response.status);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Server error" }));
-        throw new Error(errorData.message || "Error updating password");
+        let errorMessage = "Error updating password";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // Si la réponse ne peut pas être analysée comme JSON, utilisez response.text()
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       // Reset form
@@ -258,15 +295,12 @@ const ProfileSettings = () => {
       });
       
       setSuccess("Password updated successfully");
-      
-      // Hide success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
+      console.error("Password update - Error:", err.message);
       
-      if (err instanceof TypeError && err.message.includes('cors')) {
-        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
+        setError("CORS Error: Unable to communicate with the server. Please try again later.");
       } else {
         setError(err.message || "An error occurred while updating password");
       }
@@ -287,10 +321,11 @@ const ProfileSettings = () => {
     setImageUploading(true);
     
     try {
-      const authToken = token || localStorage.getItem('token');
+      // CORS pre-check
+      const corsCheck = await checkCorsAccess(URL.UPDATE_PICTURE, 'PUT');
+      console.log("Image upload - CORS Check Result:", corsCheck);
       
-      console.log("Sending request to", URL.UPDATE_PICTURE);
-      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
+      const authToken = token || localStorage.getItem('token');
       
       // Create FormData object to send image
       const formData = new FormData();
@@ -300,16 +335,23 @@ const ProfileSettings = () => {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`
+          // Ne pas mettre Content-Type, FormData le définit automatiquement
         },
-        credentials: 'include',
+        // Retirer credentials: 'include'
         body: formData
       });
       
-      console.log("Response status:", response.status);
+      console.log("Image upload - Response status:", response.status);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Server error" }));
-        throw new Error(errorData.message || "Error uploading image");
+        let errorMessage = "Error uploading image";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -330,18 +372,13 @@ const ProfileSettings = () => {
       setSuccess("Profile picture updated successfully");
       setImageFile(null);
       setImagePreview(null);
-      
-      // Reset file field
       document.getElementById('imageInput').value = '';
-      
-      // Hide success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
+      console.error("Image upload - Error:", err.message);
       
-      if (err instanceof TypeError && err.message.includes('cors')) {
-        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
+        setError("CORS Error: Unable to communicate with the server. Please try again later.");
       } else {
         setError(err.message || "An error occurred while uploading the image");
       }
