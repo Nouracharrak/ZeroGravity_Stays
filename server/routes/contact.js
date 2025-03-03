@@ -1,24 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const ContactUs = require("../models/ContactUs"); // Renommé ici
-const mailer = require("../config/mailer");
+const ContactUs = require("../models/ContactUs"); // Assurez-vous que ce chemin est correct
+const mailer = require("../config/mailer"); // Assurez-vous que votre configuration de mailer est correcte
 
 // Route pour soumettre un formulaire de contact
 router.post("/", async (req, res) => {
   try {
     const { firstName, lastName, email, message } = req.body;
-    
+
     // Validation des champs
     if (!firstName || !lastName || !email || !message) {
+      console.log("Validation échouée : Tous les champs sont requis.");
       return res.status(400).json({ message: "All fields are required" });
     }
-    
+
     // Validation de l'email avec regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.log("Validation échouée : Adresse email invalide.");
       return res.status(400).json({ message: "Invalid email address" });
     }
-    
+
     // Créer un nouveau message de contact
     const newContact = new ContactUs({
       firstName,
@@ -26,34 +28,42 @@ router.post("/", async (req, res) => {
       email,
       message
     });
-    
+
     // Sauvegarder le message dans la base de données
     await newContact.save();
-    
+    console.log("Message de contact sauvegardé avec succès:", newContact);
+
     // Envoyer des notifications par email
-    await mailer.sendContactAdminNotification({
-      firstName,
-      lastName,
-      email,
-      message
-    });
-    
-    await mailer.sendContactUserConfirmation({
-      firstName,
-      lastName,
-      email,
-      message
-    });
-    
+    try {
+      await mailer.sendContactAdminNotification({
+        firstName,
+        lastName,
+        email,
+        message
+      });
+      console.log("Notification envoyée à l'administrateur avec succès.");
+      
+      await mailer.sendContactUserConfirmation({
+        firstName,
+        lastName,
+        email,
+        message
+      });
+      console.log("Confirmation envoyée à l'utilisateur avec succès.");
+    } catch (mailerError) {
+      console.error("Erreur lors de l'envoi des notifications par email:", mailerError);
+      return res.status(500).json({ message: "Error sending notification emails" });
+    }
+
     // Répondre avec succès
     res.status(201).json({ 
       message: "Message sent successfully",
       contactId: newContact._id
     });
-    
+
   } catch (error) {
-    console.error("Error sending contact message:", error);
-    res.status(500).json({ message: "Server error while sending message" });
+    console.error("Erreur lors de l'envoi du message de contact:", error);
+    res.status(500).json({ message: "Server error while sending message", error: error.message });
   }
 });
 

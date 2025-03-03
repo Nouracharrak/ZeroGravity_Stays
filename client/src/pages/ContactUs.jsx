@@ -127,7 +127,7 @@ function Contact() {
         message: ''
       });
     } catch (error) {
-      console.error('Error sending message:', error);
+        console.error("Error sending contact message:", error);
       setSubmitError(
         error.message || 
         'An error occurred while sending your message. Please try again later.'
