@@ -92,7 +92,7 @@ router.put("/me/password", verifyToken, async (req, res) => {
 });
 
 // 4. Mettre à jour la photo de profil (utilisant Cloudinary)
-router.put("/me/photo", verifyToken, upload.single("profileImage"), async (req, res) => {
+router.put("/me/picture", verifyToken, upload.single("profileImage"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "Aucune image n'a été téléchargée" });
