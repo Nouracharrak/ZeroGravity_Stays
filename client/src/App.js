@@ -12,7 +12,7 @@ import ReservationList from "./pages/ReservationList";
 import CategoryPage from './pages/CategoryPage'
 import SearchPage from './pages/SearchPage'
 import ProfileSettings from './pages/ProfileSettings';
-import Contact from "./pages/Contact";
+import Contact from "./pages/ContactUs";
 
 function App() {
   return (
