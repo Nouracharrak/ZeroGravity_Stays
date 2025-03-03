@@ -36,44 +36,6 @@ const ProfileSettings = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // CORS pre-check utility - version améliorée
-  const checkCorsAccess = async (url, targetMethod = 'PUT') => {
-    try {
-      console.log(`Testing CORS for ${url}...`);
-      
-      // First, try an OPTIONS request to simulate preflight
-      const preflightResponse = await fetch(url, {
-        method: 'OPTIONS',
-        headers: {
-          'Origin': window.location.origin,
-          'Access-Control-Request-Method': targetMethod,
-          'Access-Control-Request-Headers': 'Content-Type, Authorization'
-        },
-        mode: 'cors'
-      });
-      
-      // Log the response headers
-      console.log('CORS Preflight Response:', {
-        status: preflightResponse.status,
-        statusText: preflightResponse.statusText,
-        allowOrigin: preflightResponse.headers.get('access-control-allow-origin'),
-        allowMethods: preflightResponse.headers.get('access-control-allow-methods'),
-        allowCredentials: preflightResponse.headers.get('access-control-allow-credentials'),
-        allowHeaders: preflightResponse.headers.get('access-control-allow-headers')
-      });
-      
-      return {
-        ok: preflightResponse.ok,
-        status: preflightResponse.status,
-        allowOrigin: preflightResponse.headers.get('access-control-allow-origin'),
-        allowCredentials: preflightResponse.headers.get('access-control-allow-credentials') === 'true'
-      };
-    } catch (err) {
-      console.error("CORS Error during preflight check:", err);
-      return { ok: false, error: err.message };
-    }
-  };
-
   // Function to fetch user data
   const fetchUserData = async () => {
     try {
@@ -87,7 +49,6 @@ const ProfileSettings = () => {
       }
       
       console.log("Sending request to", URL.FETCH_PROFILE);
-      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
       
       const response = await fetch(URL.FETCH_PROFILE, {
         method: 'GET',
@@ -95,7 +56,6 @@ const ProfileSettings = () => {
           'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
-        // Supprimer 'credentials: include' pour éviter les problèmes CORS
       });
       
       if (!response.ok) {
@@ -119,14 +79,8 @@ const ProfileSettings = () => {
         lastName: data.lastName || ''
       });
     } catch (err) {
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
-      
-      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
-        setError("CORS Error: Unable to communicate with the server. Please try again later.");
-      } else {
-        setError(err.message || "An error occurred");
-      }
+      console.error("Error fetching user data:", err.message);
+      setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -170,9 +124,6 @@ const ProfileSettings = () => {
     setSuccess(null);
     
     try {
-      const corsCheck = await checkCorsAccess(URL.UPDATE_PROFILE, 'PUT');
-      console.log("Info update - CORS Check Result:", corsCheck);
-      
       const authToken = token || localStorage.getItem('token');
       
       console.log("Sending request to", URL.UPDATE_PROFILE);
@@ -185,7 +136,6 @@ const ProfileSettings = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        // Retirer credentials: 'include'
         body: JSON.stringify(infoForm)
       });
       
@@ -224,12 +174,7 @@ const ProfileSettings = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Info update - Error:", err.message);
-      
-      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
-        setError("CORS Error: Unable to communicate with the server. Please try again later.");
-      } else {
-        setError(err.message || "An error occurred while updating");
-      }
+      setError(err.message || "An error occurred while updating");
     }
   };
   
@@ -246,15 +191,6 @@ const ProfileSettings = () => {
     }
     
     try {
-      // CORS pre-check avec plus d'informations
-      const corsCheck = await checkCorsAccess(URL.UPDATE_PASSWORD, 'PUT');
-      console.log("Password update - CORS Check Result:", corsCheck);
-      
-      // Si problème CORS détecté, essayez une approche alternative
-      if (!corsCheck.ok || !corsCheck.allowCredentials) {
-        console.warn("CORS issues detected - trying alternative approach");
-      }
-      
       const authToken = token || localStorage.getItem('token');
       
       console.log("Password update - sending request to", URL.UPDATE_PASSWORD);
@@ -266,7 +202,6 @@ const ProfileSettings = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        // Retirer credentials: 'include'
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword
@@ -281,7 +216,6 @@ const ProfileSettings = () => {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         } catch (e) {
-          // Si la réponse ne peut pas être analysée comme JSON, utilisez response.text()
           errorMessage = await response.text() || errorMessage;
         }
         throw new Error(errorMessage);
@@ -298,12 +232,7 @@ const ProfileSettings = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Password update - Error:", err.message);
-      
-      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
-        setError("CORS Error: Unable to communicate with the server. Please try again later.");
-      } else {
-        setError(err.message || "An error occurred while updating password");
-      }
+      setError(err.message || "An error occurred while updating password");
     }
   };
   
@@ -321,10 +250,6 @@ const ProfileSettings = () => {
     setImageUploading(true);
     
     try {
-      // CORS pre-check
-      const corsCheck = await checkCorsAccess(URL.UPDATE_PICTURE, 'PUT');
-      console.log("Image upload - CORS Check Result:", corsCheck);
-      
       const authToken = token || localStorage.getItem('token');
       
       // Create FormData object to send image
@@ -337,7 +262,6 @@ const ProfileSettings = () => {
           'Authorization': `Bearer ${authToken}`
           // Ne pas mettre Content-Type, FormData le définit automatiquement
         },
-        // Retirer credentials: 'include'
         body: formData
       });
       
@@ -376,12 +300,7 @@ const ProfileSettings = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Image upload - Error:", err.message);
-      
-      if (err.message.includes('NetworkError') || err.message.includes('cors')) {
-        setError("CORS Error: Unable to communicate with the server. Please try again later.");
-      } else {
-        setError(err.message || "An error occurred while uploading the image");
-      }
+      setError(err.message || "An error occurred while uploading the image");
     } finally {
       setImageUploading(false);
     }
