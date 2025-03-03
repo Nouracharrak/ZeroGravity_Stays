@@ -8,6 +8,7 @@ const path = require("path");
 const { router: authRoutes } = require("./routes/auth.js");
 const listingRoutes = require("./routes/listing.js");
 const bookingRoutes = require("./routes/booking.js");
+const profileRoutes = require("./routes/profile.js");
 const userRoutes = require("./routes/user.js");
 
 // Charger les variables d'environnement
@@ -92,6 +93,7 @@ mongoose
 
 // Définir les routes
 app.use("/auth", authRoutes);
+app.use("/users", profileRoutes);
 app.use("/users", userRoutes);
 app.use("/properties", listingRoutes);
 app.use("/bookings", bookingRoutes);
