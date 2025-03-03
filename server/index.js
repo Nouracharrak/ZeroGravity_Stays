@@ -9,7 +9,6 @@ const { router: authRoutes } = require("./routes/auth.js");
 const listingRoutes = require("./routes/listing.js");
 const bookingRoutes = require("./routes/booking.js");
 const userRoutes = require("./routes/user.js");
-const profileRoutes = require("./routes/profile.js");
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -96,7 +95,6 @@ app.use("/auth", authRoutes);
 app.use("/properties", listingRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/users", userRoutes);
-app.use("/profile", profileRoutes);
 
 // Gestion des erreurs globales
 app.use((err, req, res, next) => {
