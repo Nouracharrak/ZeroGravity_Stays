@@ -1,8 +1,6 @@
 @import "./variables.scss";
 @import "./breakpoints.scss";
 
-
-
 .footer {
   position: relative;
   bottom: 0;
@@ -59,8 +57,12 @@
       margin-top: 20px;
       cursor: pointer;
 
-      li:hover {
-        color: $pinkred
+      li {
+        margin-bottom: 8px; // Ajouté pour meilleur espacement entre éléments
+        
+        &:hover {
+          color: $pinkred;
+        }
       }
 
       a {
@@ -92,6 +94,31 @@
         margin-left: 20px;
         margin-bottom: 15px;
       }
+    }
+    
+    &_button {
+      margin: 15px 0;
+      
+      .contact-button {
+        display: inline-block;
+        padding: 8px 15px;
+        background-color: white;
+        color: black;
+        border: 1px solid $pinkred;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background-color: $pinkred;
+          color: white;
+        }
+      }
+    }
+
+    img {
+      margin-top: 10px; // Ajouté pour donner de l'espace après le bouton de contact
     }
 
     @include sm {

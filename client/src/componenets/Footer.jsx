@@ -1,5 +1,7 @@
 import "../styles/footer.scss"
-import {LocalPhone, Email } from "@mui/icons-material"
+import { LocalPhone, Email } from "@mui/icons-material"
+import { Link } from "react-router-dom"
+
 const Footer = () => {
   return (
     <div className="footer">
@@ -10,14 +12,15 @@ const Footer = () => {
       <div className="footer_center">
         <h3>Useful Links</h3>
         <ul>
-          <li>About Us</li>
-          <li>Terms and Conditions</li>
-          <li>Return and Refund Policy</li>
+          <li><Link to="/about">About Us</Link></li>
+          <li><Link to="/terms">Terms and Conditions</Link></li>
+          <li><Link to="/refund-policy">Return and Refund Policy</Link></li>
+          <li><Link to="/contact">Contact Us</Link></li> {/* Nouvelle ligne */}
         </ul>
       </div>
 
       <div className="footer_right">
-        <h3>Contact</h3>
+        <h3>Contact Us</h3>
         <div className="footer_right_info">
           <LocalPhone />
           <p>+33629200522</p>
@@ -26,6 +29,9 @@ const Footer = () => {
           <Email />
           <p>SpaceHotel@support.com</p>
         </div>
+        <div className="footer_right_button">
+          <Link to="/contact" className="contact-button">Contact Us</Link>
+        </div>
         <img src="/assets/payment.png" alt="payment" />
       </div>
     </div>
@@ -33,3 +39,4 @@ const Footer = () => {
 }
 
 export default Footer
+

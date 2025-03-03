@@ -12,6 +12,7 @@ import ReservationList from "./pages/ReservationList";
 import CategoryPage from './pages/CategoryPage'
 import SearchPage from './pages/SearchPage'
 import ProfileSettings from './pages/ProfileSettings';
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/:userId/properties" element={<PropertyList/>}/>
         <Route path="/:userId/reservations" element={<ReservationList/>}/>
         <Route path="/profile" element={<ProfileSettings/>}/>
+        <Route path="/contact" element={<Contact />} />
       </Routes>
       </BrowserRouter>
     </div>
