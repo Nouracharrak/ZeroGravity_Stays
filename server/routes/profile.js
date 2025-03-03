@@ -38,14 +38,16 @@ const upload = multer({
 // 1. Route pour récupérer le profil de l'utilisateur connecté
 router.get("/profile/me", verifyToken, async (req, res) => {
     try {
-      console.log("Route /me appelée, ID utilisateur:", req.user.id);
+      console.log("Route /me appelée, ID utilisateur:", req.user._id);
       
-      const user = await User.findById(req.user.id).select("-password");
+      const user = await User.findById(req.user._id).select("-password");
       
       if (!user) {
+        console.log("Utilisateur non trouvé pour l'ID:", req.user._id);
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
       
+      console.log("Utilisateur trouvé:", user.email);
       res.status(200).json(user);
     } catch (error) {
       console.error("Erreur lors de la récupération du profil:", error);
@@ -54,10 +56,9 @@ router.get("/profile/me", verifyToken, async (req, res) => {
   });
   
   // 2. Route pour mettre à jour le profil de l'utilisateur connecté
-  // IMPORTANT: Cette route doit être définie AVANT toute route avec paramètre :id
   router.put("/profile/update", verifyToken, async (req, res) => {
     try {
-      console.log("Mise à jour du profil pour l'utilisateur:", req.user.id);
+      console.log("Mise à jour du profil pour l'utilisateur:", req.user._id);
       console.log("Données reçues:", req.body);
       
       const { firstName, lastName } = req.body;
@@ -69,13 +70,13 @@ router.get("/profile/me", verifyToken, async (req, res) => {
       console.log("Données à mettre à jour:", updateData);
       
       const updatedUser = await User.findByIdAndUpdate(
-        req.user.id,
+        req.user._id,
         { $set: updateData },
         { new: true }
       ).select("-password");
       
       if (!updatedUser) {
-        console.log("Utilisateur non trouvé pour l'ID:", req.user.id);
+        console.log("Utilisateur non trouvé pour l'ID:", req.user._id);
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
       
@@ -89,22 +90,72 @@ router.get("/profile/me", verifyToken, async (req, res) => {
   
   // 3. Route pour changer le mot de passe
   router.put("/profile/password", verifyToken, async (req, res) => {
-    // (code inchangé pour cette route)
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Tous les champs sont requis" });
+      }
+      
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+      
+      // Vérifier le mot de passe actuel
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Mot de passe actuel incorrect" });
+      }
+      
+      // Hasher le nouveau mot de passe
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+      
+      await user.save();
+      
+      res.status(200).json({ message: "Mot de passe mis à jour avec succès" });
+    } catch (error) {
+      console.error("Erreur lors du changement de mot de passe:", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
   });
   
   // 4. Routes pour la gestion de la photo de profil
   router.options("/profile/picture", cors(corsOptions), (req, res) => {
-    // (code inchangé pour cette route)
+    res.status(200).send();
   });
   
-  router.put("/profile/picture", cors(corsOptions), (req, res, next) => {
-    // (code inchangé pour cette route)
+  router.put("/profile/picture", cors(corsOptions), verifyToken, upload.single("profileImage"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Aucune image fournie" });
+      }
+      
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { profileImagePath: req.file.path },
+        { new: true }
+      ).select("-password");
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+      
+      res.status(200).json({
+        message: "Photo de profil mise à jour",
+        profileImagePath: updatedUser.profileImagePath
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la photo:", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
   });
   
-  // 5. Route de suppression du profil (si nécessaire)
+  // 5. Route de suppression du profil
   router.delete("/profile/delete", verifyToken, async (req, res) => {
     try {
-      const deletedUser = await User.findByIdAndDelete(req.user.id);
+      const deletedUser = await User.findByIdAndDelete(req.user._id);
       if (!deletedUser) {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
@@ -115,7 +166,6 @@ router.get("/profile/me", verifyToken, async (req, res) => {
     }
   });
   
-  // IMPORTANT: Routes génériques avec paramètre :id APRÈS toutes les routes spécifiques
   // 6. Route pour obtenir un utilisateur par ID
   router.get("/:id", verifyToken, async (req, res) => {
     try {
@@ -193,4 +243,5 @@ router.get("/profile/me", verifyToken, async (req, res) => {
   });
   
   module.exports = router;
+
 
