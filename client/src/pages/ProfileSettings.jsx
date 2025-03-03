@@ -48,6 +48,8 @@ const ProfileSettings = () => {
         return;
       }
       
+      console.log("Envoi de la requête à", URL.FETCH_PROFILE);
+      
       const response = await fetch(URL.FETCH_PROFILE, {
         method: 'GET',
         headers: {
@@ -56,11 +58,12 @@ const ProfileSettings = () => {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
         throw new Error(errorData.message || "Erreur lors de la récupération des données");
       }
       
       const data = await response.json();
+      console.log("Données utilisateur reçues:", data);
       setUserData(data);
       
       // Initialiser le formulaire avec les données utilisateur
@@ -69,7 +72,7 @@ const ProfileSettings = () => {
         lastName: data.lastName || ''
       });
     } catch (err) {
-      console.error("Erreur:", err);
+      console.error("Erreur complète:", err);
       setError(err.message || "Une erreur s'est produite");
     } finally {
       setLoading(false);
@@ -116,7 +119,10 @@ const ProfileSettings = () => {
     try {
       const authToken = token || localStorage.getItem('token');
       
-      const response = await fetch(URL.UPDATE_USER, {
+      console.log("Envoi de la requête à", URL.UPDATE_PROFILE);
+      console.log("Données envoyées:", infoForm);
+      
+      const response = await fetch(URL.UPDATE_PROFILE, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -125,16 +131,18 @@ const ProfileSettings = () => {
         body: JSON.stringify(infoForm)
       });
       
+      console.log("Statut de réponse:", response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
         throw new Error(errorData.message || "Erreur lors de la mise à jour");
       }
       
       const data = await response.json();
+      console.log("Données reçues après mise à jour:", data);
       setUserData(data);
       
       // Mettre à jour le state Redux
-      // Notez que nous devons préserver la structure actuelle
       if (user) {
         dispatch(setLogin({
           user: {
@@ -151,7 +159,7 @@ const ProfileSettings = () => {
       // Masquer le message de succès après 3 secondes
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur:", err);
+      console.error("Erreur complète:", err);
       setError(err.message || "Une erreur s'est produite lors de la mise à jour");
     }
   };
@@ -171,6 +179,12 @@ const ProfileSettings = () => {
     try {
       const authToken = token || localStorage.getItem('token');
       
+      console.log("Envoi de la requête à", URL.UPDATE_PASSWORD);
+      console.log("Données envoyées:", {
+        currentPassword: "***", // masqué pour la sécurité
+        newPassword: "***" // masqué pour la sécurité
+      });
+      
       const response = await fetch(URL.UPDATE_PASSWORD, {
         method: 'PUT',
         headers: {
@@ -183,8 +197,10 @@ const ProfileSettings = () => {
         })
       });
       
+      console.log("Statut de réponse:", response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
         throw new Error(errorData.message || "Erreur lors de la mise à jour du mot de passe");
       }
       
@@ -200,7 +216,7 @@ const ProfileSettings = () => {
       // Masquer le message de succès après 3 secondes
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur:", err);
+      console.error("Erreur complète:", err);
       setError(err.message || "Une erreur s'est produite lors de la mise à jour du mot de passe");
     }
   };
@@ -221,6 +237,8 @@ const ProfileSettings = () => {
     try {
       const authToken = token || localStorage.getItem('token');
       
+      console.log("Envoi de la requête à", URL.UPDATE_PICTURE);
+      
       // Création d'un objet FormData pour envoyer l'image
       const formData = new FormData();
       formData.append('profileImage', imageFile);
@@ -233,12 +251,15 @@ const ProfileSettings = () => {
         body: formData
       });
       
+      console.log("Statut de réponse:", response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
         throw new Error(errorData.message || "Erreur lors de l'upload de l'image");
       }
       
       const data = await response.json();
+      console.log("Données reçues après upload d'image:", data);
       setUserData(data);
       
       // Mettre à jour le state Redux avec la nouvelle image
@@ -262,7 +283,7 @@ const ProfileSettings = () => {
       // Masquer le message de succès après 3 secondes
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur:", err);
+      console.error("Erreur complète:", err);
       setError(err.message || "Une erreur s'est produite lors de l'upload de l'image");
     } finally {
       setImageUploading(false);
@@ -464,3 +485,4 @@ const ProfileSettings = () => {
 };
 
 export default ProfileSettings;
+
