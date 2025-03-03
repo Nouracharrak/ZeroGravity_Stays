@@ -35,9 +35,12 @@ const upload = multer({
   }
 }).single("profileImage");
 
-// 1. Récupérer les informations du profil
+// IMPORTANT: Route spécifique pour le profil de l'utilisateur actuel
+// Cette route doit être définie AVANT toute route avec :id
 router.get("/me", verifyToken, async (req, res) => {
   try {
+    console.log("Route /me appelée, ID utilisateur:", req.user.id);
+    
     const user = await User.findById(req.user.id).select("-password");
     
     if (!user) {
@@ -51,14 +54,19 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
-// 2. Mettre à jour les informations du profil
+// Route pour mettre à jour les informations du profil
 router.put("/update", verifyToken, async (req, res) => {
   try {
+    console.log("Mise à jour du profil pour l'utilisateur:", req.user.id);
+    console.log("Données reçues:", req.body);
+    
     const { firstName, lastName } = req.body;
     const updateData = {};
     
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;
+    
+    console.log("Données à mettre à jour:", updateData);
     
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
@@ -66,6 +74,12 @@ router.put("/update", verifyToken, async (req, res) => {
       { new: true }
     ).select("-password");
     
+    if (!updatedUser) {
+      console.log("Utilisateur non trouvé pour l'ID:", req.user.id);
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+    
+    console.log("Mise à jour réussie, données retournées:", updatedUser);
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error("Erreur lors de la mise à jour du profil:", error);
@@ -73,9 +87,11 @@ router.put("/update", verifyToken, async (req, res) => {
   }
 });
 
-// 3. Changer le mot de passe
+// Route pour changer le mot de passe
 router.put("/me/password", verifyToken, async (req, res) => {
   try {
+    console.log("Changement de mot de passe pour l'utilisateur:", req.user.id);
+    
     const { currentPassword, newPassword } = req.body;
     
     if (!currentPassword || !newPassword) {
@@ -83,6 +99,10 @@ router.put("/me/password", verifyToken, async (req, res) => {
     }
     
     const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
     
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
@@ -102,13 +122,13 @@ router.put("/me/password", verifyToken, async (req, res) => {
   }
 });
 
-// Gérer explicitement les requêtes OPTIONS pour /me/picture
+// Route OPTIONS explicite pour /me/picture
 router.options("/me/picture", cors(corsOptions), (req, res) => {
   console.log("OPTIONS request received for /me/picture");
   return res.status(200).end();
 });
 
-// 4. Mettre à jour la photo de profil avec gestion CORS et multer améliorée
+// Route pour mettre à jour la photo de profil
 router.put("/me/picture", cors(corsOptions), (req, res, next) => {
   console.log("Processing PUT request for profile picture upload");
   
@@ -133,7 +153,7 @@ router.put("/me/picture", cors(corsOptions), (req, res, next) => {
   });
 });
 
-// Fonction séparée pour gérer le traitement de l'image après l'upload
+// Fonction pour traiter l'image après l'upload
 async function handleProfileImageUpload(req, res) {
   try {
     if (!req.file) {
@@ -157,5 +177,42 @@ async function handleProfileImageUpload(req, res) {
     res.status(500).json({ message: "Erreur serveur" });
   }
 }
+
+// IMPORTANT: Toute route générique avec paramètres d'ID doit venir APRÈS les routes spécifiques
+// Route pour obtenir un utilisateur spécifique par ID
+router.get("/:id", verifyToken, async (req, res) => {
+  try {
+    console.log("Récupération d'utilisateur avec ID:", req.params.id);
+    
+    const user = await User.findById(req.params.id).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+    
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'utilisateur:", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+// Route pour supprimer le profil utilisateur
+router.delete("/delete", verifyToken, async (req, res) => {
+    try {
+      console.log("Suppression du profil pour l'utilisateur:", req.user.id);
+      
+      const deletedUser = await User.findByIdAndDelete(req.user.id);
+      
+      if (!deletedUser) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+      
+      res.status(200).json({ message: "Utilisateur supprimé avec succès" });
+    } catch (error) {
+      console.error("Erreur lors de la suppression du profil:", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+  
 
 module.exports = router;
