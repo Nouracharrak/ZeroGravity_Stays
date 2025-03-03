@@ -372,7 +372,7 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 // Route to submit a contact form
-router.post('/', async (req, res) => {
+router.post('/contact', async (req, res) => {
   try {
     const { firstName, lastName, email, message } = req.body;
     
