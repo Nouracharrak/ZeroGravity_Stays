@@ -1,0 +1,264 @@
+@import "./variables.scss"; 
+@import "./breakpoints.scss";
+
+.profile-settings-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  
+  @include sm {
+    margin: 20px auto;
+  }
+  
+  .settings-title {
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 700;
+    color: $blue;
+  }
+  
+  .loading-spinner {
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: 100px auto;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: $blue;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    
+    &-error {
+      background-color: rgba($pinkred, 0.1);
+      border: 1px solid rgba($pinkred, 0.3);
+      color: $pinkred;
+    }
+    
+    &-success {
+      background-color: rgba(#28a745, 0.1);
+      border: 1px solid rgba(#28a745, 0.3);
+      color: #28a745;
+    }
+  }
+  
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid $lightgrey;
+    
+    @include sm {
+      flex-direction: column;
+      border-bottom: none;
+    }
+    
+    .tab {
+      padding: 15px 20px;
+      margin-right: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        color: $pinkred;
+      }
+      
+      &.active {
+        color: $blue;
+        border-bottom-color: $blue;
+      }
+      
+      @include sm {
+        margin-bottom: 10px;
+        padding: 10px 15px;
+        border: 1px solid $lightgrey;
+        border-radius: 5px;
+        
+        &.active {
+          background-color: $blue;
+          color: white;
+          border-color: $blue;
+        }
+      }
+    }
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    
+    @include sm {
+      padding: 20px 15px;
+    }
+  }
+  
+  .form {
+    width: 100%;
+    
+    &-group {
+      margin-bottom: 20px;
+      
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: $darkgrey;
+      }
+      
+      input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid $grey;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border 0.2s;
+        
+        &:focus {
+          outline: none;
+          border-color: $blue;
+        }
+        
+        &:disabled {
+          background-color: $lightgrey;
+          cursor: not-allowed;
+        }
+      }
+      
+      .form-text {
+        display: block;
+        margin-top: 5px;
+        font-size: 13px;
+        color: $darkgrey;
+      }
+    }
+    
+    &-actions {
+      margin-top: 30px;
+      display: flex;
+      justify-content: flex-end;
+      
+      @include sm {
+        justify-content: center;
+      }
+    }
+  }
+  
+  .btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    &-primary {
+      background-color: $blue;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background-color: darken($blue, 10%);
+      }
+      
+      &.loading {
+        position: relative;
+        color: transparent;
+        
+        &:before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          margin-top: -8px;
+          margin-left: -8px;
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top-color: #fff;
+          animation: spin 1s ease-in-out infinite;
+        }
+      }
+    }
+  }
+  
+  // Styles spécifiques pour la section photo
+  .photo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-photo-container {
+    margin-bottom: 25px;
+    
+    .profile-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid $lightgrey;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .file-upload {
+    &-label {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: $lightgrey;
+      color: $darkgrey;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        background-color: darken($lightgrey, 5%);
+      }
+    }
+    
+    &-input {
+      display: block;
+      margin-top: 10px;
+      
+      &::-webkit-file-upload-button {
+        visibility: hidden;
+        display: none;
+      }
+      
+      &::before {
+        content: 'Choisir un fichier';
+        display: inline-block;
+        background-color: $lightgrey;
+        color: $darkgrey;
+        border-radius: 5px;
+        padding: 10px 20px;
+        outline: none;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      
+      &:hover::before {
+        background-color: darken($lightgrey, 5%);
+      }
+    }
+  }
+}
