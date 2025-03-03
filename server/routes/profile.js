@@ -5,7 +5,7 @@ const User = require("../models/user.js");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const { verifyToken } = require("../middleware/auth");
+const { verifyToken } = require("../routes/auth.js");
 const cors = require("cors");
 
 // Configuration CORS spécifique pour cette route
