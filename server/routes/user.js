@@ -75,30 +75,30 @@ router.get("/:userId/trips", async (req, res) => {
   router.patch('/:userId/:listingId', async (req, res) => {
     try {
         const { userId, listingId } = req.params;
-        console.log("🔹 PATCH request received");
+        console.log(" PATCH request received");
         console.log("User ID:", userId);
         console.log("Listing ID:", listingId);
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
-        console.log("🔹 Current Wishlist:", user.wishList);
+        console.log(" Current Wishlist:", user.wishList);
 
         const isInWishlist = user.wishList.some(id => id.toString() === listingId);
         if (isInWishlist) {
-            console.log("⛔ Removing from Wishlist");
+            console.log("Removing from Wishlist");
             user.wishList = user.wishList.filter(id => id.toString() !== listingId);
         } else {
-            console.log("✅ Adding to Wishlist");
+            console.log(" Adding to Wishlist");
             user.wishList.push(listingId);
         }
 
         await user.save();
-        console.log("🎉 Updated Wishlist:", user.wishList);
+        console.log("Updated Wishlist:", user.wishList);
         return res.status(200).json({ message: isInWishlist ? "Listing retiré de la wishList" : "Listing ajouté à la wishList", wishList: user.wishList });
 
     } catch (err) {
-        console.error("❌ Error:", err);
+        console.error(" Error:", err);
         return res.status(500).json({ error: err.message });
     }
 });

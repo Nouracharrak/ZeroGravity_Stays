@@ -112,6 +112,33 @@
           background-color: rgba(217, 213, 213, 0.2);
         }
       }
+
+      .profile-link {
+        display: flex;
+        align-items: center;
+        color: $blue;
+        font-weight: 700;
+
+        &:hover {
+          color: $pinkred;
+          background-color: rgba(217, 213, 213, 0.2);
+        }
+      }
+
+      .menu-divider {
+        height: 1px;
+        margin: 5px 15px;
+        border: none;
+        background-color: $lightgrey;
+      }
     }
+  }
+
+  .error-message {
+    color: $pinkred;
+    font-size: 12px;
+    position: absolute;
+    bottom: -20px;
+    left: 20px;
   }
 }

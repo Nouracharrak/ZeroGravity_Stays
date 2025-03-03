@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { IconButton } from '@mui/material';
-import { Search, Person, Menu } from '@mui/icons-material';
+import { Search, Person, Menu, Settings } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { setLogout } from '../redux/state';
 import variables from '../styles/variables.scss';
@@ -92,6 +92,11 @@ const Navbar = () => {
             <Link to={`/${user._id}/properties`}>Property List</Link>
             <Link to={`/${user._id}/reservations`}>Reservation List</Link>
             <Link to="/create-listing">Become A Host</Link>
+            <Link to="/profile" className="profile-link">
+              <Settings sx={{ fontSize: '20px', marginRight: '8px', verticalAlign: 'text-bottom' }} />
+              Profile Settings
+            </Link>
+
             <Link to="/login" onClick={() => { dispatch(setLogout()) }}>Log Out</Link>
           </div>
         )}

@@ -11,6 +11,7 @@ import PropertyList from "./pages/PropertyList"
 import ReservationList from "./pages/ReservationList";
 import CategoryPage from './pages/CategoryPage'
 import SearchPage from './pages/SearchPage'
+import ProfileSettings from './pages/ProfileSettings';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/:userId/wishList" element={<WishList/>}/>
         <Route path="/:userId/properties" element={<PropertyList/>}/>
         <Route path="/:userId/reservations" element={<ReservationList/>}/>
+        <Route path="/profile" element={<ProfileSettings/>}/>
       </Routes>
       </BrowserRouter>
     </div>
