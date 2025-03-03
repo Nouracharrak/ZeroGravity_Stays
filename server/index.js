@@ -92,9 +92,9 @@ mongoose
 
 // Définir les routes
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 app.use("/properties", listingRoutes);
 app.use("/bookings", bookingRoutes);
-app.use("/users", userRoutes);
 
 // Gestion des erreurs globales
 app.use((err, req, res, next) => {
