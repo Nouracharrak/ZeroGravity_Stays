@@ -18,14 +18,13 @@ const URL = {
     DELETE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
 
     // PROFILE
+    // PROFILE - URLs corrigées
     FETCH_PROFILE: "https://zero-gravity-stays-bevn.vercel.app/users/profile/me",
     UPDATE_PROFILE: "https://zero-gravity-stays-bevn.vercel.app/users/profile/update",
     UPDATE_PASSWORD: "https://zero-gravity-stays-bevn.vercel.app/users/profile/password",
     UPDATE_PICTURE: "https://zero-gravity-stays-bevn.vercel.app/users/profile/picture",
     DELETE_PROFILE: "https://zero-gravity-stays-bevn.vercel.app/users/profile/delete",
 
-   
- 
 // LISTING
     FETCH_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties",
     CREATE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/create",
