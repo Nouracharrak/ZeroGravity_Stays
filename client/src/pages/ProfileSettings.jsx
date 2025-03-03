@@ -5,21 +5,21 @@ import '../styles/profileSettings.scss';
 import URL from "../constants/api";
 
 const ProfileSettings = () => {
-  // États pour la gestion des onglets
+  // Tab management states
   const [activeTab, setActiveTab] = useState('info');
   const dispatch = useDispatch();
   
-  // Récupérer les informations utilisateur et le token du Redux store
+  // Get user information and token from Redux store
   const user = useSelector((state) => state.user);
   const token = useSelector((state) => state.token);
   
-  // États pour les données utilisateur
+  // User data states
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   
-  // États pour les formulaires
+  // Form states
   const [infoForm, setInfoForm] = useState({
     firstName: '',
     lastName: ''
@@ -31,60 +31,69 @@ const ProfileSettings = () => {
     confirmPassword: ''
   });
   
-  // État pour l'upload d'image
+  // Image upload states
   const [imageFile, setImageFile] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // Fonction pour récupérer les données utilisateur
+  // Function to fetch user data
   const fetchUserData = async () => {
     try {
       setLoading(true);
       const authToken = token || localStorage.getItem('token');
       
       if (!authToken) {
-        setError("Vous devez être connecté pour accéder à cette page");
+        setError("You must be logged in to access this page");
         setLoading(false);
         return;
       }
       
-      console.log("Envoi de la requête à", URL.FETCH_PROFILE);
+      console.log("Sending request to", URL.FETCH_PROFILE);
+      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
       
       const response = await fetch(URL.FETCH_PROFILE, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
-        throw new Error(errorData.message || "Erreur lors de la récupération des données");
+        const errorData = await response.json().catch(e => ({ message: "Server error" }));
+        throw new Error(errorData.message || "Error retrieving data");
       }
       
       const data = await response.json();
-      console.log("Données utilisateur reçues:", data);
+      console.log("User data received:", data);
       setUserData(data);
       
-      // Initialiser le formulaire avec les données utilisateur
+      // Initialize form with user data
       setInfoForm({
         firstName: data.firstName || '',
         lastName: data.lastName || ''
       });
     } catch (err) {
-      console.error("Erreur complète:", err);
-      setError(err.message || "Une erreur s'est produite");
+      console.error("Error type:", err.constructor.name);
+      console.error("Error message:", err.message);
+      
+      if (err instanceof TypeError && err.message.includes('cors')) {
+        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      } else {
+        setError(err.message || "An error occurred");
+      }
     } finally {
       setLoading(false);
     }
   };
   
-  // Charger les données au montage du composant
+  // Load data when component mounts
   useEffect(() => {
     fetchUserData();
   }, [token]);
   
-  // Gestionnaires pour les changements dans les formulaires
+  // Handlers for form changes
   const handleInfoChange = (e) => {
     setInfoForm({
       ...infoForm,
@@ -104,13 +113,31 @@ const ProfileSettings = () => {
       const file = e.target.files[0];
       setImageFile(file);
       
-      // Créer une URL pour prévisualiser l'image
+      // Create URL for image preview
       const previewURL = URL.createObjectURL(file);
       setImagePreview(previewURL);
     }
   };
   
-  // Soumission du formulaire des informations personnelles
+  // CORS pre-check utility
+  const checkCorsAccess = async (url, method = 'OPTIONS') => {
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Access-Control-Request-Method': 'PUT',
+          'Access-Control-Request-Headers': 'Content-Type, Authorization'
+        },
+        mode: 'cors'
+      });
+      return response.ok;
+    } catch (err) {
+      console.error("CORS Error:", err);
+      return false;
+    }
+  };
+  
+  // Personal information form submission
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -119,30 +146,33 @@ const ProfileSettings = () => {
     try {
       const authToken = token || localStorage.getItem('token');
       
-      console.log("Envoi de la requête à", URL.UPDATE_PROFILE);
-      console.log("Données envoyées:", infoForm);
+      console.log("Sending request to", URL.UPDATE_PROFILE);
+      console.log("Data sent:", infoForm);
+      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
       
       const response = await fetch(URL.UPDATE_PROFILE, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(infoForm)
       });
       
-      console.log("Statut de réponse:", response.status);
+      console.log("Response status:", response.status);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
-        throw new Error(errorData.message || "Erreur lors de la mise à jour");
+        const errorData = await response.json().catch(e => ({ message: "Server error" }));
+        throw new Error(errorData.message || "Error updating information");
       }
       
       const data = await response.json();
-      console.log("Données reçues après mise à jour:", data);
+      console.log("Data received after update:", data);
       setUserData(data);
       
-      // Mettre à jour le state Redux
+      // Update Redux state
       if (user) {
         dispatch(setLogin({
           user: {
@@ -154,79 +184,100 @@ const ProfileSettings = () => {
         }));
       }
       
-      setSuccess("Informations mises à jour avec succès");
+      setSuccess("Information updated successfully");
       
-      // Masquer le message de succès après 3 secondes
+      // Hide success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur complète:", err);
-      setError(err.message || "Une erreur s'est produite lors de la mise à jour");
+      console.error("Error type:", err.constructor.name);
+      console.error("Error message:", err.message);
+      
+      if (err instanceof TypeError && err.message.includes('cors')) {
+        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      } else {
+        setError(err.message || "An error occurred while updating");
+      }
     }
   };
   
-  // Soumission du formulaire de mot de passe
+  // Password form submission
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     
-    // Vérifier que les nouveaux mots de passe correspondent
+    // Check that new passwords match
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setError("Les nouveaux mots de passe ne correspondent pas");
+      setError("New passwords don't match");
       return;
     }
     
     try {
+      // CORS pre-check
+      const corsOk = await checkCorsAccess(URL.UPDATE_PASSWORD);
+      if (!corsOk) {
+        console.warn("Potential CORS issue - attempting workaround...");
+      }
+      
       const authToken = token || localStorage.getItem('token');
       
-      console.log("Envoi de la requête à", URL.UPDATE_PASSWORD);
-      console.log("Données envoyées:", {
-        currentPassword: "***", // masqué pour la sécurité
-        newPassword: "***" // masqué pour la sécurité
+      console.log("Sending request to", URL.UPDATE_PASSWORD);
+      console.log("Data sent:", {
+        currentPassword: "***", // masked for security
+        newPassword: "***" // masked for security
       });
+      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
       
       const response = await fetch(URL.UPDATE_PASSWORD, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword
         })
       });
       
-      console.log("Statut de réponse:", response.status);
+      console.log("Response status:", response.status);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
-        throw new Error(errorData.message || "Erreur lors de la mise à jour du mot de passe");
+        const errorData = await response.json().catch(e => ({ message: "Server error" }));
+        throw new Error(errorData.message || "Error updating password");
       }
       
-      // Réinitialiser le formulaire
+      // Reset form
       setPasswordForm({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       });
       
-      setSuccess("Mot de passe mis à jour avec succès");
+      setSuccess("Password updated successfully");
       
-      // Masquer le message de succès après 3 secondes
+      // Hide success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur complète:", err);
-      setError(err.message || "Une erreur s'est produite lors de la mise à jour du mot de passe");
+      console.error("Error type:", err.constructor.name);
+      console.error("Error message:", err.message);
+      
+      if (err instanceof TypeError && err.message.includes('cors')) {
+        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      } else {
+        setError(err.message || "An error occurred while updating password");
+      }
     }
   };
   
-  // Soumission du formulaire d'image de profil
+  // Profile image form submission
   const handleImageSubmit = async (e) => {
     e.preventDefault();
     
     if (!imageFile) {
-      setError("Veuillez sélectionner une image");
+      setError("Please select an image");
       return;
     }
     
@@ -237,9 +288,10 @@ const ProfileSettings = () => {
     try {
       const authToken = token || localStorage.getItem('token');
       
-      console.log("Envoi de la requête à", URL.UPDATE_PICTURE);
+      console.log("Sending request to", URL.UPDATE_PICTURE);
+      console.log("Token used:", authToken ? `${authToken.substring(0, 10)}...` : "No token");
       
-      // Création d'un objet FormData pour envoyer l'image
+      // Create FormData object to send image
       const formData = new FormData();
       formData.append('profileImage', imageFile);
       
@@ -248,21 +300,22 @@ const ProfileSettings = () => {
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: formData
       });
       
-      console.log("Statut de réponse:", response.status);
+      console.log("Response status:", response.status);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(e => ({ message: "Erreur du serveur" }));
-        throw new Error(errorData.message || "Erreur lors de l'upload de l'image");
+        const errorData = await response.json().catch(e => ({ message: "Server error" }));
+        throw new Error(errorData.message || "Error uploading image");
       }
       
       const data = await response.json();
-      console.log("Données reçues après upload d'image:", data);
+      console.log("Data received after image upload:", data);
       setUserData(data);
       
-      // Mettre à jour le state Redux avec la nouvelle image
+      // Update Redux state with new image
       if (user) {
         dispatch(setLogin({
           user: {
@@ -273,24 +326,30 @@ const ProfileSettings = () => {
         }));
       }
       
-      setSuccess("Photo de profil mise à jour avec succès");
+      setSuccess("Profile picture updated successfully");
       setImageFile(null);
       setImagePreview(null);
       
-      // Réinitialiser le champ de fichier
+      // Reset file field
       document.getElementById('imageInput').value = '';
       
-      // Masquer le message de succès après 3 secondes
+      // Hide success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur complète:", err);
-      setError(err.message || "Une erreur s'est produite lors de l'upload de l'image");
+      console.error("Error type:", err.constructor.name);
+      console.error("Error message:", err.message);
+      
+      if (err instanceof TypeError && err.message.includes('cors')) {
+        setError("CORS Error: The server doesn't allow this request. Please contact the administrator.");
+      } else {
+        setError(err.message || "An error occurred while uploading the image");
+      }
     } finally {
       setImageUploading(false);
     }
   };
   
-  // Fonction pour changer l'onglet actif
+  // Function to change active tab
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     setError(null);
@@ -305,12 +364,12 @@ const ProfileSettings = () => {
     );
   }
   
-  // Vérifier si l'utilisateur est connecté
+  // Check if user is logged in
   if (!user && !token) {
     return (
       <div className="profile-settings-container">
         <div className="alert alert-error">
-          Vous devez être connecté pour accéder à cette page.
+          You must be logged in to access this page.
         </div>
       </div>
     );
@@ -318,7 +377,7 @@ const ProfileSettings = () => {
   
   return (
     <div className="profile-settings-container">
-      <h1 className="settings-title">Paramètres du profil</h1>
+      <h1 className="settings-title">Profile Settings</h1>
       
       {error && <div className="alert alert-error">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
@@ -328,19 +387,19 @@ const ProfileSettings = () => {
           className={`tab ${activeTab === 'info' ? 'active' : ''}`} 
           onClick={() => handleTabClick('info')}
         >
-          Informations personnelles
+          Personal Information
         </div>
         <div 
           className={`tab ${activeTab === 'password' ? 'active' : ''}`} 
           onClick={() => handleTabClick('password')}
         >
-          Changer le mot de passe
+          Change Password
         </div>
         <div 
           className={`tab ${activeTab === 'photo' ? 'active' : ''}`} 
           onClick={() => handleTabClick('photo')}
         >
-          Photo de profil
+          Profile Picture
         </div>
       </div>
       
@@ -349,7 +408,7 @@ const ProfileSettings = () => {
           <div className="card">
             <form onSubmit={handleInfoSubmit} className="form info-form">
               <div className="form-group">
-                <label htmlFor="firstName">Prénom</label>
+                <label htmlFor="firstName">First Name</label>
                 <input
                   type="text"
                   id="firstName"
@@ -361,7 +420,7 @@ const ProfileSettings = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="lastName">Nom</label>
+                <label htmlFor="lastName">Last Name</label>
                 <input
                   type="text"
                   id="lastName"
@@ -380,12 +439,12 @@ const ProfileSettings = () => {
                   value={userData?.email || user?.email || ''}
                   disabled
                 />
-                <small className="form-text">L'adresse email ne peut pas être modifiée.</small>
+                <small className="form-text">Email address cannot be changed.</small>
               </div>
               
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
-                  Enregistrer les modifications
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -396,7 +455,7 @@ const ProfileSettings = () => {
           <div className="card">
             <form onSubmit={handlePasswordSubmit} className="form password-form">
               <div className="form-group">
-                <label htmlFor="currentPassword">Mot de passe actuel</label>
+                <label htmlFor="currentPassword">Current Password</label>
                 <input
                   type="password"
                   id="currentPassword"
@@ -408,7 +467,7 @@ const ProfileSettings = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="newPassword">Nouveau mot de passe</label>
+                <label htmlFor="newPassword">New Password</label>
                 <input
                   type="password"
                   id="newPassword"
@@ -418,11 +477,11 @@ const ProfileSettings = () => {
                   required
                   minLength={8}
                 />
-                <small className="form-text">Minimum 8 caractères</small>
+                <small className="form-text">Minimum 8 characters</small>
               </div>
               
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirmer le mot de passe</label>
+                <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -435,7 +494,7 @@ const ProfileSettings = () => {
               
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
-                  Changer le mot de passe
+                  Change Password
                 </button>
               </div>
             </form>
@@ -447,7 +506,7 @@ const ProfileSettings = () => {
             <div className="profile-photo-container">
               <img
                 src={imagePreview || userData?.profileImagePath || user?.profileImagePath || "/default-avatar.png"}
-                alt="Photo de profil"
+                alt="Profile Picture"
                 className="profile-photo"
               />
             </div>
@@ -455,7 +514,7 @@ const ProfileSettings = () => {
             <form onSubmit={handleImageSubmit} className="form photo-form">
               <div className="form-group">
                 <label htmlFor="imageInput" className="file-upload-label">
-                  Sélectionner une image
+                  Select Image
                 </label>
                 <input
                   id="imageInput"
@@ -464,7 +523,7 @@ const ProfileSettings = () => {
                   accept="image/*"
                   className="file-upload-input"
                 />
-                <small className="form-text">Formats recommandés: JPG, PNG. Taille max: 5MB</small>
+                <small className="form-text">Recommended formats: JPG, PNG. Max size: 5MB</small>
               </div>
               
               <div className="form-actions">
@@ -473,7 +532,7 @@ const ProfileSettings = () => {
                   className={`btn btn-primary ${imageUploading ? 'loading' : ''}`}
                   disabled={!imageFile || imageUploading}
                 >
-                  {imageUploading ? 'Téléchargement...' : 'Mettre à jour la photo'}
+                  {imageUploading ? 'Uploading...' : 'Update Picture'}
                 </button>
               </div>
             </form>
@@ -485,4 +544,3 @@ const ProfileSettings = () => {
 };
 
 export default ProfileSettings;
-

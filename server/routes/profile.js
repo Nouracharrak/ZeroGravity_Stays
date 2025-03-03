@@ -115,4 +115,5 @@ router.put("/me/picture", verifyToken, upload.single("profileImage"), async (req
   }
 });
 
-module.exports = { verifyToken, router };
+module.exports = router;
+

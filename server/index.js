@@ -16,16 +16,34 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// Configuration CORS complète
+const corsOptions = {
+  origin: ["https://zero-gravity-stays.vercel.app", "http://localhost:3001"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],  // Ajout de OPTIONS
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],  // Ajout de X-Requested-With
+  credentials: true,  // Ajout important pour les cookies/auth
+  maxAge: 86400,  // Augmenté à 24 heures pour réduire les preflight requests
+};
+
+// Appliquer CORS
+app.use(cors(corsOptions));
+
+// Middleware spécial pour les requêtes OPTIONS (préflight)
+app.options('*', (req, res) => {
+  res.status(204).end();
+});
+
+// Middleware pour vérifier que les en-têtes CORS sont bien appliqués
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://zero-gravity-stays.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+// Middleware pour le parsing JSON
 app.use(express.json());
-app.use(
-  cors({
-    origin: ["https://zero-gravity-stays.vercel.app", "http://localhost:3001"],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-    maxAge: 3600,
-  })
-);
 
 // Connexion à MongoDB
 mongoose
