@@ -23,12 +23,13 @@ const allowedOrigins = [
   "http://localhost:3001"
 ];
 
-// Configuration CORS
+// Configuration CORS simplifiée et unifiée
 const corsOptions = {
   origin: function (origin, callback) {
-    // Autoriser les requêtes sans origine (comme les appels API mobiles)
+    // Pour les requêtes sans origine (comme les appels API mobiles ou Postman)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log("CORS origin rejected:", origin);
@@ -39,32 +40,38 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
   credentials: true,
   maxAge: 86400,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  // Changement important : utiliser 200 au lieu de 204
+  optionsSuccessStatus: 200 
 };
 
 // Appliquer CORS comme premier middleware
 app.use(cors(corsOptions));
 
-// Middleware pour le parsing JSON - après CORS
+// Middleware pour le parsing JSON
 app.use(express.json());
 
-// Middleware explicite pour les requêtes OPTIONS
-app.options("*", cors(corsOptions));
-
-// Middleware de sécurité pour les headers (en supplément du middleware CORS)
+// Middleware de logging pour le debug
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  
-  // Ajouter des logs pour debug
-  console.log(`Request: ${req.method} ${req.path}`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   console.log("Origin:", req.headers.origin);
+  console.log("Headers:", JSON.stringify(req.headers));
+  
+  // Pour les requêtes OPTIONS, assurez-vous qu'elles retournent un statut 200
+  if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS request explicitly");
+    
+    // Assurez-vous que les en-têtes CORS sont corrects
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Credentials", "true");
+      res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+      
+      // Répondre avec 200 OK pour les requêtes OPTIONS
+      return res.status(200).end();
+    }
+  }
   
   next();
 });
@@ -97,8 +104,9 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   
   // Répondre avec une erreur 500, mais s'assurer que les en-têtes CORS sont toujours inclus
-  if (req.headers.origin && allowedOrigins.includes(req.headers.origin)) {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
   }
   
@@ -111,8 +119,9 @@ app.use((err, req, res, next) => {
 // Route par défaut pour les requêtes inconnues
 app.use((req, res) => {
   // S'assurer que les en-têtes CORS sont aussi inclus pour les 404
-  if (req.headers.origin && allowedOrigins.includes(req.headers.origin)) {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
   }
   
@@ -120,4 +129,3 @@ app.use((req, res) => {
 });
 
 module.exports = app;
-
