@@ -5,13 +5,27 @@
   ],
   "routes": [
     {
-      "src": "/.*",
+      "src": "/(.*)",
       "methods": ["OPTIONS"],
+      "dest": "/index.js",
+      "status": 200,
+      "headers": {
+        "Access-Control-Allow-Origin": "https://zero-gravity-stays.vercel.app",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Max-Age": "86400"
+      }
+    },
+    {
+      "src": "/profile/me/picture",
+      "methods": ["PUT", "POST", "OPTIONS"],
       "dest": "/index.js",
       "headers": {
         "Access-Control-Allow-Origin": "https://zero-gravity-stays.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
+        "Access-Control-Allow-Methods": "PUT, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type",
+        "Access-Control-Allow-Credentials": "true",
         "Access-Control-Max-Age": "86400"
       }
     },
@@ -20,9 +34,11 @@
       "dest": "/index.js",
       "headers": {
         "Access-Control-Allow-Origin": "https://zero-gravity-stays.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
+        "Access-Control-Allow-Credentials": "true"
       }
     }
   ]
 }
+
