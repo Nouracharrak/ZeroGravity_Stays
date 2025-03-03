@@ -113,11 +113,12 @@ const ProfileSettings = () => {
       const file = e.target.files[0];
       setImageFile(file);
       
+      
       // Create URL for image preview
-      const previewURL = URL.createObjectURL(file);
-      setImagePreview(previewURL);
-    }
-  };
+      const previewURL = window.URL.createObjectURL(file);
+    setImagePreview(previewURL);
+  }
+};
   
   // CORS pre-check utility
   const checkCorsAccess = async (url, method = 'OPTIONS') => {

@@ -16,34 +16,58 @@ dotenv.config();
 
 const app = express();
 
-// Configuration CORS complète
+// Liste des origines autorisées
+const allowedOrigins = [
+  "https://zero-gravity-stays.vercel.app", 
+  "http://localhost:3000",
+  "http://localhost:3001"
+];
+
+// Configuration CORS
 const corsOptions = {
-  origin: ["https://zero-gravity-stays.vercel.app", "http://localhost:3001"],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],  // Ajout de OPTIONS
-  allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],  // Ajout de X-Requested-With
-  credentials: true,  // Ajout important pour les cookies/auth
-  maxAge: 86400,  // Augmenté à 24 heures pour réduire les preflight requests
+  origin: function (origin, callback) {
+    // Autoriser les requêtes sans origine (comme les appels API mobiles)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log("CORS origin rejected:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+  credentials: true,
+  maxAge: 86400,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
-// Appliquer CORS
+// Appliquer CORS comme premier middleware
 app.use(cors(corsOptions));
 
-// Middleware spécial pour les requêtes OPTIONS (préflight)
-app.options('*', (req, res) => {
-  res.status(204).end();
-});
+// Middleware pour le parsing JSON - après CORS
+app.use(express.json());
 
-// Middleware pour vérifier que les en-têtes CORS sont bien appliqués
+// Middleware explicite pour les requêtes OPTIONS
+app.options("*", cors(corsOptions));
+
+// Middleware de sécurité pour les headers (en supplément du middleware CORS)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://zero-gravity-stays.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  
+  // Ajouter des logs pour debug
+  console.log(`Request: ${req.method} ${req.path}`);
+  console.log("Origin:", req.headers.origin);
+  
   next();
 });
-
-// Middleware pour le parsing JSON
-app.use(express.json());
 
 // Connexion à MongoDB
 mongoose
@@ -69,13 +93,31 @@ app.use("/profile", profileRoutes);
 
 // Gestion des erreurs globales
 app.use((err, req, res, next) => {
+  console.error("Global error:", err.message);
   console.error(err.stack);
-  res.status(500).send("Internal Server Error");
+  
+  // Répondre avec une erreur 500, mais s'assurer que les en-têtes CORS sont toujours inclus
+  if (req.headers.origin && allowedOrigins.includes(req.headers.origin)) {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  
+  res.status(500).json({ 
+    error: "Internal Server Error",
+    message: process.env.NODE_ENV === 'production' ? "An unexpected error occurred" : err.message 
+  });
 });
 
 // Route par défaut pour les requêtes inconnues
 app.use((req, res) => {
-  res.status(404).send("Page non trouvée");
+  // S'assurer que les en-têtes CORS sont aussi inclus pour les 404
+  if (req.headers.origin && allowedOrigins.includes(req.headers.origin)) {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  
+  res.status(404).json({ error: "Not Found", message: "The requested resource was not found" });
 });
 
 module.exports = app;
+
