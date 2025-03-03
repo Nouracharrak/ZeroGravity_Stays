@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Contact = require("../models/ContactUs");
-const mailer = require("../config/mailer"); 
+const ContactUs = require("../models/ContactUs"); // Renommé ici
+const mailer = require("../config/mailer");
 
 // Route pour soumettre un formulaire de contact
 router.post("/", async (req, res) => {
@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
     }
     
     // Créer un nouveau message de contact
-    const newContact = new Contact({
+    const newContact = new ContactUs({
       firstName,
       lastName,
       email,
