@@ -372,6 +372,7 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 // Route to submit a contact form
+// Route to submit a contact form
 router.post('/contact', async (req, res) => {
   try {
     const { firstName, lastName, email, message } = req.body;
@@ -398,44 +399,20 @@ router.post('/contact', async (req, res) => {
     // Save the message to the database
     await newContact.save();
     
-    // Prepare admin notification email content
-    const adminEmailContent = {
-      subject: 'New Contact Form Submission - Zero Gravity Stays',
-      template: 'admin-contact-notification', // Adjust to your template name
-      context: {
-        firstName,
-        lastName,
-        email,
-        message,
-        date: new Date().toLocaleString()
-      }
-    };
+    // Envoyer les notifications par email en utilisant les fonctions existantes
+    await mailer.sendContactAdminNotification({
+      firstName,
+      lastName,
+      email,
+      message
+    });
     
-    // Prepare user confirmation email content
-    const userEmailContent = {
-      subject: 'Thanks for Contacting Us - Zero Gravity Stays',
-      template: 'user-contact-confirmation', // Adjust to your template name
-      context: {
-        firstName,
-        lastName,
-        message
-      }
-    };
-    
-    // Send emails using your existing mailer service
-    await mailer.sendEmail(
-      process.env.ADMIN_EMAIL, // To admin
-      adminEmailContent.subject,
-      adminEmailContent.template,
-      adminEmailContent.context
-    );
-    
-    await mailer.sendEmail(
-      email, // To user
-      userEmailContent.subject,
-      userEmailContent.template,
-      userEmailContent.context
-    );
+    await mailer.sendContactUserConfirmation({
+      firstName,
+      lastName,
+      email,
+      message
+    });
     
     // Respond with success
     res.status(201).json({ 
@@ -448,7 +425,6 @@ router.post('/contact', async (req, res) => {
     res.status(500).json({ message: 'Server error while sending message' });
   }
 });
-
 // Middleware pour vérifier le token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
