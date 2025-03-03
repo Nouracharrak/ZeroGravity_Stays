@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Contact = require("../models/Contact"); // Assurez-vous d'avoir un modèle Contact
-const mailer = require("../services/mailer"); // Votre service de mail
+const Contact = require("../models/ContactUs");
+const mailer = require("../services/mailer"); 
 
 // Route pour soumettre un formulaire de contact
 router.post("/", async (req, res) => {

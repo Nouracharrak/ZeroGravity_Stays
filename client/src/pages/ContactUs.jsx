@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/contact.scss';
-import URL from "../constants/api"
+import URL from "../constants/api";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -15,6 +15,11 @@ function Contact() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   
+  // Log URL for debugging
+  useEffect(() => {
+    console.log("Backend URL:", URL.BACK_LINK);
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -71,7 +76,11 @@ function Contact() {
     setSubmitError(null);
     
     try {
-      const response = await fetch(`${URL.BACK_LINK}/contact`, {
+      const apiUrl = `${URL.BACK_LINK}/contact`;
+      console.log("Sending request to:", apiUrl);
+      console.log("Data being sent:", formData);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,10 +88,34 @@ function Contact() {
         body: JSON.stringify(formData)
       });
       
-      const data = await response.json();
+      console.log("Response status:", response.status);
+      
+      // Get response text first before attempting to parse as JSON
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+      
+      // Try to parse the response as JSON only if there is content
+      let data;
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+          console.log("Parsed response data:", data);
+        } catch (parseError) {
+          console.error("Error parsing JSON:", parseError);
+          throw new Error(
+            "The server returned an invalid response. Please try again later or contact support."
+          );
+        }
+      } else {
+        console.warn("Empty response received from server");
+        throw new Error("No response received from server. Please try again.");
+      }
       
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to send message');
+        throw new Error(
+          (data && data.message) || 
+          `Request failed with status ${response.status}`
+        );
       }
       
       setSubmitSuccess(true);
@@ -188,6 +221,7 @@ function Contact() {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
+                className={isSubmitting ? 'submitting' : ''}
               >
                 {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
@@ -200,4 +234,3 @@ function Contact() {
 }
 
 export default Contact;
-
