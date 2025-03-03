@@ -8,7 +8,10 @@ const ProfileSettings = () => {
   // États pour la gestion des onglets
   const [activeTab, setActiveTab] = useState('info');
   const dispatch = useDispatch();
+  
+  // Récupérer les informations utilisateur et le token du Redux store
   const user = useSelector((state) => state.user);
+  const token = useSelector((state) => state.token);
   
   // États pour les données utilisateur
   const [userData, setUserData] = useState(null);
@@ -37,9 +40,9 @@ const ProfileSettings = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const token = user?.token || localStorage.getItem('token');
+      const authToken = token || localStorage.getItem('token');
       
-      if (!token) {
+      if (!authToken) {
         setError("Vous devez être connecté pour accéder à cette page");
         setLoading(false);
         return;
@@ -48,7 +51,7 @@ const ProfileSettings = () => {
       const response = await fetch(URL.FETCH_PROFILE, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -76,7 +79,7 @@ const ProfileSettings = () => {
   // Charger les données au montage du composant
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [token]);
   
   // Gestionnaires pour les changements dans les formulaires
   const handleInfoChange = (e) => {
@@ -111,12 +114,12 @@ const ProfileSettings = () => {
     setSuccess(null);
     
     try {
-      const token = user?.token || localStorage.getItem('token');
+      const authToken = token || localStorage.getItem('token');
       
       const response = await fetch(URL.UPDATE_USER, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(infoForm)
@@ -131,11 +134,15 @@ const ProfileSettings = () => {
       setUserData(data);
       
       // Mettre à jour le state Redux
+      // Notez que nous devons préserver la structure actuelle
       if (user) {
         dispatch(setLogin({
-          ...user,
-          firstName: data.firstName,
-          lastName: data.lastName
+          user: {
+            ...user,
+            firstName: data.firstName,
+            lastName: data.lastName
+          },
+          token: authToken
         }));
       }
       
@@ -162,12 +169,12 @@ const ProfileSettings = () => {
     }
     
     try {
-      const token = user?.token || localStorage.getItem('token');
+      const authToken = token || localStorage.getItem('token');
       
       const response = await fetch(URL.UPDATE_PASSWORD, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -212,7 +219,7 @@ const ProfileSettings = () => {
     setImageUploading(true);
     
     try {
-      const token = user?.token || localStorage.getItem('token');
+      const authToken = token || localStorage.getItem('token');
       
       // Création d'un objet FormData pour envoyer l'image
       const formData = new FormData();
@@ -221,7 +228,7 @@ const ProfileSettings = () => {
       const response = await fetch(URL.UPDATE_PICTURE, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${authToken}`
         },
         body: formData
       });
@@ -237,8 +244,11 @@ const ProfileSettings = () => {
       // Mettre à jour le state Redux avec la nouvelle image
       if (user) {
         dispatch(setLogin({
-          ...user,
-          profileImagePath: data.profileImagePath
+          user: {
+            ...user,
+            profileImagePath: data.profileImagePath
+          },
+          token: authToken
         }));
       }
       
@@ -270,6 +280,17 @@ const ProfileSettings = () => {
     return (
       <div className="profile-settings-container">
         <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+  
+  // Vérifier si l'utilisateur est connecté
+  if (!user && !token) {
+    return (
+      <div className="profile-settings-container">
+        <div className="alert alert-error">
+          Vous devez être connecté pour accéder à cette page.
+        </div>
       </div>
     );
   }
@@ -335,7 +356,7 @@ const ProfileSettings = () => {
                 <input
                   type="email"
                   id="email"
-                  value={userData?.email || ''}
+                  value={userData?.email || user?.email || ''}
                   disabled
                 />
                 <small className="form-text">L'adresse email ne peut pas être modifiée.</small>
@@ -404,7 +425,7 @@ const ProfileSettings = () => {
           <div className="card photo-card">
             <div className="profile-photo-container">
               <img
-                src={imagePreview || userData?.profileImagePath || "/default-avatar.png"}
+                src={imagePreview || userData?.profileImagePath || user?.profileImagePath || "/default-avatar.png"}
                 alt="Photo de profil"
                 className="profile-photo"
               />
