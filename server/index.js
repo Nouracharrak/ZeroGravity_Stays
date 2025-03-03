@@ -10,6 +10,7 @@ const listingRoutes = require("./routes/listing.js");
 const bookingRoutes = require("./routes/booking.js");
 const profileRoutes = require("./routes/profile.js");
 const userRoutes = require("./routes/user.js");
+const contactRoutes = require("./routes/contact.js");
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -95,6 +96,7 @@ mongoose
 app.use("/auth", authRoutes);
 app.use("/users", profileRoutes);
 app.use("/users", userRoutes);
+app.use("/contact", contactRoutes);
 app.use("/properties", listingRoutes);
 app.use("/bookings", bookingRoutes);
 

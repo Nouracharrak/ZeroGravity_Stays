@@ -371,60 +371,6 @@ router.post('/reset-password', async (req, res) => {
     });
   }
 });
-// Route to submit a contact form
-// Route to submit a contact form
-router.post('/contact', async (req, res) => {
-  try {
-    const { firstName, lastName, email, message } = req.body;
-    
-    // Field validation
-    if (!firstName || !lastName || !email || !message) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-    
-    // Email validation with regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Invalid email address' });
-    }
-    
-    // Create a new contact message
-    const newContact = new Contact({
-      firstName,
-      lastName,
-      email,
-      message
-    });
-    
-    // Save the message to the database
-    await newContact.save();
-    
-    // Envoyer les notifications par email en utilisant les fonctions existantes
-    await mailer.sendContactAdminNotification({
-      firstName,
-      lastName,
-      email,
-      message
-    });
-    
-    await mailer.sendContactUserConfirmation({
-      firstName,
-      lastName,
-      email,
-      message
-    });
-    
-    // Respond with success
-    res.status(201).json({ 
-      message: 'Message sent successfully',
-      contactId: newContact._id
-    });
-    
-  } catch (error) {
-    console.error('Error sending contact message:', error);
-    res.status(500).json({ message: 'Server error while sending message' });
-  }
-});
 // Middleware pour vérifier le token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
