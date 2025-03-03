@@ -52,7 +52,7 @@ router.get("/me", verifyToken, async (req, res) => {
 });
 
 // 2. Mettre à jour les informations du profil
-router.put("/me/update", verifyToken, async (req, res) => {
+router.put("/update", verifyToken, async (req, res) => {
   try {
     const { firstName, lastName } = req.body;
     const updateData = {};
