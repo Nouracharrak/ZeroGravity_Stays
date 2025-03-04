@@ -105,10 +105,19 @@
         }
       }
 
-      button {
-        @include buttonStyle; // Utilisez votre mixin de style de bouton
+      .btn-secondary {
+        @include buttonStyle; // Appliquez le même style de bouton si nécessaire
         width: 50%;
-        margin: 15px auto 0;
+        margin-top: 15px; // Ajoutez une marge en haut pour séparer de l'autre bouton
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .btn-primary {
+        @include buttonStyle; // Appliquez le même style de bouton si nécessaire
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;        
 
         &:hover {
           box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.3);
