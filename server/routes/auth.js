@@ -6,8 +6,8 @@ const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const { sendConfirmationEmail, sendPasswordResetEmail} = require('../config/mailer.js');
-const crypto = require('crypto'); // Ajout de crypto pour la génération de tokens
+const { sendConfirmationEmail, sendPasswordResetEmail, sendPaymentConfirmationEmail} = require('../config/mailer.js');
+const crypto = require('crypto');
 require("dotenv").config();
 
 

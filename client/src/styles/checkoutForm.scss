@@ -1,32 +1,44 @@
-/* Styles pour le modal de paiement */
 .checkout-overlay {
-    position: fixed; 
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Fond plus foncé */
-    z-index: 999; 
-    display: flex; /* Utilisez flex pour centrer le contenu */
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.checkout-modal {
-    background-color: white; 
-    padding: 40px; /* Plus d'espacement intérieur */
-    border-radius: 12px; /* Coins arrondis */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Ombre pour un effet plus prononcé */
-    z-index: 1000; 
-    width: 90%; /* Largeur ajustable */
-    max-width: 500px; /* Largeur maximale */
-    text-align: center; /* Centrer le texte */
-}
-
-.checkout-modal h2 {
-    margin-bottom: 20px; /* Espacement entre le titre et le contenu */
-}
-
-.checkout-modal button {
-    margin-top: 15px; /* Espacement entre le bouton et les éléments supérieurs */
-}
+    z-index: 1000;
+  }
+  
+  .checkout-modal {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px; // Width maximum pour les écrans larges
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.19);
+    transition: all 0.3s ease-in-out; // Transition fluide pour les animations
+  }
+  
+  .checkout-modal h2 {
+    margin-top: 0;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .checkout-modal button {
+    cursor: pointer;
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  
+    &:hover {
+      background-color: #0056b3; // Changement de couleur au survol
+    }
+  }
+  

@@ -16,6 +16,7 @@ const TripList = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const userId = useSelector((state) => state.user._id);
+  const userEmail = useSelector((state) => state.user.email); // Récupérer l'email de l'utilisateur
   const tripList = useSelector((state) => state.user.tripList);
   const dispatch = useDispatch();
 
@@ -61,7 +62,7 @@ const TripList = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: 'user@example.com', // Mettez l'adresse email de l'utilisateur ici
+          email: userEmail,
           tripDetails: paymentDetails,
         }),
       });
