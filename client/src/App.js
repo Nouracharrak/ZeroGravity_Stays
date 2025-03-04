@@ -13,7 +13,7 @@ import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
 import ProfileSettings from './pages/ProfileSettings';
 import Contact from "./pages/ContactUs";
-import CheckoutForm from './pages/CheckoutForm';
+import CheckoutForm from './componenets/ChekoutForm';
 import { Elements } from '@stripe/react-stripe-js'; // Ajouter cette ligne
 import { loadStripe } from '@stripe/stripe-js'; // Ajouter cette ligne
 
