@@ -54,12 +54,12 @@ const CheckoutForm = () => {
         <form onSubmit={handleSubmit}>
             <div>
                 <label>
-                    Amount (in $):
+                    Amount (in €):
                     <input
                         type="number"
-                        value={amount / 100} // Affichage en dollars
-                        onChange={(e) => setAmount(e.target.value * 100)} // Conversion en cents
-                        min="1" // Montant minimum de 1 dollar
+                        value={amount / 100}
+                        onChange={(e) => setAmount(e.target.value * 100)}
+                        min="1"
                         required
                     />
                 </label>
