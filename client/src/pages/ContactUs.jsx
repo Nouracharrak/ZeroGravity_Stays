@@ -142,22 +142,24 @@ function Contact() {
     <div className="contact">
       <div className="contact_content">
         {submitSuccess ? (
-          <div className="contact_success">
-            <h2>Thank You for Contacting Us!</h2>
-            <p>
-              Your message has been sent successfully. We will get back to you
-              as soon as possible.
-            </p>
-            <button
-              className="btn-secondary"
-              onClick={() => setSubmitSuccess(false)}
-            >
-              Send Another Message
-            </button>
-            <button className="btn-primary" onClick={() => navigate("/")}>
-              Go to Home
-            </button>
-          </div>
+         <div className="contact_success">
+         <h2>Thank You!</h2>
+         <p>Your message has been sent successfully.</p>
+         <div className="button-container">
+           <button
+             className="btn-secondary"
+             onClick={() => setSubmitSuccess(false)}
+           >
+             Send Another Message
+           </button>
+           <button
+             className="btn-primary"
+             onClick={() => navigate('/')}
+           >
+             Go to Home
+           </button>
+         </div>
+       </div>   
         ) : (
           <>
             <h2>Contact Us</h2>
