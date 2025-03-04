@@ -16,7 +16,7 @@ const TripList = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const userId = useSelector((state) => state.user._id);
-  const userEmail = useSelector((state) => state.user.email); // Récupérer l'email de l'utilisateur
+  const userEmail = useSelector((state) => state.user.email);
   const tripList = useSelector((state) => state.user.tripList);
   const dispatch = useDispatch();
 
@@ -45,30 +45,11 @@ const TripList = () => {
     setOpenCheckout(true);
   };
 
-  const handlePaymentSuccess = async (paymentDetails) => {
+  const handlePaymentSuccess = (paymentDetails) => {
     setPaymentSuccess(paymentDetails);
     setOpenCheckout(false);
     
-    // Envoyer le récapitulatif de paiement par email
-    await sendPaymentConfirmation(paymentDetails);
-  };
-
-  const sendPaymentConfirmation = async (paymentDetails) => {
-    // Exemple de requête à votre backend pour envoyer un email de confirmation
-    try {
-      await fetch(`${URL.SEND_CONFIRMATION}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: userEmail,
-          tripDetails: paymentDetails,
-        }),
-      });
-    } catch (error) {
-      console.error('Error sending confirmation email:', error);
-    }
+    // Ici, l'email de confirmation est envoyé depuis le backend après le paiement réussi
   };
 
   const handlePaymentFailure = (errorMessage) => {
@@ -101,6 +82,8 @@ const TripList = () => {
             <h2>Finalize Payment for Booking</h2>
             <CheckoutForm 
               amount={selectedTrip.totalPrice} 
+              userEmail={userEmail} // Ajout de l'email
+              tripDetails={selectedTrip} // Détails du voyage
               onClose={() => setOpenCheckout(false)} 
               onPaymentSuccess={handlePaymentSuccess} 
               onPaymentFailure={handlePaymentFailure} 
@@ -116,7 +99,7 @@ const TripList = () => {
           <p>Trip Details:</p>
           <ul>
             <li>Destination: {selectedTrip.listingDetails.city}, {selectedTrip.listingDetails.province}</li>
-            <li>Price: ${selectedTrip.totalPrice}</li>
+            <li>Price: {selectedTrip.totalPrice} €</li>
             <li>Booking Dates: {selectedTrip.startDate} to {selectedTrip.endDate}</li>
           </ul>
           <button onClick={() => setPaymentSuccess(false)}>Close</button>

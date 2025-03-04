@@ -85,3 +85,4 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
 
 export default CheckoutForm;
 
+
