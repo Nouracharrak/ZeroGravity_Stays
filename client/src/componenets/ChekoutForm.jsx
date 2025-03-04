@@ -15,10 +15,10 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
         setError("");
 
         if (!stripe || !elements) {
-            return; // Assurez-vous que Stripe et Elements sont chargés
+            return; // S'assurer que Stripe et Elements sont chargés
         }
 
-        const cardElement = elements.getElement(CardElement); // Récupérez l'élément de carte
+        const cardElement = elements.getElement(CardElement); 
 
         try {
             const response = await fetch(`${URL.BACK_LINK}/stripe/create-payment-intent`, {
@@ -44,11 +44,9 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
             if (result.error) {
                 setError(result.error.message);
                 if (onPaymentFailure) onPaymentFailure(result.error.message);
-                alert("Payment failed. Please try again.");
             } else if (result.paymentIntent.status === "succeeded") {
-                alert("Payment successful!");
                 if (onPaymentSuccess) onPaymentSuccess(result.paymentIntent);
-                onClose(); // Ferme le modal après le succès du paiement
+                onClose();
             }
         } catch (error) {
             console.error(error);
@@ -60,25 +58,30 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
+        <form className="checkout-form" onSubmit={handleSubmit}>
+            <div className="form-group">
                 <label>
                     Amount (in €):
                     <input
                         type="number"
-                        value={amount / 100} // Affichage du montant en euros
-                        readOnly // Le montant est fixe ici
+                        value={amount}
+                        readOnly
                     />
                 </label>
             </div>
-            <CardElement /> 
-            {error && <div style={{ color: 'red' }}>{error}</div>}
-            <button type="submit" disabled={loading || !stripe}>
-                {loading ? "Processing..." : "Pay Now"}
-            </button>
-            <button type="button" onClick={onClose}>Close</button> 
+            <div className="form-group">
+                <CardElement />
+                {error && <div className="error-message">{error}</div>}
+            </div>
+            <div className="form-actions">
+                <button type="submit" disabled={loading || !stripe}>
+                    {loading ? "Processing..." : "Pay Now"}
+                </button>
+                <button type="button" onClick={onClose}>Close</button>
+            </div>
         </form>
     );
 };
 
 export default CheckoutForm;
+

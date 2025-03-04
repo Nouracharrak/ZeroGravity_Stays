@@ -1,44 +1,29 @@
-.checkout-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .checkout-modal {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 30px;
-    width: 90%;
-    max-width: 500px; // Width maximum pour les écrans larges
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.19);
-    transition: all 0.3s ease-in-out; // Transition fluide pour les animations
-  }
-  
-  .checkout-modal h2 {
-    margin-top: 0;
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .checkout-modal button {
-    cursor: pointer;
-    padding: 10px 15px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    margin-top: 20px;
-    transition: background-color 0.3s;
-  
-    &:hover {
-      background-color: #0056b3; // Changement de couleur au survol
+.checkout-form {
+    .form-group {
+        margin-bottom: 1.5rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.875rem;
+        }
     }
-  }
-  
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        
+        button {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+
+            &:disabled {
+                background-color: grey;
+            }
+        }
+    }
+}

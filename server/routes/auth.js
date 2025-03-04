@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const { sendConfirmationEmail, sendPasswordResetEmail, sendPaymentConfirmationEmail} = require('../config/mailer.js');
+const { sendConfirmationEmail, sendPasswordResetEmail} = require('../config/mailer.js');
 const crypto = require('crypto');
 require("dotenv").config();
 
@@ -369,16 +369,6 @@ router.post('/reset-password', async (req, res) => {
       success: false,
       message: "Une erreur est survenue. Veuillez réessayer plus tard."
     });
-  }
-});
-app.post('/payment-success', async (req, res) => {
-  const { userEmail, tripDetails } = req.body; // Supposons que userEmail et tripDetails viennent de votre logique de paiement
-
-  try {
-    await sendPaymentConfirmationEmail(userEmail, tripDetails);
-    res.status(200).send('Email de confirmation de paiement envoyé.');
-  } catch (error) {
-    res.status(500).send('Erreur lors de l\'envoi de l\'email de confirmation de paiement.');
   }
 });
 
