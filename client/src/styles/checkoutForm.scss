@@ -1,0 +1,52 @@
+/* CheckoutForm.scss */
+.checkout-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 300px;
+}
+
+.checkout-modal h2 {
+    margin-bottom: 20px;
+}
+
+.checkout-modal form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.checkout-modal label {
+    margin-bottom: 10px;
+}
+
+.checkout-modal input {
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.checkout-modal button {
+    padding: 10px;
+    background-color: #28a745; /* Couleur de fond verte */
+    color: white;
+    border: 1px solid #28a745;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.checkout-modal button:disabled {
+    background-color: #ccc; /* Couleur pour le bouton désactivé */
+    cursor: not-allowed;
+}
+
+.checkout-modal button:hover:not(:disabled) {
+    background-color: #218838; /* Couleur plus foncée lors du survol */
+}

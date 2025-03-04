@@ -61,38 +61,36 @@ const TripList = () => {
           const category = listingDetails?.category || 'Unknown Category';
 
           return (
-            <ListingCard
-              key={listingId}
-              listingId={listingId}
-              listingPhotosPaths={photos}
-              city={city}
-              province={province}
-              country={country}
-              category={category}
-              startDate={startDate}
-              endDate={endDate}
-              totalPrice={totalPrice}
-              booking={true}
-            />
+            <div key={listingId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <ListingCard
+                listingId={listingId}
+                listingPhotosPaths={photos}
+                city={city}
+                province={province}
+                country={country}
+                category={category}
+                startDate={startDate}
+                endDate={endDate}
+                totalPrice={totalPrice}
+                booking={true}
+              />
+              <button 
+                className="pay-now-button" 
+                onClick={() => handleBooking(trip)} // Passons le bon voyage ici
+              >
+                Pay Now
+              </button>
+            </div>
           );
         })}
       </div>
 
-      {/* Bouton de paiement pour chaque voyage sélectionné*/}
-      {selectedTrip && openCheckout && (
+      {openCheckout && selectedTrip && (
         <div className="checkout-modal">
           <h2>Finalize Payment for Booking</h2>
           <CheckoutForm amount={selectedTrip.totalPrice} onClose={() => setOpenCheckout(false)} />
         </div>
       )}
-
-      <button 
-        className="pay-now-button" 
-        onClick={() => handleBooking(selectedTrip)} 
-        disabled={!selectedTrip}
-      >
-        Pay Now
-      </button>
 
       <Footer />
     </>
@@ -100,5 +98,3 @@ const TripList = () => {
 };
 
 export default TripList;
-
-
