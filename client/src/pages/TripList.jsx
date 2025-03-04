@@ -1,13 +1,13 @@
-import Loader from '../components/Loader';
-import Navbar from '../components/Navbar';
-import Footer from "../components/Footer";
+import Loader from '../componenets/Loader';
+import Navbar from '../componenets/Navbar';
+import Footer from "../componenets/Footer";
 import '../styles/list.scss';
 import React, { useEffect, useState } from 'react';
 import { setTripList } from '../redux/state';
 import { useDispatch, useSelector } from 'react-redux';
-import ListingCard from '../components/ListingCard';
+import ListingCard from '../componenets/ListingCard';
 import URL from "../constants/api";
-import CheckoutForm from '../components/CheckoutForm';
+import CheckoutForm from '../pages/CheckoutForm';
 
 const TripList = () => {
   const [loading, setLoading] = useState(true);
