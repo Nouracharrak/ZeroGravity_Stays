@@ -33,6 +33,8 @@ const URL = {
     SEARCH_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/search",
 // URL CLOUDINARY
     CLOUDINARY: "https://api.cloudinary.com/v1_1/drdw1wuks/image/upload",
+// CONFIRMATION
+    SEND_CONFIRMATION: "https://zero-gravity-stays-bevn.vercel.app/payment-success",
 // URL BACK 
     BACK_LINK : "https://zero-gravity-stays-bevn.vercel.app"
     }

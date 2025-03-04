@@ -13,13 +13,12 @@ const TripList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [openCheckout, setOpenCheckout] = useState(false);
-  
-  // Récupérer l'ID utilisateur et la liste des voyages depuis Redux
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
   const userId = useSelector((state) => state.user._id);
   const tripList = useSelector((state) => state.user.tripList);
   const dispatch = useDispatch();
 
-  // Fonction pour récupérer la liste des voyages de l'utilisateur
   const getTripList = async () => {
     try {
       const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`, {
@@ -34,32 +33,45 @@ const TripList = () => {
     }
   };
 
-  // Utilisation de useEffect pour récupérer la liste des voyages lorsque l'utilisateur est disponible
   useEffect(() => {
     if (userId) {
       getTripList();
-    } else {
-      console.log('Error: User ID is not available');
     }
   }, [userId]);
 
-  // Fonction exécutée lors du clic sur le bouton "Pay Now"
   const handleBooking = (trip) => {
     setSelectedTrip(trip);
     setOpenCheckout(true);
   };
 
-  // Fonction de rappel en cas de succès de paiement
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async (paymentDetails) => {
+    setPaymentSuccess(paymentDetails);
     setOpenCheckout(false);
-    alert("Payment successful!");
-    // Vous pouvez également mettre à jour des états ou rediriger l'utilisateur ici
+    
+    // Envoyer le récapitulatif de paiement par email
+    await sendPaymentConfirmation(paymentDetails);
   };
 
-  // Fonction de rappel en cas d'échec de paiement
+  const sendPaymentConfirmation = async (paymentDetails) => {
+    // Exemple de requête à votre backend pour envoyer un email de confirmation
+    try {
+      await fetch(`${URL.SEND_CONFIRMATION}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'user@example.com', // Mettez l'adresse email de l'utilisateur ici
+          tripDetails: paymentDetails,
+        }),
+      });
+    } catch (error) {
+      console.error('Error sending confirmation email:', error);
+    }
+  };
+
   const handlePaymentFailure = (errorMessage) => {
     alert("Payment failed: " + errorMessage);
-    // Logique pour gérer les échecs de paiement
   };
 
   return loading ? (
@@ -69,37 +81,17 @@ const TripList = () => {
       <Navbar />
       <h1 className="title-list">Your Trip List</h1>
       <div className="list">
-        {tripList?.map((trip) => {
-          const { listingId, startDate, endDate, totalPrice, listingDetails } = trip;
-          const photos = listingDetails?.listingPhotosPaths || [];
-          const city = listingDetails?.city || 'Unknown City';
-          const province = listingDetails?.province || 'Unknown Province';
-          const country = listingDetails?.country || 'Unknown Country';
-          const category = listingDetails?.category || 'Unknown Category';
-
-          return (
-            <div key={listingId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <ListingCard
-                listingId={listingId}
-                listingPhotosPaths={photos}
-                city={city}
-                province={province}
-                country={country}
-                category={category}
-                startDate={startDate}
-                endDate={endDate}
-                totalPrice={totalPrice}
-                booking={true}
-              />
-              <button 
-                className="pay-now-button" 
-                onClick={() => handleBooking(trip)}
-              >
-                Pay Now
-              </button>
-            </div>
-          );
-        })}
+        {tripList.map((trip) => (
+          <div key={trip.listingId} className="listing-item">
+            <ListingCard {...trip.listingDetails} {...trip} />
+            <button 
+              className="pay-now-button" 
+              onClick={() => handleBooking(trip)}
+            >
+              Pay Now
+            </button>
+          </div>
+        ))}
       </div>
 
       {openCheckout && selectedTrip && (
@@ -107,12 +99,26 @@ const TripList = () => {
           <div className="checkout-modal">
             <h2>Finalize Payment for Booking</h2>
             <CheckoutForm 
-              amount={selectedTrip.totalPrice} // Assurez-vous que c'est en cents
+              amount={selectedTrip.totalPrice} 
               onClose={() => setOpenCheckout(false)} 
               onPaymentSuccess={handlePaymentSuccess} 
               onPaymentFailure={handlePaymentFailure} 
             />
           </div>
+        </div>
+      )}
+
+      {paymentSuccess && (
+        <div className="payment-summary">
+          <h2>Payment Successful!</h2>
+          <p>Thank you for your payment.</p>
+          <p>Trip Details:</p>
+          <ul>
+            <li>Destination: {selectedTrip.listingDetails.city}, {selectedTrip.listingDetails.province}</li>
+            <li>Price: ${selectedTrip.totalPrice}</li>
+            <li>Booking Dates: {selectedTrip.startDate} to {selectedTrip.endDate}</li>
+          </ul>
+          <button onClick={() => setPaymentSuccess(false)}>Close</button>
         </div>
       )}
 

@@ -371,6 +371,17 @@ router.post('/reset-password', async (req, res) => {
     });
   }
 });
+app.post('/payment-success', async (req, res) => {
+  const { userEmail, tripDetails } = req.body; // Supposons que userEmail et tripDetails viennent de votre logique de paiement
+
+  try {
+    await sendPaymentConfirmationEmail(userEmail, tripDetails);
+    res.status(200).send('Email de confirmation de paiement envoyé.');
+  } catch (error) {
+    res.status(500).send('Erreur lors de l\'envoi de l\'email de confirmation de paiement.');
+  }
+});
+
 // Middleware pour vérifier le token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;

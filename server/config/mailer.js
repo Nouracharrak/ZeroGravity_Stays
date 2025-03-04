@@ -117,6 +117,35 @@ const sendPasswordResetEmail = async (user, token) => {
     throw error;
   }
 };
+// Fonction pour envoyer une confirmation de paiement
+const sendPaymentConfirmationEmail = async (userEmail, tripDetails) => {
+    try {
+      console.log("Preparing payment confirmation email for:", userEmail);
+  
+      // Contenu HTML de l'email
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 5px;">
+          <h2>Thank You for Your Payment!</h2>
+          <p>Your payment has been successfully processed. Here are the details of your booking:</p>
+  
+          <div style="margin: 20px 0;">
+            <strong>Destination:</strong> ${tripDetails.destination}<br>
+            <strong>Price:</strong> $${tripDetails.totalPrice}<br>
+            <strong>Booking Dates:</strong> ${tripDetails.startDate} to ${tripDetails.endDate}
+          </div>
+  
+          <p>If you have any questions or need further assistance, feel free to reach out to us.</p>
+          
+          <p>Thank you,<br>The Zero Gravity Stays Team</p>
+        </div>
+      `;
+  
+      return await sendEmail(userEmail, 'Payment Confirmation - Zero Gravity Stays', htmlContent);
+    } catch (error) {
+      console.error('Error in sendPaymentConfirmationEmail:', error);
+      throw error;
+    }
+  };
 
 // Fonction pour envoyer un email de notification à l'administrateur pour un nouveau message de contact
 const sendContactAdminNotification = async (contactData) => {
@@ -195,6 +224,7 @@ module.exports = {
   sendEmail, // Exporter la nouvelle fonction générique
   sendConfirmationEmail, 
   sendPasswordResetEmail,
+  sendPaymentConfirmationEmail,
   sendContactAdminNotification,
   sendContactUserConfirmation
 };

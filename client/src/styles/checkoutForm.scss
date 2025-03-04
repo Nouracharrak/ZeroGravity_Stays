@@ -1,23 +1,32 @@
 /* Styles pour le modal de paiement */
 .checkout-overlay {
-    position: fixed; /* Fixe le fond d'overlay à l'écran */
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
-    z-index: 999; /* S'assure que l'overlay soit au-dessus des autres éléments */
+    background-color: rgba(0, 0, 0, 0.7); /* Fond plus foncé */
+    z-index: 999; 
+    display: flex; /* Utilisez flex pour centrer le contenu */
+    justify-content: center;
+    align-items: center;
 }
 
 .checkout-modal {
-    position: fixed; /* Fixe le modal à l'écran */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Centre le modal */
-    background-color: white; /* Couleur de fond du modal */
-    padding: 20px; /* Espacement intérieur */
-    border-radius: 8px; /* Coins arrondis */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre pour donner un effet 3D */
-    z-index: 1000; /* Assurez-vous que le modal soit au-dessus des autres éléments */
+    background-color: white; 
+    padding: 40px; /* Plus d'espacement intérieur */
+    border-radius: 12px; /* Coins arrondis */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Ombre pour un effet plus prononcé */
+    z-index: 1000; 
+    width: 90%; /* Largeur ajustable */
+    max-width: 500px; /* Largeur maximale */
+    text-align: center; /* Centrer le texte */
 }
 
+.checkout-modal h2 {
+    margin-bottom: 20px; /* Espacement entre le titre et le contenu */
+}
+
+.checkout-modal button {
+    margin-top: 15px; /* Espacement entre le bouton et les éléments supérieurs */
+}
