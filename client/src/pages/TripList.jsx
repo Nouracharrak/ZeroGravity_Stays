@@ -7,17 +7,19 @@ import { setTripList } from '../redux/state';
 import { useDispatch, useSelector } from 'react-redux';
 import ListingCard from '../componenets/ListingCard';
 import URL from "../constants/api";
-import CheckoutForm from '../pages/CheckoutForm';
+import CheckoutForm from '../componenets/ChekoutForm';
 
 const TripList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [openCheckout, setOpenCheckout] = useState(false);
-
+  
+  // Récupérer l'ID utilisateur et la liste des voyages depuis Redux
   const userId = useSelector((state) => state.user._id);
   const tripList = useSelector((state) => state.user.tripList);
   const dispatch = useDispatch();
 
+  // Fonction pour récupérer la liste des voyages de l'utilisateur
   const getTripList = async () => {
     try {
       const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`, {
@@ -32,6 +34,7 @@ const TripList = () => {
     }
   };
 
+  // Utilisation de useEffect pour récupérer la liste des voyages lorsque l'utilisateur est disponible
   useEffect(() => {
     if (userId) {
       getTripList();
@@ -40,9 +43,23 @@ const TripList = () => {
     }
   }, [userId]);
 
+  // Fonction exécutée lors du clic sur le bouton "Pay Now"
   const handleBooking = (trip) => {
     setSelectedTrip(trip);
     setOpenCheckout(true);
+  };
+
+  // Fonction de rappel en cas de succès de paiement
+  const handlePaymentSuccess = () => {
+    setOpenCheckout(false);
+    alert("Payment successful!");
+    // Vous pouvez également mettre à jour des états ou rediriger l'utilisateur ici
+  };
+
+  // Fonction de rappel en cas d'échec de paiement
+  const handlePaymentFailure = (errorMessage) => {
+    alert("Payment failed: " + errorMessage);
+    // Logique pour gérer les échecs de paiement
   };
 
   return loading ? (
@@ -76,7 +93,7 @@ const TripList = () => {
               />
               <button 
                 className="pay-now-button" 
-                onClick={() => handleBooking(trip)} // Passons le bon voyage ici
+                onClick={() => handleBooking(trip)}
               >
                 Pay Now
               </button>
@@ -86,9 +103,16 @@ const TripList = () => {
       </div>
 
       {openCheckout && selectedTrip && (
-        <div className="checkout-modal">
-          <h2>Finalize Payment for Booking</h2>
-          <CheckoutForm amount={selectedTrip.totalPrice} onClose={() => setOpenCheckout(false)} />
+        <div className="checkout-overlay">
+          <div className="checkout-modal">
+            <h2>Finalize Payment for Booking</h2>
+            <CheckoutForm 
+              amount={selectedTrip.totalPrice} // Assurez-vous que c'est en cents
+              onClose={() => setOpenCheckout(false)} 
+              onPaymentSuccess={handlePaymentSuccess} 
+              onPaymentFailure={handlePaymentFailure} 
+            />
+          </div>
         </div>
       )}
 

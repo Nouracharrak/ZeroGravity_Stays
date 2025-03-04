@@ -1,24 +1,26 @@
-// CheckoutForm.js
 import React, { useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js"; 
 import URL from "../constants/api";
-import '../styles/checkoutForm.scss'
+import '../styles/checkoutForm.scss';
 
-const stripePromise = loadStripe("pk_test_51Qz1XhH4A3C3bxRrvtv45UUq516BqFFipdtQqZ6m7c0VQlg6Fuu0vOkOXsi5ZYduSvRSBMBAqBJjGEJO6ByuiNce00mNKMKuKp");
-
-const CheckoutForm = ({ amount, onClose }) => { // Notez que nous utilisons ici les props amount et onClose
+const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) => { 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const stripe = useStripe();
+    const elements = useElements();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
         setError("");
 
-        const stripe = await stripePromise;
+        if (!stripe || !elements) {
+            return; // Assurez-vous que Stripe et Elements sont chargés
+        }
+
+        const cardElement = elements.getElement(CardElement); // Récupérez l'élément de carte
 
         try {
-            // API Call pour créer un Payment Intent
             const response = await fetch(`${URL.BACK_LINK}/stripe/create-payment-intent`, {
                 method: "POST",
                 headers: {
@@ -33,19 +35,25 @@ const CheckoutForm = ({ amount, onClose }) => { // Notez que nous utilisons ici 
 
             const { clientSecret } = await response.json();
 
-            // Utiliser le clientSecret pour finaliser le paiement
-            const result = await stripe.confirmCardPayment(clientSecret);
+            const result = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                },
+            });
 
             if (result.error) {
                 setError(result.error.message);
+                if (onPaymentFailure) onPaymentFailure(result.error.message);
                 alert("Payment failed. Please try again.");
             } else if (result.paymentIntent.status === "succeeded") {
                 alert("Payment successful!");
+                if (onPaymentSuccess) onPaymentSuccess(result.paymentIntent);
                 onClose(); // Ferme le modal après le succès du paiement
             }
         } catch (error) {
             console.error(error);
             setError("An error occurred. Please try again.");
+            if (onPaymentFailure) onPaymentFailure(error.message);
         } finally {
             setLoading(false);
         }
@@ -63,15 +71,14 @@ const CheckoutForm = ({ amount, onClose }) => { // Notez que nous utilisons ici 
                     />
                 </label>
             </div>
+            <CardElement /> 
             {error && <div style={{ color: 'red' }}>{error}</div>}
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading || !stripe}>
                 {loading ? "Processing..." : "Pay Now"}
             </button>
-            <button type="button" onClick={onClose}>Close</button> {/* Ajout d'un bouton pour fermer */}
+            <button type="button" onClick={onClose}>Close</button> 
         </form>
     );
 };
 
 export default CheckoutForm;
-
-
