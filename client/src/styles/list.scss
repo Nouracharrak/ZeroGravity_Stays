@@ -1,7 +1,6 @@
 @import "./breakpoints.scss";
 @import "./variables.scss";
 
-
 .title-list {
   margin: 40px 100px;
   color: $blue;
@@ -20,5 +19,26 @@
 
   @include xl {
     padding: 0 20px 120px;
+  }
+}
+
+// Styles pour le bouton "Pay Now"
+.pay-now-button {
+  background-color: $blue; // Remplacez par la couleur souhaitée
+  color: white; // Couleur du texte
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: darken($blue, 10%); // Assurez-vous que cette fonction est définie dans variables.scss
+  }
+
+  &:disabled {
+    background-color: grey;
+    cursor: not-allowed;
   }
 }

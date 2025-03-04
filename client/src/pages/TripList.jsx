@@ -1,17 +1,21 @@
-import Loader from '../componenets/Loader';
-import Navbar from '../componenets/Navbar';
-import Footer from "../componenets/Footer"
+import Loader from '../components/Loader';
+import Navbar from '../components/Navbar';
+import Footer from "../components/Footer";
 import '../styles/list.scss';
 import React, { useEffect, useState } from 'react';
 import { setTripList } from '../redux/state';
 import { useDispatch, useSelector } from 'react-redux';
-import ListingCard from '../componenets/ListingCard';
-import URL from "../constants/api"
+import ListingCard from '../components/ListingCard';
+import URL from "../constants/api";
+import CheckoutForm from '../components/CheckoutForm';
 
 const TripList = () => {
   const [loading, setLoading] = useState(true);
-  const userId = useSelector((state) => state.user._id);  // Accès à l'ID de l'utilisateur dans le store
-  const tripList = useSelector((state) => state.user.tripList);  // Accès à la liste des voyages dans le store
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [openCheckout, setOpenCheckout] = useState(false);
+
+  const userId = useSelector((state) => state.user._id);
+  const tripList = useSelector((state) => state.user.tripList);
   const dispatch = useDispatch();
 
   const getTripList = async () => {
@@ -20,11 +24,11 @@ const TripList = () => {
         method: 'GET',
       });
       const data = await response.json();
-      dispatch(setTripList(data));  // Mise à jour du store avec la liste des voyages
-      setLoading(false);  // Mettre à jour le loading à false une fois que les données sont chargées
+      dispatch(setTripList(data));
+      setLoading(false);
     } catch (err) {
       console.log('Fetch Trip List Failed', err.message);
-      setLoading(false);  // En cas d'erreur, on met aussi loading à false
+      setLoading(false);
     }
   };
 
@@ -34,7 +38,12 @@ const TripList = () => {
     } else {
       console.log('Error: User ID is not available');
     }
-  }, [userId]); // Ajout de userId dans le tableau de dépendances pour qu'il recharge quand l'ID change.
+  }, [userId]);
+
+  const handleBooking = (trip) => {
+    setSelectedTrip(trip);
+    setOpenCheckout(true);
+  };
 
   return loading ? (
     <Loader />
@@ -44,10 +53,7 @@ const TripList = () => {
       <h1 className="title-list">Your Trip List</h1>
       <div className="list">
         {tripList?.map((trip) => {
-          // Déstructure l'objet trip pour obtenir l'ID du listing et les détails du listing
           const { listingId, startDate, endDate, totalPrice, listingDetails } = trip;
-
-          // Si listingDetails est disponible, nous récupérons les informations
           const photos = listingDetails?.listingPhotosPaths || [];
           const city = listingDetails?.city || 'Unknown City';
           const province = listingDetails?.province || 'Unknown Province';
@@ -56,8 +62,8 @@ const TripList = () => {
 
           return (
             <ListingCard
-              key={listingId}  // Utilisation de listingId comme clé
-              listingId={listingId}  // Passe directement l'ID du listing ici (sans _id)
+              key={listingId}
+              listingId={listingId}
               listingPhotosPaths={photos}
               city={city}
               province={province}
@@ -71,12 +77,28 @@ const TripList = () => {
           );
         })}
       </div>
-      <Footer/>
+
+      {/* Bouton de paiement pour chaque voyage sélectionné*/}
+      {selectedTrip && openCheckout && (
+        <div className="checkout-modal">
+          <h2>Finalize Payment for Booking</h2>
+          <CheckoutForm amount={selectedTrip.totalPrice} onClose={() => setOpenCheckout(false)} />
+        </div>
+      )}
+
+      <button 
+        className="pay-now-button" 
+        onClick={() => handleBooking(selectedTrip)} 
+        disabled={!selectedTrip}
+      >
+        Pay Now
+      </button>
+
+      <Footer />
     </>
   );
 };
 
 export default TripList;
-
 
 
