@@ -49,7 +49,6 @@ const TripList = () => {
     setPaymentSuccess(paymentDetails);
     setOpenCheckout(false);
     
-    // Ici, l'email de confirmation est envoyé depuis le backend après le paiement réussi
   };
 
   const handlePaymentFailure = (errorMessage) => {
@@ -82,8 +81,8 @@ const TripList = () => {
             <h2>Finalize Payment for Booking</h2>
             <CheckoutForm 
               amount={selectedTrip.totalPrice} 
-              userEmail={userEmail} // Ajout de l'email
-              tripDetails={selectedTrip} // Détails du voyage
+              userEmail={userEmail} 
+              tripDetails={selectedTrip}
               onClose={() => setOpenCheckout(false)} 
               onPaymentSuccess={handlePaymentSuccess} 
               onPaymentFailure={handlePaymentFailure} 

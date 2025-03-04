@@ -15,8 +15,16 @@ router.post("/create-payment-intent", async (req, res) => {
 
         // Si le paiement est réussi, envoyer l'e-mail
         if (paymentIntent.status === 'succeeded') {
-            await sendPaymentConfirmationEmail(userEmail, tripDetails);
-        }
+            console.log("Payment succeeded for user:", userEmail);
+            console.log("Trip details:", tripDetails);
+            
+            // Vérifiez que les détails sont valides
+            if (!userEmail || !tripDetails) {
+                console.error('Missing userEmail or tripDetails');
+            } else {
+                await sendPaymentConfirmationEmail(userEmail, tripDetails);
+            }
+        }        
 
         res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
