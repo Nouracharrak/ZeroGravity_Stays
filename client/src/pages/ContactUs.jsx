@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import '../styles/contact.scss';
 import URL from "../constants/api";
 
@@ -10,7 +10,7 @@ function Contact() {
     email: '',
     message: ''
   });
-  const history = useHistory();
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -148,7 +148,7 @@ function Contact() {
             <button onClick={() => setSubmitSuccess(false)}>
               Send Another Message
             </button>
-            <button onClick={() => history.push('/')}>Go to Home</button>
+            <button onClick={() => navigate('/')}>Go to Home</button>
           </div>
         ) : (
           <>
