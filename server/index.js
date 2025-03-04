@@ -11,6 +11,7 @@ const bookingRoutes = require("./routes/booking.js");
 const profileRoutes = require("./routes/profile.js");
 const userRoutes = require("./routes/user.js");
 const contactRoutes = require("./routes/contact.js");
+const stripeRoutes = require("./routes/stripe.js");
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -99,6 +100,7 @@ app.use("/users", userRoutes);
 app.use("/contact", contactRoutes);
 app.use("/properties", listingRoutes);
 app.use("/bookings", bookingRoutes);
+app.use("/stripe", stripeRoutes);
 
 // Gestion des erreurs globales
 app.use((err, req, res, next) => {

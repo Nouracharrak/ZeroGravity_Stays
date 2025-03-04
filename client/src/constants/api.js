@@ -17,8 +17,7 @@ const URL = {
     UPDATE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
     DELETE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
 
-    // PROFILE
-    // PROFILE - URLs corrigées
+    // PROFILE 
     FETCH_PROFILE: "https://zero-gravity-stays-bevn.vercel.app/users/profile/me",
     UPDATE_PROFILE: "https://zero-gravity-stays-bevn.vercel.app/users/profile/update",
     UPDATE_PASSWORD: "https://zero-gravity-stays-bevn.vercel.app/users/profile/password",

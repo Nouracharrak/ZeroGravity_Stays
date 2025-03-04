@@ -13,6 +13,7 @@ import CategoryPage from './pages/CategoryPage'
 import SearchPage from './pages/SearchPage'
 import ProfileSettings from './pages/ProfileSettings';
 import Contact from "./pages/ContactUs";
+import CheckoutForm from './pages/CheckoutForm';
 
 function App() {
   return (
@@ -32,6 +33,8 @@ function App() {
         <Route path="/:userId/reservations" element={<ReservationList/>}/>
         <Route path="/profile" element={<ProfileSettings/>}/>
         <Route path="/contact" element={<Contact />} />
+        <Route path="/contact" element={<CheckoutForm />} />
+      
       </Routes>
       </BrowserRouter>
     </div>
