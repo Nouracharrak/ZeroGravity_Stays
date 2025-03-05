@@ -1,5 +1,5 @@
-@import "./breakpoints.scss";
-@import "./variables.scss";
+@import "./breakpoints.scss"; // Assurez-vous que ce fichier est correctement importé
+@import "./variables.scss";   // Assurez-vous que ce fichier est correctement importé
 
 .title-list {
   margin: 40px 100px;
@@ -45,15 +45,10 @@
   border: 1px solid #ccc; /* Bordure pour le style */
   border-radius: 8px; /* Coins arrondis */
   background-color: #f9f9f9; /* Fond gris clair */
-  
+
   h2 {
     color: $blue; /* Utilise votre couleur définie */
   }
-  .centered-title {
-    text-align: center;
-    margin-bottom: 20px; // Ajouter un espacement en bas si nécessaire
-}
-
 
   ul {
     list-style: none; /* Retire les puces de liste */
@@ -67,11 +62,18 @@
   button {
     @include buttonStyle;
     margin-top: 10px;
-    
+
     &:hover {
       background-color: darken($blue, 10%); // Assurez-vous que cette fonction est définie dans variables.scss
     }
   }
 }
 
+// Style pour le titre centré dans le modal
+.centered-title {
+  text-align: center; /* Centre le texte */
+  font-size: 1.5em; /* Ajustez la taille de la police selon vos besoins */
+  margin: 20px 0; /* Ajoute de l'espace en haut et en bas */
+  color: $blue; /* Utilise la couleur des variables si défini, sinon spécifiez une couleur ici */
+}
 
