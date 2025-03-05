@@ -40,7 +40,7 @@ function App() {
             <Route path="/:userId/reservations" element={<ReservationList />} />
             <Route path="/profile" element={<ProfileSettings />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/checkout" element={<CheckoutForm />} /> {/* Assurez-vous que le bon chemin est utilisé ici */}
+            <Route path="/checkout" element={<CheckoutForm />} />
           </Routes>
         </Elements>
       </BrowserRouter>
