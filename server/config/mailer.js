@@ -118,56 +118,53 @@ const sendPasswordResetEmail = async (user, token) => {
     throw error;
   }
 };
-// Fonction pour envoyer la confirmation de paiement
 const sendPaymentConfirmationEmail = async (userEmail, tripId, tripPrice) => {
     try {
-        console.log("Preparing payment confirmation email for:", userEmail);
-
-        // Récupérer les détails de réservation à partir de tripId
         const bookingDetails = await Booking.findById(tripId)
-            .populate('customerId', 'name') // Assurez-vous de récupérer le nom du client
-            .populate('hostId', 'name'); // Assurez-vous de récupérer le nom de l'hôte
+            .populate('customerId', 'name')
+            .populate('hostId', 'name');
 
         if (!bookingDetails) {
             throw new Error('Booking details not found for tripId: ' + tripId);
         }
 
-        // Construction du contenu HTML de l'e-mail
+        // Conversion des chaînes en objets Date
+        const startDate = new Date(bookingDetails.startDate);
+        const endDate = new Date(bookingDetails.endDate);
+
+        // Vérification de la validité des dates
+        if (isNaN(startDate) || isNaN(endDate)) {
+            throw new Error('Invalid date format in booking details');
+        }
+
+        const formattedStartDate = startDate.toDateString();
+        const formattedEndDate = endDate.toDateString();
+
         const htmlContent = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 5px; background-color: #f9f9f9;">
-                <h2 style="color: #333;">Thank You for Your Payment!</h2>
-                <p style="font-size: 16px;">Your payment of ${tripPrice} € has been successfully processed. Here are the details of your booking:</p>
-
-                <div style="margin: 20px 0; border-top: 1px solid #e5e5e5; padding-top: 15px;">
-                    <strong style="color: #555;">Destination (Listing):</strong> ${bookingDetails.listingId || 'N/A'}<br>
-                    <strong style="color: #555;">Price:</strong> ${tripPrice} €<br>
-                    <strong style="color: #555;">Booking Dates:</strong> ${bookingDetails.startDate.toDateString()} to ${bookingDetails.endDate.toDateString()}<br>
-                    <strong style="color: #555;">Customer:</strong> ${bookingDetails.customerId.name || 'N/A'}<br>
-                    <strong style="color: #555;">Host:</strong> ${bookingDetails.hostId.name || 'N/A'}
-                </div>
-
-                <p style="font-size: 16px;">If you have any questions or need further assistance, feel free to reach out to us.</p>
-                
-                <p style="font-size: 16px;">Thank you,<br>The Zero Gravity Stays Team</p>
+            <div>
+                <h2>Thank You for Your Payment!</h2>
+                <p>Your payment of ${tripPrice} € has been successfully processed. Here are the details of your booking:</p>
+                <p><strong>Booking Dates:</strong> ${formattedStartDate} to ${formattedEndDate}</p>
+                <p>If you have any questions or need further assistance, feel free to reach out to us.</p>
+                <p>Thank you,<br>The Team</p>
             </div>
         `;
 
-        // Envoyer l'e-mail avec le contenu personnalisé
-        const emailSent = await sendEmail(userEmail, 'Payment Confirmation - Zero Gravity Stays', htmlContent);
+        const emailSent = await sendEmail(userEmail, 'Payment Confirmation', htmlContent);
 
         if (emailSent) {
-            console.log("Payment confirmation email sent successfully to:", userEmail);
+            console.log("Email sent successfully to:", userEmail);
         } else {
-            console.warn("Failed to send payment confirmation email to:", userEmail);
+            console.warn("Failed to send email to:", userEmail);
         }
 
         return emailSent;
     } catch (error) {
         console.error('Error in sendPaymentConfirmationEmail:', error.message);
-        if (error.code) console.error('Error Code:', error.code);
-        throw error; // Propagate the error for upstream handling
+        throw error;
     }
 };
+
 // Fonction pour envoyer un email de notification à l'administrateur pour un nouveau message de contact
 const sendContactAdminNotification = async (contactData) => {
   try {
