@@ -73,7 +73,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                         Amount (in €):
                         <input
                             type="number"
-                            value={(amount / 100).toFixed(2)} // Afficher le montant en euros
+                            value={(amount / 100).toFixed(2)}
                             readOnly
                             aria-label={`Amount: ${amount / 100} €`}
                         />
