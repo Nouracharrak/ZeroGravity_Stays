@@ -14,7 +14,7 @@ import {
   ArrowBack as BackIcon,
   Edit as EditIcon
 } from '@mui/icons-material';
-import URL from '../../src/constants/api'
+import URL from '../../constants/api'
 
 // TabPanel component pour les onglets
 function TabPanel(props) {

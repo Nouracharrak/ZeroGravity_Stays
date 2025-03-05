@@ -3,7 +3,7 @@ import './App.css';
 import HomePage from "./pages/HomePage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
-import AdminApp from '../admin/AdminApp';
+import AdminApp from './admin/AdminApp';
 import CreateListing from "./pages/CreateListing";
 import ListingDetails from "./pages/ListingDetails";
 import TripList from "./pages/TripList";
