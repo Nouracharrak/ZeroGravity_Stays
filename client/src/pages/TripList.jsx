@@ -92,18 +92,19 @@ const TripList = () => {
       )}
 
       {paymentSuccess && (
-        <div className="payment-summary">
-          <h2>Payment Successful!</h2>
-          <p>Thank you for your payment.</p>
-          <p>Trip Details:</p>
-          <ul>
+    <div className="payment-success">
+        <h2>Payment Successful!</h2>
+        <p>Thank you for your payment.</p>
+        <p>Trip Details:</p>
+        <ul>
             <li>Destination: {selectedTrip.listingDetails.city}, {selectedTrip.listingDetails.province}</li>
             <li>Price: {selectedTrip.totalPrice} €</li>
             <li>Booking Dates: {selectedTrip.startDate} to {selectedTrip.endDate}</li>
-          </ul>
-          <button onClick={() => setPaymentSuccess(false)}>Close</button>
-        </div>
-      )}
+        </ul>
+        <button onClick={() => setPaymentSuccess(false)}>Close</button>
+    </div>
+)}
+
 
       <Footer />
     </>

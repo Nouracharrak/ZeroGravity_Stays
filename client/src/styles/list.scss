@@ -24,14 +24,8 @@
 
 // Styles pour le bouton "Pay Now"
 .pay-now-button {
-  background-color: $blue; // Remplacez par la couleur souhaitée
-  color: white; // Couleur du texte
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  @include buttonStyle;
+  margin-top: 10px;
 
   &:hover {
     background-color: darken($blue, 10%); // Assurez-vous que cette fonction est définie dans variables.scss
@@ -42,3 +36,37 @@
     cursor: not-allowed;
   }
 }
+
+// Styles pour le message de succès de paiement
+.payment-success {
+  text-align: center; /* Centre le texte */
+  margin: 20px 100px; /* Marges pour l'espacement */
+  padding: 20px; /* Espacement interne */
+  border: 1px solid #ccc; /* Bordure pour le style */
+  border-radius: 8px; /* Coins arrondis */
+  background-color: #f9f9f9; /* Fond gris clair */
+  
+  h2 {
+    color: $blue; /* Utilise votre couleur définie */
+  }
+
+  ul {
+    list-style: none; /* Retire les puces de liste */
+    padding: 0;
+
+    li {
+      margin: 8px 0; /* Espacement entre les éléments de la liste */
+    }
+  }
+
+  button {
+    @include buttonStyle;
+    margin-top: 10px;
+    
+    &:hover {
+      background-color: darken($blue, 10%); // Assurez-vous que cette fonction est définie dans variables.scss
+    }
+  }
+}
+
+

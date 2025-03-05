@@ -6,7 +6,6 @@ import '../styles/checkoutForm.scss';  // Assurez-vous que ce chemin est correct
 const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) => { 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [paymentSuccessful, setPaymentSuccessful] = useState(false); // État pour le succès du paiement
     const stripe = useStripe();
     const elements = useElements();
 
@@ -46,9 +45,11 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
                 setError(result.error.message);
                 if (onPaymentFailure) onPaymentFailure(result.error.message);
             } else if (result.paymentIntent.status === "succeeded") {
-                setPaymentSuccessful(true); // Met à jour l'état de succès
-                if (onPaymentSuccess) onPaymentSuccess(result.paymentIntent);
-                onClose();
+                // Notifie le parent du succès du paiement
+                if (onPaymentSuccess) {
+                    onPaymentSuccess(result.paymentIntent);
+                }
+                onClose(); // Ferme le formulaire
             }
         } catch (error) {
             console.error(error);
@@ -61,43 +62,36 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
 
     return (
         <div className="checkout-form-container">
-            {paymentSuccessful ? ( // Afficher le message de succès
-                <div className="payment-success">
-                    <h3>Payment Successful!</h3>
-                    <p>Thank you for your payment.</p>
-                    <button onClick={onClose}>Close</button>
+            <form className="checkout-form" onSubmit={handleSubmit}>
+                <h2>Payment Information</h2>
+                <div className="form-group">
+                    <label>
+                        Amount (in €):
+                        <input
+                            type="number"
+                            value={amount}
+                            readOnly
+                            aria-label={`Amount: ${amount} €`}
+                        />
+                    </label>
                 </div>
-            ) : (
-                <form className="checkout-form" onSubmit={handleSubmit}>
-                    <h2>Payment Information</h2>
-                    <div className="form-group">
-                        <label>
-                            Amount (in €):
-                            <input
-                                type="number"
-                                value={amount}
-                                readOnly
-                                aria-label={`Amount: ${amount} €`}
-                            />
-                        </label>
-                    </div>
-                    <div className="form-group">
-                        <CardElement className="card-element"/>
-                        {error && <div className="error-message">{error}</div>}
-                    </div>
-                    <div className="form-actions">
-                        <button type="submit" disabled={loading || !stripe}>
-                            {loading ? "Processing..." : "Pay Now"}
-                        </button>
-                        <button type="button" onClick={onClose} className="close-button">Close</button>
-                    </div>
-                </form>
-            )}
+                <div className="form-group">
+                    <CardElement className="card-element" />
+                    {error && <div className="error-message">{error}</div>}
+                </div>
+                <div className="form-actions">
+                    <button type="submit" disabled={loading || !stripe}>
+                        {loading ? "Processing..." : "Pay Now"}
+                    </button>
+                    <button type="button" onClick={onClose} className="close-button">Close</button>
+                </div>
+            </form>
         </div>
     );
 };
 
 export default CheckoutForm;
+
 
 
 
