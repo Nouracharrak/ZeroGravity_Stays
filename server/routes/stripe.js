@@ -1,48 +1,67 @@
 const express = require("express");
 const router = express.Router();
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); 
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { sendPaymentConfirmationEmail } = require('../config/mailer.js');
 
-// Route pour créer un Payment Intent
+// Route to create a Payment Intent
 router.post("/create-payment-intent", async (req, res) => {
-    const { amount, currency, userEmail, tripDetails } = req.body; // Ajoutez ici userEmail et tripDetails
+    const { amount, currency, userEmail, tripDetails } = req.body;
+
+    // Validate userEmail and tripDetails before proceeding
+    if (!userEmail || !tripDetails) {
+        console.error('Missing userEmail or tripDetails');
+        return res.status(400).json({ error: 'Missing userEmail or tripDetails.' });
+    }
 
     try {
+        // Create the Payment Intent with Stripe
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
             currency,
+            metadata: {
+                userEmail,     // Store userEmail in metadata
+                tripDetails: JSON.stringify(tripDetails) // Store tripDetails in metadata
+            }
         });
 
-        // Si le paiement est réussi, envoyer l'e-mail
-        if (paymentIntent.status === 'succeeded') {
-            console.log("Payment succeeded for user:", userEmail);
-            console.log("Trip details:", tripDetails);
-            
-            // Vérifiez que les détails sont valides
-            if (!userEmail || !tripDetails) {
-                console.error('Missing userEmail or tripDetails');
-            } else {
-                await sendPaymentConfirmationEmail(userEmail, tripDetails);
-            }
-        }        
-
+        // Respond with the client secret for the Payment Intent
         res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
+        console.error("Error creating payment intent:", error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Optionnel : Route séparée pour l'envoi d'e-mail après confirmation de paiement
+// Route pour gérer la réussite du paiement
 router.post('/payment-success', async (req, res) => {
-    const { userEmail, tripDetails } = req.body;
+    const { paymentIntentId } = req.body; // On s'attend à ce que l'ID de Payment Intent soit fourni
+
+    if (!paymentIntentId) {
+        return res.status(400).send('Missing paymentIntentId.');
+    }
 
     try {
-        await sendPaymentConfirmationEmail(userEmail, tripDetails);
-        res.status(200).send('Email de confirmation de paiement envoyé.');
+        // Récupérer le Payment Intent pour vérifier son état
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        // Vérifier si le paiement a réussi
+        if (paymentIntent.status === 'succeeded') {
+            const userEmail = paymentIntent.metadata.userEmail;
+            const tripDetails = JSON.parse(paymentIntent.metadata.tripDetails);
+
+            // Envoyer l'e-mail de confirmation
+            await sendPaymentConfirmationEmail(userEmail, tripDetails);
+            console.log("Payment confirmation email sent to:", userEmail);
+            res.status(200).send('Payment confirmation email sent successfully.');
+        } else {
+            res.status(400).send('Payment not successful.');
+        }
     } catch (error) {
-        res.status(500).send('Erreur lors de l\'envoi de l\'email de confirmation de paiement.');
+        console.error("Error processing payment success:", error);
+        res.status(500).send('Error processing payment success.');
     }
 });
 
 module.exports = router;
+
 

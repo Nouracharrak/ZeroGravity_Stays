@@ -117,36 +117,44 @@ const sendPasswordResetEmail = async (user, token) => {
     throw error;
   }
 };
-// Fonction pour envoyer une confirmation de paiement
+// Function to send a payment confirmation
 const sendPaymentConfirmationEmail = async (userEmail, tripDetails) => {
     try {
-      console.log("Preparing payment confirmation email for:", userEmail);
-  
-      // Contenu HTML de l'email
-      const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 5px;">
-          <h2>Thank You for Your Payment!</h2>
-          <p>Your payment has been successfully processed. Here are the details of your booking:</p>
-  
-          <div style="margin: 20px 0;">
-            <strong>Destination:</strong> ${tripDetails.destination}<br>
-            <strong>Price:</strong> $${tripDetails.totalPrice}<br>
-            <strong>Booking Dates:</strong> ${tripDetails.startDate} to ${tripDetails.endDate}
-          </div>
-  
-          <p>If you have any questions or need further assistance, feel free to reach out to us.</p>
-          
-          <p>Thank you,<br>The Zero Gravity Stays Team</p>
-        </div>
-      `;
-  
-      return await sendEmail(userEmail, 'Payment Confirmation - Zero Gravity Stays', htmlContent);
-    } catch (error) {
-      console.error('Error in sendPaymentConfirmationEmail:', error);
-      throw error;
-    }
-  };
+        console.log("Preparing payment confirmation email for:", userEmail);
 
+        // HTML content of the email
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 5px; background-color: #f9f9f9;">
+                <h2 style="color: #333;">Thank You for Your Payment!</h2>
+                <p style="font-size: 16px;">Your payment has been successfully processed. Here are the details of your booking:</p>
+
+                <div style="margin: 20px 0; border-top: 1px solid #e5e5e5; padding-top: 15px;">
+                    <strong style="color: #555;">Destination:</strong> ${tripDetails.destination}<br>
+                    <strong style="color: #555;">Price:</strong> ${tripDetails.totalPrice} €<br>
+                    <strong style="color: #555;">Booking Dates:</strong> ${tripDetails.startDate} to ${tripDetails.endDate}
+                </div>
+
+                <p style="font-size: 16px;">If you have any questions or need further assistance, feel free to reach out to us.</p>
+                
+                <p style="font-size: 16px;">Thank you,<br>The Zero Gravity Stays Team</p>
+            </div>
+        `;
+
+        // Send the email with the custom content
+        const emailSent = await sendEmail(userEmail, 'Payment Confirmation - Zero Gravity Stays', htmlContent);
+
+        if (emailSent) {
+            console.log("Payment confirmation email sent successfully to:", userEmail);
+        } else {
+            console.warn("Failed to send payment confirmation email to:", userEmail);
+        }
+
+        return emailSent;
+    } catch (error) {
+        console.error('Error in sendPaymentConfirmationEmail:', error);
+        throw error;  // Propagate the error for upstream handling
+    }
+};
 // Fonction pour envoyer un email de notification à l'administrateur pour un nouveau message de contact
 const sendContactAdminNotification = async (contactData) => {
   try {
