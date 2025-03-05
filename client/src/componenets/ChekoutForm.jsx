@@ -3,7 +3,7 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import URL from "../constants/api";
 import '../styles/checkoutForm.scss';  // Assurez-vous que ce chemin est correct
 
-const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) => { 
+const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSuccess, onPaymentFailure }) => { 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const stripe = useStripe();
@@ -26,7 +26,12 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ amount, currency: "eur" }), // Change currency to EUR
+                body: JSON.stringify({
+                    amount,
+                    currency: "eur",
+                    userEmail,
+                    tripDetails 
+                }),
             });
 
             if (!response.ok) {
@@ -91,6 +96,7 @@ const CheckoutForm = ({ amount, onClose, onPaymentSuccess, onPaymentFailure }) =
 };
 
 export default CheckoutForm;
+
 
 
 
