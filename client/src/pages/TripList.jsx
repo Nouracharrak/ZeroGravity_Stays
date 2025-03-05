@@ -47,7 +47,7 @@ const TripList = () => {
 
   const handlePaymentSuccess = async (paymentDetails) => {
     try {
-        const response = await fetch(`${URL.BACK_LINK}/payment-success`, {
+        const response = await fetch(URL.SEND_CONFIRMATION, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
