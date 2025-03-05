@@ -3,6 +3,31 @@ const Booking = require('../models/Booking');
 const Listing = require('../models/Listing');
 const ContactUs = require('../models/ContactUs');
 
+exports.getDashboardStats = async (req, res) => {
+  try {
+      const userCount = await User.countDocuments();
+      const bookingCount = await Booking.countDocuments();
+      const propertyCount = await Listing.countDocuments();
+      const contactMessageCount = await ContactUs.countDocuments();
+
+      res.status(200).json({
+          success: true,
+          data: {
+              users: userCount,
+              bookings: bookingCount,
+              properties: propertyCount,
+              contactMessages: contactMessageCount
+          }
+      });
+  } catch (error) {
+      res.status(500).json({ 
+          success: false, 
+          message: 'Erreur lors de la récupération des statistiques du tableau de bord.', 
+          error: error.message 
+      });
+  }
+};
+
 // Gestion des utilisateurs
 exports.getAllUsers = async (req, res) => {
     try {
