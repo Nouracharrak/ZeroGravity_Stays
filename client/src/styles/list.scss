@@ -49,6 +49,11 @@
   h2 {
     color: $blue; /* Utilise votre couleur définie */
   }
+  .centered-title {
+    text-align: center;
+    margin-bottom: 20px; // Ajouter un espacement en bas si nécessaire
+}
+
 
   ul {
     list-style: none; /* Retire les puces de liste */

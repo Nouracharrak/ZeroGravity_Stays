@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const Booking = require('../models/Booking');
 
 // Configuration du transporteur d'email
 const transporter = nodemailer.createTransport({
@@ -118,20 +119,30 @@ const sendPasswordResetEmail = async (user, token) => {
   }
 };
 // Function to send a payment confirmation
-const sendPaymentConfirmationEmail = async (userEmail, tripDetails) => {
+// Fonction pour envoyer la confirmation de paiement
+const sendPaymentConfirmationEmail = async (userEmail, tripId, tripPrice) => {
     try {
         console.log("Preparing payment confirmation email for:", userEmail);
 
-        // HTML content of the email
+        // Récupérer les détails de réservation à partir de tripId
+        const bookingDetails = await Booking.findById(tripId).populate('customerId').populate('hostId', 'name');
+
+        if (!bookingDetails) {
+            throw new Error('Booking details not found');
+        }
+
+        // Construction du contenu HTML de l'e-mail
         const htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 5px; background-color: #f9f9f9;">
                 <h2 style="color: #333;">Thank You for Your Payment!</h2>
-                <p style="font-size: 16px;">Your payment has been successfully processed. Here are the details of your booking:</p>
+                <p style="font-size: 16px;">Your payment of ${tripPrice} € has been successfully processed. Here are the details of your booking:</p>
 
                 <div style="margin: 20px 0; border-top: 1px solid #e5e5e5; padding-top: 15px;">
-                    <strong style="color: #555;">Destination:</strong> ${tripDetails.destination}<br>
-                    <strong style="color: #555;">Price:</strong> ${tripDetails.totalPrice} €<br>
-                    <strong style="color: #555;">Booking Dates:</strong> ${tripDetails.startDate} to ${tripDetails.endDate}
+                    <strong style="color: #555;">Destination (Listing):</strong> ${bookingDetails.listingId}<br>
+                    <strong style="color: #555;">Price:</strong> ${tripPrice} €<br>
+                    <strong style="color: #555;">Booking Dates:</strong> ${bookingDetails.startDate} to ${bookingDetails.endDate}<br>
+                    <strong style="color: #555;">Customer:</strong> ${bookingDetails.customerId.name}<br>
+                    <strong style="color: #555;">Host:</strong> ${bookingDetails.hostId.name}
                 </div>
 
                 <p style="font-size: 16px;">If you have any questions or need further assistance, feel free to reach out to us.</p>
@@ -140,7 +151,7 @@ const sendPaymentConfirmationEmail = async (userEmail, tripDetails) => {
             </div>
         `;
 
-        // Send the email with the custom content
+        // Envoyer l'e-mail avec le contenu personnalisé
         const emailSent = await sendEmail(userEmail, 'Payment Confirmation - Zero Gravity Stays', htmlContent);
 
         if (emailSent) {

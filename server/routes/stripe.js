@@ -5,12 +5,12 @@ const { sendPaymentConfirmationEmail } = require('../config/mailer.js');
 
 // Route to create a Payment Intent
 router.post("/create-payment-intent", async (req, res) => {
-    const { amount, currency, userEmail, tripDetails } = req.body;
+    const { amount, currency, userEmail, tripId } = req.body; // Recevez seulement l'ID et le prix
 
-    // Validate userEmail and tripDetails before proceeding
-    if (!userEmail || !tripDetails) {
-        console.error('Missing userEmail or tripDetails');
-        return res.status(400).json({ error: 'Missing userEmail or tripDetails.' });
+    // Validate userEmail and tripId before proceeding
+    if (!userEmail || !tripId) {
+        console.error('Missing userEmail or tripId');
+        return res.status(400).json({ error: 'Missing userEmail or tripId.' });
     }
 
     try {
@@ -19,8 +19,9 @@ router.post("/create-payment-intent", async (req, res) => {
             amount,
             currency,
             metadata: {
-                userEmail,     // Store userEmail in metadata
-                tripDetails: JSON.stringify(tripDetails) // Store tripDetails in metadata
+                userEmail,    // Store userEmail in metadata
+                tripId        // Send only the trip ID
+                // tripPrice      // Optionnel: stockez le prix du voyage si nécessaire
             }
         });
 
@@ -47,12 +48,21 @@ router.post('/payment-success', async (req, res) => {
         // Vérifier si le paiement a réussi
         if (paymentIntent.status === 'succeeded') {
             const userEmail = paymentIntent.metadata.userEmail;
-            const tripDetails = JSON.parse(paymentIntent.metadata.tripDetails);
+            const tripId = paymentIntent.metadata.tripId; // Récupérez l'ID du voyage
+            const tripPrice = paymentIntent.amount; // Vous pouvez utiliser paymentIntent.amount en tant que prix
 
             // Envoyer l'e-mail de confirmation
-            await sendPaymentConfirmationEmail(userEmail, tripDetails);
-            console.log("Payment confirmation email sent to:", userEmail);
-            res.status(200).send('Payment confirmation email sent successfully.');
+            try {
+                await sendPaymentConfirmationEmail(userEmail, tripId, tripPrice); // Appel correct avec les paramètres individuels
+                console.log("Payment confirmation email sent to:", userEmail);
+                
+                res.status(200).send({
+                    message: 'Payment confirmation email sent successfully.',
+                });
+            } catch (emailError) {
+                console.error("Error sending payment confirmation email:", emailError);
+                res.status(500).send("Error sending payment confirmation email.");
+            }
         } else {
             res.status(400).send('Payment not successful.');
         }
@@ -63,5 +73,7 @@ router.post('/payment-success', async (req, res) => {
 });
 
 module.exports = router;
+
+
 
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js"; 
 import URL from "../constants/api";
-import '../styles/checkoutForm.scss';  // Assurez-vous que ce chemin est correct
+import '../styles/checkoutForm.scss'; 
 
 const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSuccess, onPaymentFailure }) => { 
     const [loading, setLoading] = useState(false);
@@ -13,13 +13,13 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
         event.preventDefault();
         setLoading(true);
         setError("");
-
+    
         if (!stripe || !elements) {
             return; // S'assurer que Stripe et Elements sont chargés
         }
-
+    
         const cardElement = elements.getElement(CardElement); 
-
+    
         try {
             const response = await fetch(`${URL.BACK_LINK}/stripe/create-payment-intent`, {
                 method: "POST",
@@ -30,22 +30,23 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                     amount,
                     currency: "eur",
                     userEmail,
-                    tripDetails 
+                    tripId: tripDetails._id, // Id du voyage
+                    // Vous pourriez choisir de omettre tripPrice ici si ce n'est pas nécessaire
                 }),
             });
-
+    
             if (!response.ok) {
                 throw new Error("Failed to create payment intent");
             }
-
+    
             const { clientSecret } = await response.json();
-
+            
             const result = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: cardElement,
                 },
             });
-
+    
             if (result.error) {
                 setError(result.error.message);
                 if (onPaymentFailure) onPaymentFailure(result.error.message);
@@ -63,8 +64,8 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
         } finally {
             setLoading(false);
         }
-    };
-
+    };    
+    
     return (
         <div className="checkout-form-container">
             <form className="checkout-form" onSubmit={handleSubmit}>
@@ -74,7 +75,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                         Amount (in €):
                         <input
                             type="number"
-                            value={amount}
+                            value={amount.toFixed(2)} // Optionnel: formater le montant
                             readOnly
                             aria-label={`Amount: ${amount} €`}
                         />
@@ -96,6 +97,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
 };
 
 export default CheckoutForm;
+
 
 
 
