@@ -118,17 +118,18 @@ const sendPasswordResetEmail = async (user, token) => {
     throw error;
   }
 };
-// Function to send a payment confirmation
 // Fonction pour envoyer la confirmation de paiement
 const sendPaymentConfirmationEmail = async (userEmail, tripId, tripPrice) => {
     try {
         console.log("Preparing payment confirmation email for:", userEmail);
 
         // Récupérer les détails de réservation à partir de tripId
-        const bookingDetails = await Booking.findById(tripId).populate('customerId').populate('hostId', 'name');
+        const bookingDetails = await Booking.findById(tripId)
+            .populate('customerId', 'name') // Assurez-vous de récupérer le nom du client
+            .populate('hostId', 'name'); // Assurez-vous de récupérer le nom de l'hôte
 
         if (!bookingDetails) {
-            throw new Error('Booking details not found');
+            throw new Error('Booking details not found for tripId: ' + tripId);
         }
 
         // Construction du contenu HTML de l'e-mail
@@ -138,11 +139,11 @@ const sendPaymentConfirmationEmail = async (userEmail, tripId, tripPrice) => {
                 <p style="font-size: 16px;">Your payment of ${tripPrice} € has been successfully processed. Here are the details of your booking:</p>
 
                 <div style="margin: 20px 0; border-top: 1px solid #e5e5e5; padding-top: 15px;">
-                    <strong style="color: #555;">Destination (Listing):</strong> ${bookingDetails.listingId}<br>
+                    <strong style="color: #555;">Destination (Listing):</strong> ${bookingDetails.listingId || 'N/A'}<br>
                     <strong style="color: #555;">Price:</strong> ${tripPrice} €<br>
-                    <strong style="color: #555;">Booking Dates:</strong> ${bookingDetails.startDate} to ${bookingDetails.endDate}<br>
-                    <strong style="color: #555;">Customer:</strong> ${bookingDetails.customerId.name}<br>
-                    <strong style="color: #555;">Host:</strong> ${bookingDetails.hostId.name}
+                    <strong style="color: #555;">Booking Dates:</strong> ${bookingDetails.startDate.toDateString()} to ${bookingDetails.endDate.toDateString()}<br>
+                    <strong style="color: #555;">Customer:</strong> ${bookingDetails.customerId.name || 'N/A'}<br>
+                    <strong style="color: #555;">Host:</strong> ${bookingDetails.hostId.name || 'N/A'}
                 </div>
 
                 <p style="font-size: 16px;">If you have any questions or need further assistance, feel free to reach out to us.</p>
@@ -162,8 +163,9 @@ const sendPaymentConfirmationEmail = async (userEmail, tripId, tripPrice) => {
 
         return emailSent;
     } catch (error) {
-        console.error('Error in sendPaymentConfirmationEmail:', error);
-        throw error;  // Propagate the error for upstream handling
+        console.error('Error in sendPaymentConfirmationEmail:', error.message);
+        if (error.code) console.error('Error Code:', error.code);
+        throw error; // Propagate the error for upstream handling
     }
 };
 // Fonction pour envoyer un email de notification à l'administrateur pour un nouveau message de contact
