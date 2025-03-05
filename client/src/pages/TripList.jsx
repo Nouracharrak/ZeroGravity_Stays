@@ -7,14 +7,14 @@ import { setTripList } from '../redux/state';
 import { useDispatch, useSelector } from 'react-redux';
 import ListingCard from '../componenets/ListingCard';
 import URL from "../constants/api";
-import CheckoutForm from '../componenets/ChekoutForm'; // Veuillez vérifier l'orthographe
+import CheckoutForm from '../componenets/ChekoutForm'; 
 
 const TripList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [openCheckout, setOpenCheckout] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [error, setError] = useState(''); // Gérer les erreurs
+  const [error, setError] = useState('');
 
   const userId = useSelector((state) => state.user._id);
   const userEmail = useSelector((state) => state.user.email);
@@ -23,26 +23,21 @@ const TripList = () => {
 
   const getTripList = async () => {
     try {
-      const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`, {
-        method: 'GET',
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`);
+      if (!response.ok) throw new Error('Network response was not ok');
+      
       const data = await response.json();
       dispatch(setTripList(data));
     } catch (err) {
       console.log('Fetch Trip List Failed', err.message);
-      setError('Failed to fetch trip list. Please try again later.'); // Mettez à jour l'état d'erreur
+      setError('Failed to fetch trip list. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (userId) {
-      getTripList();
-    }
+    if (userId) getTripList();
   }, [userId]);
 
   const handleBooking = (trip) => {
@@ -57,9 +52,7 @@ const TripList = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                paymentIntentId: paymentDetails.id, // ID du Payment Intent
-            }),
+            body: JSON.stringify({ paymentIntentId: paymentDetails.id }),
         });
 
         if (!response.ok) {
@@ -72,11 +65,10 @@ const TripList = () => {
         console.error("Error sending email confirmation:", error);
         alert("Failed to send email confirmation. Please try again.");
     }
-};
-
+  };
 
   const handlePaymentFailure = (errorMessage) => {
-    setPaymentSuccess(false); // Réinitialiser le statut de paiement
+    setPaymentSuccess(false); 
     alert("Payment failed: " + errorMessage);
   };
 
@@ -87,7 +79,7 @@ const TripList = () => {
       <>
         <Navbar />
         <h1 className="title-list">Your Trip List</h1>
-        {error && <div className="error-message">{error}</div>} {/* Afficher le message d'erreur */}
+        {error && <div className="error-message">{error}</div>}
         <div className="list">
           {tripList.map((trip) => (
             <div key={trip.listingId} className="listing-item">
@@ -105,7 +97,7 @@ const TripList = () => {
         {openCheckout && selectedTrip && (
           <div className="checkout-overlay">
             <div className="checkout-modal">
-            <h2 className="centered-title">Finalize Payment for Booking</h2>
+              <h2 className="centered-title">Finalize Payment for Booking</h2>
               <CheckoutForm 
                 amount={selectedTrip.totalPrice} 
                 userEmail={userEmail} 
@@ -139,4 +131,3 @@ const TripList = () => {
 };
 
 export default TripList;
-

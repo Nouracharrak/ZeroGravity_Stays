@@ -1,3 +1,4 @@
+// Composant CheckoutForm
 import React, { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js"; 
 import URL from "../constants/api";
@@ -30,8 +31,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                     amount,
                     currency: "eur",
                     userEmail,
-                    tripId: tripDetails._id, // Id du voyage
-                    // Vous pourriez choisir de omettre tripPrice ici si ce n'est pas nécessaire
+                    tripId: tripDetails._id,
                 }),
             });
     
@@ -40,7 +40,6 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
             }
     
             const { clientSecret } = await response.json();
-            
             const result = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: cardElement,
@@ -51,11 +50,10 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                 setError(result.error.message);
                 if (onPaymentFailure) onPaymentFailure(result.error.message);
             } else if (result.paymentIntent.status === "succeeded") {
-                // Notifie le parent du succès du paiement
                 if (onPaymentSuccess) {
                     onPaymentSuccess(result.paymentIntent);
                 }
-                onClose(); // Ferme le formulaire
+                onClose(); 
             }
         } catch (error) {
             console.error(error);
@@ -65,7 +63,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
             setLoading(false);
         }
     };    
-    
+
     return (
         <div className="checkout-form-container">
             <form className="checkout-form" onSubmit={handleSubmit}>
@@ -75,9 +73,9 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                         Amount (in €):
                         <input
                             type="number"
-                            value={amount.toFixed(2)} // Optionnel: formater le montant
+                            value={(amount / 100).toFixed(2)} // Afficher le montant en euros
                             readOnly
-                            aria-label={`Amount: ${amount} €`}
+                            aria-label={`Amount: ${amount / 100} €`}
                         />
                     </label>
                 </div>
@@ -97,10 +95,3 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
 };
 
 export default CheckoutForm;
-
-
-
-
-
-
-
