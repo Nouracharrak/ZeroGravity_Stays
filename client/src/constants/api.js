@@ -34,7 +34,7 @@ const URL = {
 // URL CLOUDINARY
     CLOUDINARY: "https://api.cloudinary.com/v1_1/drdw1wuks/image/upload",
 // CONFIRMATION
-    SEND_CONFIRMATION: "https://zero-gravity-stays-bevn.vercel.app/payment-success",
+    SEND_CONFIRMATION: "https://zero-gravity-stays-bevn.vercel.app/stripe/payment-success",
 // URL BACK 
     BACK_LINK : "https://zero-gravity-stays-bevn.vercel.app"
     }

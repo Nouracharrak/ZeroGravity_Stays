@@ -50,10 +50,30 @@ const TripList = () => {
     setOpenCheckout(true);
   };
 
-  const handlePaymentSuccess = (paymentDetails) => {
-    setPaymentSuccess(true);
-    setOpenCheckout(false);
-  };
+  const handlePaymentSuccess = async (paymentDetails) => {
+    try {
+        const response = await fetch(`${URL.BACK_LINK}/stripe/payment-success`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                paymentIntentId: paymentDetails.id, // ID du Payment Intent
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send payment confirmation email');
+        }
+
+        setPaymentSuccess(true);
+        setOpenCheckout(false);
+    } catch (error) {
+        console.error("Error sending email confirmation:", error);
+        alert("Failed to send email confirmation. Please try again.");
+    }
+};
+
 
   const handlePaymentFailure = (errorMessage) => {
     setPaymentSuccess(false); // Réinitialiser le statut de paiement
