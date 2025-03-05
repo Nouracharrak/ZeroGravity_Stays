@@ -30,13 +30,18 @@ const TripList = () => {
       const data = await response.json();
       dispatch(setTripList(data));
       
-      // Initialiser l'état des paiements
-      const paidStatus = {};
-      data.forEach(trip => {
-        // Supposons que votre API renvoie un champ 'isPaid' pour chaque voyage
-        paidStatus[trip.listingId] = trip.isPaid || false;
-      });
-      setPaidTrips(paidStatus);
+      // Charger les statuts de paiement depuis localStorage
+      const storedPaidTrips = localStorage.getItem('paidTrips');
+      if (storedPaidTrips) {
+        setPaidTrips(JSON.parse(storedPaidTrips));
+      } else {
+        // Initialiser l'état des paiements si rien n'est en localStorage
+        const paidStatus = {};
+        data.forEach(trip => {
+          paidStatus[trip.listingId] = trip.isPaid || false;
+        });
+        setPaidTrips(paidStatus);
+      }
     } catch (err) {
       console.log('Fetch Trip List Failed', err.message);
       setError('Failed to fetch trip list. Please try again later.');
@@ -44,6 +49,7 @@ const TripList = () => {
       setLoading(false);
     }
   };  
+  
   useEffect(() => {
     if (userId) getTripList();
   }, [userId]);
@@ -66,12 +72,17 @@ const TripList = () => {
       if (!response.ok) {
         throw new Error("Failed to send payment confirmation email");
       }
-      // Marquer le voyage comme payé
-      setPaidTrips((prev) => ({
-        ...prev,
-        [selectedTrip.listingId]: true,
-      }));
-
+      
+      // Mettre à jour l'état local des paiements
+      const updatedPaidTrips = {
+        ...paidTrips,
+        [selectedTrip.listingId]: true
+      };
+      
+      setPaidTrips(updatedPaidTrips);
+      
+      // Sauvegarder dans localStorage pour persistance
+      localStorage.setItem('paidTrips', JSON.stringify(updatedPaidTrips));
       setPaymentSuccess(true);
       setOpenCheckout(false);
     } catch (error) {
