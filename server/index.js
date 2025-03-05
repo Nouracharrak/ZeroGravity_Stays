@@ -12,6 +12,7 @@ const profileRoutes = require("./routes/profile.js");
 const userRoutes = require("./routes/user.js");
 const contactRoutes = require("./routes/contact.js");
 const stripeRoutes = require("./routes/stripe.js");
+const adminRoutes = require('./routes/admin.js');
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -39,7 +40,7 @@ const corsOptions = {
     }
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With", "Content-Disposition"],
   credentials: true,
   maxAge: 86400,
   // Changement important : utiliser 200 au lieu de 204
@@ -95,6 +96,7 @@ mongoose
 
 // Définir les routes
 app.use("/auth", authRoutes);
+app.use('/admin', adminRoutes);
 app.use("/users", profileRoutes);
 app.use("/users", userRoutes);
 app.use("/contact", contactRoutes);

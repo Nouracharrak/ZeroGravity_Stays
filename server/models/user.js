@@ -26,29 +26,35 @@ const UserSchema = new mongoose.Schema(
         },
         tripList: {
             type: Array,
-            default: [] // Correction ici
+            default: [] 
         },
         wishList: {
             type: Array,
-            default: [] // Correction ici
+            default: [] 
         },
         propertyList: {
             type: Array,
-            default: [] // Correction ici
+            default: [] 
         },
         reservationList: {
             type: Array,
-            default: [] // Correction ici
+            default: [] 
         },
         isVerified: {
             type: Boolean,
             default: false
         },
         verificationToken: String,
-        verificationTokenExpires: Date
+        verificationTokenExpires: Date,
+        
+        isAdmin: {
+            type: Boolean,
+            default: false
+        }
     },
     { timestamps: true }
 );
 
 const User = mongoose.model('User', UserSchema);
 module.exports = User;
+

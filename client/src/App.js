@@ -3,6 +3,7 @@ import './App.css';
 import HomePage from "./pages/HomePage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import AdminApp from '../admin/AdminApp';
 import CreateListing from "./pages/CreateListing";
 import ListingDetails from "./pages/ListingDetails";
 import TripList from "./pages/TripList";
@@ -30,6 +31,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin/*" element={<AdminApp />} />
             <Route path="/create-listing" element={<CreateListing />} />
             <Route path="/properties/:listingId" element={<ListingDetails />} />
             <Route path="/properties/category/:category" element={<CategoryPage />} />
