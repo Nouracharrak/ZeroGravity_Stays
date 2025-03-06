@@ -18,5 +18,3 @@ router.get("/:userId/reservations", verifyToken, userController.getUserReservati
 router.patch("/:userId/wishlist/:listingId", verifyToken, userController.toggleWishlistItem);
 
 module.exports = router;
-
-

@@ -6,6 +6,11 @@ exports.createBooking = async (req, res) => {
     try {
         const { customerId, hostId, listingId, startDate, endDate, totalPrice } = req.body;
 
+        // Validation des champs requis
+        if (!customerId || !hostId || !listingId || !startDate || !endDate || !totalPrice) {
+            return res.status(400).json({ message: "Tous les champs sont nécessaires" });
+        }
+
         // Vérifier si les dates sont déjà réservées
         const existingBooking = await Booking.findOne({
             listingId,
@@ -35,9 +40,8 @@ exports.createBooking = async (req, res) => {
 
         // Récupérer l'utilisateur par son ID pour ajouter le voyage à la liste
         const user = await User.findById(customerId);
-
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "Utilisateur non trouvé" });
         }
 
         // Ajouter la réservation au tripList de l'utilisateur
@@ -59,13 +63,13 @@ exports.createBooking = async (req, res) => {
 
         // Répondre avec la réservation et l'utilisateur mis à jour
         res.status(201).json({
-            message: "Booking created and trip added successfully",
+            message: "Réservation créée et voyage ajouté avec succès",
             booking: savedBooking,
             user: user
         });
 
     } catch (err) {
-        res.status(400).json({ message: 'Failed to create a new booking', error: err.message });
+        res.status(500).json({ message: 'Échec de la création de la réservation', error: err.message });
     }
 };
 
@@ -79,7 +83,7 @@ exports.getAllBookings = async (req, res) => {
         
         res.status(200).json(bookings);
     } catch (err) {
-        res.status(400).json({ message: 'Failed to retrieve bookings', error: err.message });
+        res.status(500).json({ message: 'Échec de la récupération des réservations', error: err.message });
     }
 };
 
@@ -92,12 +96,12 @@ exports.getBookingById = async (req, res) => {
             .populate('listingId', '_id title');
         
         if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
+            return res.status(404).json({ message: "Réservation non trouvée" });
         }
         
         res.status(200).json(booking);
     } catch (err) {
-        res.status(400).json({ message: 'Failed to retrieve booking', error: err.message });
+        res.status(500).json({ message: 'Échec de la récupération de la réservation', error: err.message });
     }
 };
 
@@ -106,7 +110,7 @@ exports.updateBooking = async (req, res) => {
     try {
         const { customerId, hostId, listingId, startDate, endDate, totalPrice } = req.body;
 
-        // Vérifier si les dates sont déjà réservées
+        // Vérification des dates réservées
         const existingBooking = await Booking.findOne({
             listingId,
             _id: { $ne: req.params.id },
@@ -131,12 +135,12 @@ exports.updateBooking = async (req, res) => {
         }, { new: true });
 
         if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
+            return res.status(404).json({ message: "Réservation non trouvée" });
         }
 
         res.status(200).json(booking);
     } catch (err) {
-        res.status(400).json({ message: 'Failed to update booking', error: err.message });
+        res.status(500).json({ message: 'Échec de la mise à jour de la réservation', error: err.message });
     }
 };
 
@@ -145,7 +149,7 @@ exports.deleteBooking = async (req, res) => {
     try {
         const booking = await Booking.findByIdAndDelete(req.params.id);
         if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
+            return res.status(404).json({ message: "Réservation non trouvée" });
         }
 
         // Récupérer l'utilisateur pour supprimer le voyage de la liste
@@ -161,8 +165,9 @@ exports.deleteBooking = async (req, res) => {
             await user.save();
         }
 
-        res.status(200).json({ message: "Booking deleted successfully" });
+        res.status(200).json({ message: "Réservation supprimée avec succès" });
     } catch (err) {
-        res.status(400).json({ message: 'Failed to delete booking', error: err.message });
+        res.status(500).json({ message: 'Échec de la suppression de la réservation', error: err.message });
     }
 };
+

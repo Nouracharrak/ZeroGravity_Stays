@@ -83,7 +83,7 @@ const ListingCard = ({
         console.error("Erreur lors de la mise à jour de la wishlist:", response.statusText);
       }
     } catch (error) {
-      console.error("❌ Error in fetch:", error);
+      console.error("Error in fetch:", error);
     }
   };
 

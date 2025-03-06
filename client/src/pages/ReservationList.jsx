@@ -23,7 +23,6 @@ const ReservationList = () => {
         return;
       }
 
-      
       const response = await fetch(
         `${URL.FETCH_USERS}/${userId}/reservations`,
         { method: "GET" }
@@ -56,14 +55,14 @@ const ReservationList = () => {
       <div className="list">
         {reservationList?.map(({ listingId, hostId, startDate, endDate, totalPrice, booking = true }) => (
           <ListingCard
-            key={listingId._id}  // Ajout d'une clé unique pour chaque élément
-            listingId={listingId._id}
-            creator={hostId._id}
-            listingPhotosPaths={listingId.listingPhotosPaths} // Correction du nom de la propriété de photos
-            city={listingId.city}
-            province={listingId.province}
-            country={listingId.country}
-            category={listingId.category}
+            key={listingId?._id || listingId}  // Assurez-vous que listingId est correct
+            listingId={listingId?._id || listingId}
+            creator={hostId?._id || hostId}
+            listingPhotosPaths={listingId?.listingPhotosPaths || []}
+            city={listingId?.city}
+            province={listingId?.province}
+            country={listingId?.country}
+            category={listingId?.category}
             startDate={startDate}
             endDate={endDate}
             totalPrice={totalPrice}
@@ -71,7 +70,7 @@ const ReservationList = () => {
           />
         ))}
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };
