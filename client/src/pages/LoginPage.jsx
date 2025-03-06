@@ -72,7 +72,7 @@ const LoginPage = () => {
   const handleVerifyEmail = async (token) => {
     setVerificationStatus("pending");
     setError("");
-    
+  
     try {
       const response = await fetch(`${URL.VERIFY_EMAIL}/${token}`, {
         method: "GET",
@@ -80,9 +80,9 @@ const LoginPage = () => {
           "Content-Type": "application/json",
         }
       });
-      
+  
       const data = await response.json();
-      
+  
       if (response.ok) {
         setVerificationStatus("success");
         setVerificationMessage("Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.");
@@ -95,7 +95,6 @@ const LoginPage = () => {
       setError("Problème de connexion au serveur");
     }
   };
-
   // NOUVEAU: Fonction pour gérer la demande de réinitialisation de mot de passe
   const handleForgotPassword = async (e) => {
     e.preventDefault();

@@ -12,7 +12,7 @@ const URL = {
     FORGOT_PASSWORD: "https://zero-gravity-stays-bevn.vercel.app/auth/forgot-password",
     RESET_PASSWORD: "https://zero-gravity-stays-bevn.vercel.app/auth/reset-password",
     RESEND_VERIFICATION: "https://zero-gravity-stays-bevn.vercel.app/auth/resend-verification",
-    VERIFY_EMAIL: "https://zero-gravity-stays-bevn.vercel.app/auth/verify",
+    VERIFY_EMAIL: "https://zero-gravity-stays-bevn.vercel.app/auth/verify-email",
     FETCH_USERS: "https://zero-gravity-stays-bevn.vercel.app/users",
     UPDATE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
     DELETE_USER: "https://zero-gravity-stays-bevn.vercel.app/users",
