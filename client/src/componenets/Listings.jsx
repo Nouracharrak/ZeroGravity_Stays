@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { categories } from '../data';
-import '../styles/listing.scss';
 import ListingCard from './ListingCard';
 import Loader from './Loader';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,9 +10,8 @@ const Listings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const listings = useSelector((state) => state.user.listings); // Accéder aux listings depuis Redux
+  const listings = useSelector((state) => state.user.listings);
 
-  // Utiliser useCallback pour mémoriser la fonction getFeedListings
   const getFeedListings = useCallback(async () => {
     try {
       const response = await fetch(
@@ -23,15 +21,20 @@ const Listings = () => {
         { method: 'GET' }
       );
       const data = await response.json();
-      dispatch(setListings({ listings: data })); // Dispatch des données dans Redux
+
+      if (Array.isArray(data)) {
+        dispatch(setListings({ listings: data }));
+      } else {
+        console.error('Les données reçues ne sont pas un tableau valide.');
+      }
+
       setLoading(false);
     } catch (err) {
-      console.log('Fetch Listings failed', err.message);
-      setLoading(false); // En cas d'erreur, on arrête le chargement
+      console.log('Erreur lors de la récupération des listings:', err.message);
+      setLoading(false);
     }
   }, [dispatch, selectedCategory]);
 
-  // Effect qui se déclenche à chaque fois que la catégorie sélectionnée change
   useEffect(() => {
     if (selectedCategory) {
       getFeedListings();
@@ -40,10 +43,7 @@ const Listings = () => {
 
   return (
     <div>
-      {/* Affichage du loader si les données sont en cours de chargement */}
       {loading && <Loader />}
-
-      {/* Liste des catégories avec gestion du clic pour filtrer */}
       <div className="category-list">
         {categories?.map((category, index) => (
           <div
@@ -57,38 +57,14 @@ const Listings = () => {
         ))}
       </div>
 
-      {/* Affichage des listings après le chargement */}
-      {!loading && (
+      {!loading && listings && listings.length > 0 ? (
         <div className="listings">
-          {listings.map(
-            ({
-              _id,
-              creator,
-              listingPhotosPaths,
-              city,
-              province,
-              country,
-              category,
-              type,
-              price,
-              booking = false
-            }) => (
-              <ListingCard
-                key={_id}
-                listingId={_id}
-                creator={creator}
-                listingPhotosPaths={listingPhotosPaths}
-                city={city}
-                province={province}
-                country={country}
-                category={category}
-                type={type}
-                price={price}
-                booking={booking}
-              />
-            )
-          )}
+          {listings.map((listing) => (
+            <ListingCard key={listing._id} {...listing} />
+          ))}
         </div>
+      ) : (
+        <p>Aucun listing disponible</p>
       )}
     </div>
   );
