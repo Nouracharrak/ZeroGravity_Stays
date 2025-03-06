@@ -1,10 +1,9 @@
-// Composant CheckoutForm
 import React, { useState } from "react";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js"; 
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import URL from "../constants/api";
-import '../styles/checkoutForm.scss'; 
+import '../styles/checkoutForm.scss';
 
-const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSuccess, onPaymentFailure }) => { 
+const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSuccess, onPaymentFailure }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const stripe = useStripe();
@@ -14,18 +13,28 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
         event.preventDefault();
         setLoading(true);
         setError("");
-    
+
         if (!stripe || !elements) {
             return; // S'assurer que Stripe et Elements sont chargés
         }
-    
-        const cardElement = elements.getElement(CardElement); 
-    
+
+        const cardElement = elements.getElement(CardElement);
+
+        // Récupérer le token JWT stocké (par exemple dans localStorage)
+        const authToken = localStorage.getItem('authToken');  // Assure-toi que tu as stocké ce token lors de l'authentification
+
+        if (!authToken) {
+            setError("No authentication token found.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch(`${URL.BACK_LINK}/stripe/create-payment-intent`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`,  // Utilise le token JWT
                 },
                 body: JSON.stringify({
                     amount,
@@ -34,18 +43,18 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                     tripId: tripDetails._id,
                 }),
             });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to create payment intent");
             }
-    
+
             const { clientSecret } = await response.json();
             const result = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: cardElement,
                 },
             });
-    
+
             if (result.error) {
                 setError(result.error.message);
                 if (onPaymentFailure) onPaymentFailure(result.error.message);
@@ -53,7 +62,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                 if (onPaymentSuccess) {
                     onPaymentSuccess(result.paymentIntent);
                 }
-                onClose(); 
+                onClose();
             }
         } catch (error) {
             console.error(error);
@@ -62,7 +71,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
         } finally {
             setLoading(false);
         }
-    };    
+    };
 
     return (
         <div className="checkout-form-container">
