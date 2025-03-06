@@ -10,8 +10,11 @@ const Listings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const listings = useSelector((state) => state.user.listings);
+  
+  // Assure-toi que state.user et listings existent
+  const listings = useSelector((state) => state.user && state.user.listings ? state.user.listings : []);
 
+  // Fonction pour récupérer les listings avec le filtre de catégorie
   const getFeedListings = useCallback(async () => {
     try {
       const response = await fetch(
@@ -21,7 +24,7 @@ const Listings = () => {
         { method: 'GET' }
       );
       const data = await response.json();
-
+      
       if (Array.isArray(data)) {
         dispatch(setListings({ listings: data }));
       } else {
@@ -35,6 +38,7 @@ const Listings = () => {
     }
   }, [dispatch, selectedCategory]);
 
+  // Effect qui se déclenche chaque fois que la catégorie sélectionnée change
   useEffect(() => {
     if (selectedCategory) {
       getFeedListings();
@@ -44,6 +48,8 @@ const Listings = () => {
   return (
     <div>
       {loading && <Loader />}
+      
+      {/* Liste des catégories avec gestion du clic */}
       <div className="category-list">
         {categories?.map((category, index) => (
           <div
@@ -57,6 +63,7 @@ const Listings = () => {
         ))}
       </div>
 
+      {/* Vérification si les listings sont chargés et non vides */}
       {!loading && listings && listings.length > 0 ? (
         <div className="listings">
           {listings.map((listing) => (
