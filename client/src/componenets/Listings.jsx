@@ -4,7 +4,7 @@ import '../styles/listing.scss';
 import ListingCard from './ListingCard';
 import Loader from './Loader';
 import { useDispatch, useSelector } from 'react-redux';
-import { setListings } from '../redux/userSlice'; // Assurez-vous d'importer le setListings correct
+import { setListings } from '../redux/state';
 import URL from "../constants/api";
 
 const Listings = () => {
