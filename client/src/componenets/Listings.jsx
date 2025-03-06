@@ -4,14 +4,14 @@ import '../styles/listing.scss';
 import ListingCard from './ListingCard';
 import Loader from './Loader';
 import { useDispatch, useSelector } from 'react-redux';
-import { setListings } from '../redux/state'; // Assurez-vous que cette action existe
-import URL from "../constants/api"
+import { setListings } from '../redux/userSlice'; // Assurez-vous d'importer le setListings correct
+import URL from "../constants/api";
 
 const Listings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const listings = useSelector((state) => state.listings);
+  const listings = useSelector((state) => state.user.listings); // Accéder aux listings depuis Redux
 
   // Utiliser useCallback pour mémoriser la fonction getFeedListings
   const getFeedListings = useCallback(async () => {
@@ -23,20 +23,20 @@ const Listings = () => {
         { method: 'GET' }
       );
       const data = await response.json();
-      dispatch(setListings({ listings: data })); // Dispatch des données dans le store Redux
+      dispatch(setListings({ listings: data })); // Dispatch des données dans Redux
       setLoading(false);
     } catch (err) {
       console.log('Fetch Listings failed', err.message);
       setLoading(false); // En cas d'erreur, on arrête le chargement
     }
-  }, [dispatch, selectedCategory]); // Ajout de dispatch et selectedCategory dans les dépendances
+  }, [dispatch, selectedCategory]);
 
   // Effect qui se déclenche à chaque fois que la catégorie sélectionnée change
   useEffect(() => {
     if (selectedCategory) {
       getFeedListings();
     }
-}, [selectedCategory]);
+  }, [selectedCategory, getFeedListings]);
 
   return (
     <div>
@@ -58,9 +58,7 @@ const Listings = () => {
       </div>
 
       {/* Affichage des listings après le chargement */}
-      {loading ? (
-        <Loader />
-      ) : (
+      {!loading && (
         <div className="listings">
           {listings.map(
             ({
@@ -76,6 +74,7 @@ const Listings = () => {
               booking = false
             }) => (
               <ListingCard
+                key={_id}
                 listingId={_id}
                 creator={creator}
                 listingPhotosPaths={listingPhotosPaths}
@@ -96,5 +95,3 @@ const Listings = () => {
 };
 
 export default Listings;
-
-

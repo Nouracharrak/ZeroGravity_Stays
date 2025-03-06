@@ -26,7 +26,7 @@ router.post("/create", [
 }, bookingController.createBooking);
 
 // Récupérer toutes les réservations
-router.get("/all", bookingController.getAllBookings);
+router.get("/", bookingController.getAllBookings);
 
 // Récupérer une réservation par son ID
 router.get("/:id", validateBookingId, bookingController.getBookingById);
