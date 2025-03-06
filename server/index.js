@@ -47,12 +47,9 @@ const corsOptions = {
   optionsSuccessStatus: 200 
 };
 
-// Appliquer CORS comme premier middleware
-app.use(cors(corsOptions));
-
 // Middleware pour le parsing JSON
-app.use(express.json());
-
+app.use(cors(corsOptions)); // Active CORS en premier
+app.use(express.json());    // Ensuite, parse le JSON
 // Middleware de logging pour le debug
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);

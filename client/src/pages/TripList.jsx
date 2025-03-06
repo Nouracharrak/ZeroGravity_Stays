@@ -17,9 +17,8 @@ const TripList = () => {
   const [error, setError] = useState("");
   const userId = useSelector((state) => state.user._id);
   const userEmail = useSelector((state) => state.user.email);
-  const tripList = useSelector((state) => state.user.tripList);
+  const tripList = useSelector((state) => state.user.tripList) || [];
   const [paidTrips, setPaidTrips] = useState({});
-
   const dispatch = useDispatch();
 
   const getTripList = async () => {
@@ -114,22 +113,23 @@ const TripList = () => {
       <h1 className="title-list">Your Trip List</h1>
       {error && <div className="error-message">{error}</div>}
       <div className="list">
-        {tripList.map((trip) => (
-          <div key={trip.listingId} className="listing-item">
-            <ListingCard {...trip.listingDetails} {...trip} />
-            <button
-              className={
-                paidTrips[trip.listingId] ? "paid-button" : "pay-now-button"
-              }
-              onClick={() => !paidTrips[trip.listingId] && handleBooking(trip)}
-              disabled={paidTrips[trip.listingId]}
-            >
-              {paidTrips[trip.listingId] ? "Paid" : "Pay Now"}
-            </button>
-          </div>
-        ))}
+  {tripList.length > 0 ? (
+    tripList.map((trip) => (
+      <div key={trip.listingId} className="listing-item">
+        <ListingCard {...trip.listingDetails} {...trip} />
+        <button
+          className={paidTrips[trip.listingId] ? "paid-button" : "pay-now-button"}
+          onClick={() => !paidTrips[trip.listingId] && handleBooking(trip)}
+          disabled={paidTrips[trip.listingId]}
+        >
+          {paidTrips[trip.listingId] ? "Paid" : "Pay Now"}
+        </button>
       </div>
-
+    ))
+  ) : (
+    <p className="empty-list-message">No trips found.</p>
+  )}
+</div>
       {openCheckout && selectedTrip && (
         <div className="checkout-overlay">
           <div className="checkout-modal">
