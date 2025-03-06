@@ -24,18 +24,27 @@ const TripList = () => {
 
   const getTripList = async () => {
     try {
-      const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`);
-      if (!response.ok) throw new Error('Network response was not ok');
-      
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Aucun token trouvé !");
+  
+      const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // Ajoute le token ici
+        }
+      });
+  
+      if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+  
       const data = await response.json();
       dispatch(setTripList(data));
       
       // Charger les statuts de paiement depuis localStorage
-      const storedPaidTrips = localStorage.getItem('paidTrips');
+      const storedPaidTrips = localStorage.getItem("paidTrips");
       if (storedPaidTrips) {
         setPaidTrips(JSON.parse(storedPaidTrips));
       } else {
-        // Initialiser l'état des paiements si rien n'est en localStorage
         const paidStatus = {};
         data.forEach(trip => {
           paidStatus[trip.listingId] = trip.isPaid || false;
@@ -43,13 +52,14 @@ const TripList = () => {
         setPaidTrips(paidStatus);
       }
     } catch (err) {
-      console.log('Fetch Trip List Failed', err.message);
-      setError('Failed to fetch trip list. Please try again later.');
+      console.log("Fetch Trip List Failed", err.message);
+      setError("Failed to fetch trip list. Please try again later.");
     } finally {
       setLoading(false);
     }
-  };  
+  };
   
+
   useEffect(() => {
     if (userId) getTripList();
   }, [userId]);
