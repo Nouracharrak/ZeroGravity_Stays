@@ -20,8 +20,8 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Vérification si l'image est bien reçue (si nécessaire)
-    if (!req.file || !req.file.path || !req.file.public_id) {
+        // Vérification si l'image est bien reçue
+    if (!req.file || !req.file.path || req.file.path === "") {
       console.log("Erreur : Image non reçue ou non envoyée sur Cloudinary !");
       return res.status(400).json({ message: "Image upload failed" });
     }
