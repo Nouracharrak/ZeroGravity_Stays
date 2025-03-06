@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 
 // Routes
-const { router: authRoutes } = require("./routes/auth.js");
+const authRoutes = require("./routes/auth.js");
 const listingRoutes = require("./routes/listing.js");
 const bookingRoutes = require("./routes/booking.js");
 const profileRoutes = require("./routes/profile.js");
