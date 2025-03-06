@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-// const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const { upload } = require('../config/cloudinary');  // Importer le middleware de multer
 
-
-router.post('/register', authController.register);
+// Route d'inscription avec l'upload d'image
+router.post('/register', upload.single('profileImage'), authController.register);
 
 router.post('/login', authController.login);
 

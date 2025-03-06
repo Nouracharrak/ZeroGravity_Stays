@@ -21,8 +21,8 @@ exports.register = async (req, res) => {
     }
 
     // Vérification si l'image est bien reçue (si nécessaire)
-    if (!req.file || !req.file.path) {
-      console.log("Erreur : Image non reçue !");
+    if (!req.file || !req.file.path || !req.file.public_id) {
+      console.log("Erreur : Image non reçue ou non envoyée sur Cloudinary !");
       return res.status(400).json({ message: "Image upload failed" });
     }
 
@@ -35,8 +35,8 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    // Hashage du mot de passe
-    const salt = await bcrypt.genSalt();
+    // Hashage du mot de passe avec un salt plus sécurisé
+    const salt = await bcrypt.genSalt(12);  // Augmenter la sécurité avec un salt de 12 rounds
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Génération d'un token de vérification
@@ -69,6 +69,7 @@ exports.register = async (req, res) => {
       // Notez que nous continuons malgré l'erreur d'email
     }
 
+    // Réponse structurée avec l'utilisateur
     res.status(201).json({ 
       message: "User registered successfully. A confirmation email has been sent.", 
       user: {
@@ -78,7 +79,8 @@ exports.register = async (req, res) => {
         email: newUser.email,
         profileImagePath: newUser.profileImagePath,
         isVerified: newUser.isVerified,
-        isAdmin: newUser.isAdmin // Retourner la valeur de isAdmin
+        isAdmin: newUser.isAdmin, // Retourner la valeur de isAdmin
+        verificationTokenExpires: newUser.verificationTokenExpires // Ajout de l'expiration du token
       }
     });
   } catch (err) {
@@ -86,6 +88,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Registration failed", error: err.message });
   }
 };
+
 // Contrôleur de connexion
 exports.login = async (req, res) => {
   try {
