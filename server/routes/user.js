@@ -13,7 +13,10 @@ router.delete("/:userId", verifyToken, userController.deleteUser);
 router.get("/:userId/trips", verifyToken, userController.getUserTrips);
 router.get("/:userId/properties", verifyToken, userController.getUserProperties);
 router.get("/:userId/reservations", verifyToken, userController.getUserReservations);
+
+// Exemple d'update pour wishlist
 router.patch("/:userId/wishlist/:listingId", verifyToken, userController.toggleWishlistItem);
 
 module.exports = router;
+
 

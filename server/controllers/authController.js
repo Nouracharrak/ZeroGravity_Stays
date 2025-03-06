@@ -13,11 +13,14 @@ exports.register = async (req, res) => {
     console.log("Fichier reçu de Multer :", req.file);
 
     const { firstName, lastName, email, password } = req.body;
+
+    // Vérification des champs obligatoires
     if (!firstName || !lastName || !email || !password) {
       console.log("Erreur : Champs requis manquants !");
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    // Vérification si l'image est bien reçue (si nécessaire)
     if (!req.file || !req.file.path) {
       console.log("Erreur : Image non reçue !");
       return res.status(400).json({ message: "Image upload failed" });
@@ -25,35 +28,39 @@ exports.register = async (req, res) => {
 
     console.log("Image envoyée sur Cloudinary :", req.file.path);
 
+    // Vérification si l'utilisateur existe déjà
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.log("Erreur : Utilisateur déjà existant !");
       return res.status(409).json({ message: "User already exists" });
     }
 
+    // Hashage du mot de passe
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Générer un token de vérification
+    // Génération d'un token de vérification
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const tokenExpiration = new Date();
     tokenExpiration.setHours(tokenExpiration.getHours() + 24); // Token valide 24h
 
+    // Création du nouvel utilisateur
     const newUser = new User({
       firstName,
       lastName,
       email,
       password: hashedPassword,
-      profileImagePath: req.file.path,
+      profileImagePath: req.file.path, // chemin de l'image
       isVerified: false,
-      verificationToken: verificationToken,
+      isAdmin: false, // Valeur par défaut à false
+      verificationToken,
       verificationTokenExpires: tokenExpiration
     });
 
     await newUser.save();
     console.log("Utilisateur enregistré :", newUser);
 
-    // Envoyer l'email de confirmation avec le token
+    // Envoi de l'email de confirmation
     try {
       await sendConfirmationEmail(newUser, verificationToken);
       console.log("Email de confirmation envoyé à :", email);
@@ -70,7 +77,8 @@ exports.register = async (req, res) => {
         lastName: newUser.lastName,
         email: newUser.email,
         profileImagePath: newUser.profileImagePath,
-        isVerified: newUser.isVerified
+        isVerified: newUser.isVerified,
+        isAdmin: newUser.isAdmin // Retourner la valeur de isAdmin
       }
     });
   } catch (err) {
@@ -78,7 +86,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Registration failed", error: err.message });
   }
 };
-
 // Contrôleur de connexion
 exports.login = async (req, res) => {
   try {
