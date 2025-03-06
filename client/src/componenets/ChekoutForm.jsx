@@ -23,9 +23,12 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
         // Récupérer le token JWT stocké (par exemple dans localStorage)
         const authToken = localStorage.getItem('authToken');  // Assure-toi que tu as stocké ce token lors de l'authentification
 
+        console.log("Token récupéré:", authToken);  // Log pour déboguer
+
         if (!authToken) {
             setError("No authentication token found.");
             setLoading(false);
+            window.location.href = "/login";  // Redirige l'utilisateur vers la page de connexion si le token est absent
             return;
         }
 
@@ -34,7 +37,7 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${authToken}`,  // Utilise le token JWT
+                    "Authorization": `Bearer ${authToken}`, 
                 },
                 body: JSON.stringify({
                     amount,
@@ -104,3 +107,4 @@ const CheckoutForm = ({ amount, userEmail, tripDetails, onClose, onPaymentSucces
 };
 
 export default CheckoutForm;
+
