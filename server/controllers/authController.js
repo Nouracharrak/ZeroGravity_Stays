@@ -7,6 +7,7 @@ const { sendConfirmationEmail, sendPasswordResetEmail } = require('../config/mai
 require("dotenv").config();
 
 // Contrôleur d'inscription
+// Contrôleur d'inscription
 exports.register = async (req, res) => {
   try {
     console.log("Requête reçue avec le body :", req.body);
@@ -20,7 +21,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-        // Vérification si l'image est bien reçue
+    // Vérification si l'image est bien reçue
     if (!req.file || !req.file.path || req.file.path === "") {
       console.log("Erreur : Image non reçue ou non envoyée sur Cloudinary !");
       return res.status(400).json({ message: "Image upload failed" });
@@ -88,7 +89,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Registration failed", error: err.message });
   }
 };
-
 // Contrôleur de connexion
 exports.login = async (req, res) => {
   try {
@@ -172,20 +172,20 @@ exports.login = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    
+
     console.log(`[DEBUG] Tentative de vérification avec token: ${token}`);
     
     // Recherche d'un utilisateur avec ce token de vérification
     const user = await User.findOne({ verificationToken: token });
-    
+
     if (!user) {
       console.log(`[ERROR] Aucun utilisateur trouvé avec token: ${token}`);
       return res.status(400).json({ 
         success: false, 
-        message: "Token de vérification invalide ou expiré"
+        message: "Token de vérification invalide ou expiré" 
       });
     }
-    
+
     // Vérifier si le token n'a pas expiré
     if (user.verificationTokenExpires && user.verificationTokenExpires < new Date()) {
       console.log(`[ERROR] Token expiré pour utilisateur: ${user.email}`);
@@ -194,7 +194,7 @@ exports.verifyEmail = async (req, res) => {
         message: "Le lien de vérification a expiré, veuillez en demander un nouveau"
       });
     }
-    
+
     console.log(`[DEBUG] Utilisateur trouvé: ${user.email}, isVerified avant: ${user.isVerified}`);
     
     // Mise à jour de l'état de vérification
@@ -226,37 +226,50 @@ exports.verifyEmail = async (req, res) => {
 exports.resendVerification = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     // Rechercher l'utilisateur
     const user = await User.findOne({ email });
-    
+
     if (!user) {
       return res.status(400).json({ 
         message: 'Aucun compte avec cet email n\'a été trouvé.' 
       });
     }
-    
-    if (user.emailVerified) {
+
+    // Si l'email est déjà vérifié
+    if (user.isVerified) {
       return res.status(400).json({ 
         message: 'Ce compte est déjà vérifié.' 
       });
     }
-    
-    // Générer un nouveau token de vérification
-    const token = crypto.randomBytes(20).toString('hex');
-    const tokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 heures
-    
-    // Mettre à jour l'utilisateur avec le nouveau token
-    user.verificationToken = token;
-    user.verificationTokenExpires = tokenExpires;
-    await user.save();
-    
-    // Envoyer l'email de vérification
-    await sendConfirmationEmail(user, token);
-    
-    return res.status(200).json({ 
-      message: 'Un nouvel email de vérification a été envoyé.' 
+
+    // Vérifier si le token précédent a expiré
+    if (user.verificationTokenExpires && user.verificationTokenExpires < new Date()) {
+      console.log(`[INFO] Token de vérification expiré pour utilisateur: ${user.email}`);
+      // Générer un nouveau token de vérification
+      const newToken = crypto.randomBytes(32).toString('hex');
+      const newTokenExpiration = new Date();
+      newTokenExpiration.setHours(newTokenExpiration.getHours() + 24); // Token valide 24h
+      
+      // Mettre à jour l'utilisateur avec le nouveau token
+      user.verificationToken = newToken;
+      user.verificationTokenExpires = newTokenExpiration;
+      
+      await user.save();
+      
+      // Envoyer un nouvel email de confirmation
+      await sendConfirmationEmail(user, newToken);
+      
+      return res.status(200).json({ 
+        message: 'Un nouvel email de vérification a été envoyé.' 
+      });
+    }
+
+    // Si le token est encore valide
+    return res.status(400).json({
+      message: 'Un email de vérification a déjà été envoyé récemment. Veuillez vérifier votre boîte de réception.'
     });
+
   } catch (error) {
     console.error('Erreur lors du renvoi de l\'email de vérification:', error);
     return res.status(500).json({ 
@@ -264,7 +277,6 @@ exports.resendVerification = async (req, res) => {
     });
   }
 };
-
 // Contrôleur pour demander un lien de réinitialisation
 exports.forgotPassword = async (req, res) => {
   try {
