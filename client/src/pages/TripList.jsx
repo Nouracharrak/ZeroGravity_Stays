@@ -30,22 +30,26 @@ const TripList = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // Ajoute le token ici
-        }
+          "Authorization": `Bearer ${token}`,
+        },
       });
   
       if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
   
       const data = await response.json();
-      dispatch(setTripList(data));
-      
+      if (data && Array.isArray(data)) {
+        dispatch(setTripList(data));
+      } else {
+        throw new Error("Invalid data format received.");
+      }
+  
       // Charger les statuts de paiement depuis localStorage
       const storedPaidTrips = localStorage.getItem("paidTrips");
       if (storedPaidTrips) {
         setPaidTrips(JSON.parse(storedPaidTrips));
       } else {
         const paidStatus = {};
-        data.forEach(trip => {
+        data.forEach((trip) => {
           paidStatus[trip.listingId] = trip.isPaid || false;
         });
         setPaidTrips(paidStatus);
@@ -57,8 +61,6 @@ const TripList = () => {
       setLoading(false);
     }
   };
-  
-
   useEffect(() => {
     if (userId) getTripList();
   }, [userId]);
