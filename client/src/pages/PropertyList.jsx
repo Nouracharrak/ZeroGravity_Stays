@@ -40,8 +40,11 @@ const PropertyList = () => {
     }
   };
   useEffect(() => {
-    getPropertyList()
-  }, [])
+    if (user?._id) {
+      getPropertyList();
+    }
+  }, [user]);
+  
 
   return loading ? <Loader /> : (
     <>
