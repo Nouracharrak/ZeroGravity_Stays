@@ -21,9 +21,9 @@ const app = express();
 
 // Liste des origines autorisées
 const allowedOrigins = [
-  "https://zero-gravity-stays.vercel.app", 
-  "http://localhost:3000",
-  "http://localhost:3001"
+  "https://zero-gravity-stays.vercel.app",
+  "http://localhost:3000",                 
+  "http://localhost:3001"                 
 ];
 
 // Configuration CORS simplifiée et unifiée
@@ -41,15 +41,17 @@ const corsOptions = {
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With", "Content-Disposition"],
-  credentials: true,
-  maxAge: 86400,
-  // Changement important : utiliser 200 au lieu de 204
-  optionsSuccessStatus: 200 
+  credentials: true, // Permet l'envoi des cookies entre origines
+  maxAge: 86400,      // Durée pendant laquelle les résultats des requêtes OPTIONS sont mis en cache
+  optionsSuccessStatus: 200 // Utilise 200 au lieu de 204 pour les réponses OPTIONS
 };
 
+// Applique la configuration CORS
+app.use(cors(corsOptions));
+
 // Middleware pour le parsing JSON
-app.use(cors(corsOptions)); // Active CORS en premier
-app.use(express.json());    // Ensuite, parse le JSON
+app.use(express.json()); // Permet de parser le corps des requêtes en JSON
+
 // Middleware de logging pour le debug
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -132,3 +134,4 @@ app.use((req, res) => {
 });
 
 module.exports = app;
+
