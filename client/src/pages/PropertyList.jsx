@@ -17,18 +17,28 @@ const PropertyList = () => {
   const dispatch = useDispatch()
   const getPropertyList = async () => {
     try {
+      const token = localStorage.getItem("token"); // Récupérer le token
+      if (!token) throw new Error("Aucun token trouvé !");
+  
       const response = await fetch(`${URL.FETCH_USERS}/${user._id}/properties`, {
-        method: "GET"
-      })
-      const data = await response.json()
-      console.log(data)
-      dispatch(setPropertyList(data))
-      setLoading(false)
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // Ajouter le token ici
+        }
+      });
+  
+      if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+  
+      const data = await response.json();
+      console.log(data);
+      dispatch(setPropertyList(data));
+      setLoading(false);
     } catch (err) {
-      console.log("Fetch all properties failed", err.message)
+      console.log("Fetch all properties failed", err.message);
+      setLoading(false);
     }
-  }
-
+  };
   useEffect(() => {
     getPropertyList()
   }, [])
