@@ -27,8 +27,8 @@ const URL = {
 // LISTING
     FETCH_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties",
     CREATE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/create",
-    UPDATE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties",
-    DELETE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties",
+    UPDATE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/",
+    DELETE_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/",
 // Search
     SEARCH_LISTINGS: "https://zero-gravity-stays-bevn.vercel.app/properties/search",
 // URL CLOUDINARY
