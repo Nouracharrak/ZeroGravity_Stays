@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/register.scss";
-import URL from "../constants/api";  // Renommé pour éviter le conflit avec l'objet global URL
+import URL from "../constants/api";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,7 @@ const RegisterPage = () => {
     password: "",
     confirmPassword: "",
     profileImage: null,
+    isAdmin: false,  // Si tu veux permettre un rôle admin côté frontend (sécurisé)
   });
 
   const [passwordMatch, setPasswordMatch] = useState(true);
@@ -29,18 +30,14 @@ const RegisterPage = () => {
   // Gestion de l'image sélectionnée avec validation
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    
-    // Réinitialiser les erreurs
     setError("");
     
     if (file) {
-      // Vérification de la taille du fichier (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError("Image trop volumineuse (max: 5MB)");
         return;
       }
-      
-      // Vérification du type de fichier
+
       if (!file.type.match('image.*')) {
         setError("Le fichier doit être une image");
         return;
@@ -48,9 +45,8 @@ const RegisterPage = () => {
       
       setFormData({ ...formData, profileImage: file });
       
-      // Créer une URL d'aperçu
       if (previewImage) {
-        window.URL.revokeObjectURL(previewImage); // Utiliser window.URL pour éviter les conflits
+        window.URL.revokeObjectURL(previewImage); 
       }
       setPreviewImage(window.URL.createObjectURL(file));
     }
@@ -58,12 +54,10 @@ const RegisterPage = () => {
 
   // Vérifie si les mots de passe correspondent
   useEffect(() => {
-    setPasswordMatch(
-      formData.password === formData.confirmPassword || formData.confirmPassword === ""
-    );
+    setPasswordMatch(formData.password === formData.confirmPassword || formData.confirmPassword === "");
   }, [formData.password, formData.confirmPassword]);
 
-  // Nettoyage de l'URL de prévisualisation lorsque le composant est démonté
+  // Nettoyage de l'URL de prévisualisation
   useEffect(() => {
     return () => {
       if (previewImage) {
@@ -77,16 +71,15 @@ const RegisterPage = () => {
     navigate(`/login?registered=true&email=${encodeURIComponent(formData.email)}`);
   };
 
-  // Envoi du formulaire au backend avec gestion améliorée
+  // Envoi du formulaire au backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation finale
     if (!formData.profileImage) {
       setError("Veuillez télécharger une photo de profil");
       return;
     }
-    
+
     if (!passwordMatch) {
       setError("Les mots de passe ne correspondent pas");
       return;
@@ -101,6 +94,7 @@ const RegisterPage = () => {
       register_form.append("lastName", formData.lastName);
       register_form.append("email", formData.email);
       register_form.append("password", formData.password);
+      register_form.append("isAdmin", formData.isAdmin);  // Ajout de la gestion du rôle si nécessaire
 
       if (formData.profileImage instanceof File) {
         register_form.append("profileImage", formData.profileImage);
@@ -125,31 +119,14 @@ const RegisterPage = () => {
     }
   };
 
-  // Si l'inscription est terminée, afficher l'écran de confirmation
   if (registrationComplete) {
     return (
       <div className="register">
         <div className="register_content">
           <div className="registration-success">
-            <div className="success-message">
-              <h2>Inscription réussie !</h2>
-              <p>Votre compte a été créé avec succès, mais vous devez vérifier votre adresse email pour l'activer.</p>
-              
-              <div className="steps-info">
-                <h3>Prochaines étapes :</h3>
-                <ol>
-                  <li>Vérifiez votre boîte mail <strong>{formData.email}</strong> pour trouver notre email de confirmation.</li>
-                  <li>Cliquez sur le lien de vérification dans cet email.</li>
-                  <li>Une fois votre email vérifié, vous pourrez vous connecter à votre compte.</li>
-                </ol>
-              </div>
-              
-              <p className="note">Si vous ne trouvez pas l'email, vérifiez votre dossier spam ou demandez un nouvel email de vérification sur la page de connexion.</p>
-            </div>
-            
-            <button onClick={redirectToLogin}>
-              Aller à la page de connexion
-            </button>
+            <h2>Inscription réussie !</h2>
+            <p>Votre compte a été créé avec succès, mais vous devez vérifier votre adresse email pour l'activer.</p>
+            <button onClick={redirectToLogin}>Aller à la page de connexion</button>
           </div>
         </div>
       </div>
@@ -159,12 +136,7 @@ const RegisterPage = () => {
   return (
     <div className="register">
       <div className="register_content">
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-        
+        {error && <div className="error-message">{error}</div>}
         <form className="register_content_form" onSubmit={handleSubmit}>
           <input
             type="text"
@@ -212,12 +184,7 @@ const RegisterPage = () => {
             disabled={isSubmitting}
           />
           {!passwordMatch && <p className="password-mismatch">Passwords do not match</p>}
-
-          <div className="verification-info">
-            <p>Après l'inscription, vous recevrez un email de vérification pour activer votre compte.</p>
-          </div>
           
-          {/* Gestion du fichier image avec indication de chargement obligatoire */}
           <input
             id="image"
             type="file"
@@ -227,26 +194,14 @@ const RegisterPage = () => {
             onChange={handleImageChange}
             disabled={isSubmitting}
           />
-          <label htmlFor="image" style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
-            <img 
-              src="/assets/addImage.png" 
-              alt="Add Profile" 
-              style={{ opacity: isSubmitting ? 0.5 : 1 }} 
-            />
-            <p className={formData.profileImage ? "image-uploaded" : "image-required"}>
-              {formData.profileImage 
-                ? "✓ Photo téléchargée" 
-                : "* Photo de profil (obligatoire)"}
-            </p>
+          <label htmlFor="image">
+            <img src="/assets/addImage.png" alt="Add Profile" />
+            <p>{formData.profileImage ? "✓ Photo téléchargée" : "* Photo de profil (obligatoire)"}</p>
           </label>
 
-          {/* Affichage dynamique de l'image avec indicateur de chargement */}
           {previewImage && (
             <div className="image-preview">
-              <img
-                src={previewImage}
-                alt="Profile Preview"
-              />
+              <img src={previewImage} alt="Profile Preview" />
             </div>
           )}
 
@@ -265,5 +220,6 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
+
 
 
