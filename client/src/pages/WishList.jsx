@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import ListingCard from "../components/ListingCard"; // Composant pour afficher les listings
+import ListingCard from "../componenets/ListingCard";
 import URL from "../constants/api";
-import { setWishList } from "../redux/state"; // Action Redux pour mettre à jour la wishlist
+import { setWishList } from "../redux/state";
 
 const WishList = () => {
   const dispatch = useDispatch();
