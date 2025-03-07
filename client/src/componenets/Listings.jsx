@@ -4,7 +4,7 @@ import '../styles/listing.scss';
 import ListingCard from './ListingCard';
 import Loader from './Loader';
 import { useDispatch, useSelector } from 'react-redux';
-import { setListings } from '../redux/state'; // Assurez-vous que cette action existe
+import { setListings } from '../redux/state';
 import URL from "../constants/api"
 
 const Listings = () => {

@@ -3,7 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   user: null,
   token: null,
-  listings: [] 
+  listings: [],
+  wishList: []
 };
 
 export const userSlice = createSlice({

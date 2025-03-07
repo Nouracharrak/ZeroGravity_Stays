@@ -117,30 +117,35 @@ exports.getUserTrips = async (req, res) => {
 // Ajouter/retirer un hébergement de la liste de souhaits
 exports.toggleWishlistItem = async (req, res) => {
     try {
-        const { userId, listingId } = req.params;
-
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
-
-        const isInWishlist = user.wishList.some(id => id.toString() === listingId);
-        if (isInWishlist) {
-            user.wishList = user.wishList.filter(id => id.toString() !== listingId);
-        } else {
-            user.wishList.push(listingId);
-        }
-
-        await user.save();
-        return res.status(200).json({ 
-            message: isInWishlist ? "Listing retiré de la wishList" : "Listing ajouté à la wishList", 
-            wishList: user.wishList 
-        });
-
+      const { userId, listingId } = req.params;
+  
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+  
+      // Vérification que listingId est bien une chaîne de caractères
+      if (typeof listingId !== 'string') {
+        return res.status(400).json({ message: "ID de listing invalide" });
+      }
+  
+      const isInWishlist = user.wishList.some(id => id.toString() === listingId);
+      if (isInWishlist) {
+        user.wishList = user.wishList.filter(id => id.toString() !== listingId);
+      } else {
+        user.wishList.push(listingId);
+      }
+  
+      await user.save();
+      return res.status(200).json({ 
+        message: isInWishlist ? "Listing retiré de la wishList" : "Listing ajouté à la wishList", 
+        wishList: user.wishList 
+      });
+  
     } catch (err) {
-        console.error("Erreur:", err);
-        return res.status(500).json({ error: err.message });
+      console.error("Erreur:", err);
+      return res.status(500).json({ error: err.message });
     }
-};
-
+  };
+  
 // Récupérer les propriétés d'un utilisateur
 exports.getUserProperties = async (req, res) => {
     try {
