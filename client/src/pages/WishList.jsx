@@ -1,10 +1,10 @@
-// components/WishList.js
-
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ListingCard from "../componenets/ListingCard";
 import URL from "../constants/api";
 import { setWishList } from "../redux/state";
+import Navbar from "../componenets/Navbar"; 
+import Footer from "../componenets/Footer"; 
 
 const WishList = () => {
   const dispatch = useDispatch();
@@ -58,6 +58,7 @@ const WishList = () => {
 
   return (
     <div>
+      <Navbar /> {/* Ajout de la Navbar */}
       <h1>Your Wish List</h1>
       <div className="list">
         {fullWishList.length === 0 ? (
@@ -73,9 +74,11 @@ const WishList = () => {
           ))
         )}
       </div>
+      <Footer /> {/* Ajout du Footer */}
     </div>
   );
 };
 
 export default WishList;
+
 
