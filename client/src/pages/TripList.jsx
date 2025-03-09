@@ -26,7 +26,7 @@ const TripList = () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Aucun token trouvé !");
   
-      const response = await fetch(`${URL.FETCH_USERS}/${userId}/trips`, {
+      const response = await fetch(`${URL.FETCH_BOOKINGS}/${userId}/trips`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

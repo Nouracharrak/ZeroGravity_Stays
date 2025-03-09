@@ -10,7 +10,7 @@ import URL from "../constants/api";
 
 const ReservationList = () => {
   const [loading, setLoading] = useState(true);
-  const userId = useSelector((state) => state.user?._id);  // Assurez-vous que _id est bien défini
+  const userId = useSelector((state) => state.user?._id);
   const reservationList = useSelector((state) => state.user?.reservationList); // Utilisation de l'opérateur optional chaining pour éviter des erreurs si user ou reservationList sont undefined.
 
   const dispatch = useDispatch();
@@ -24,7 +24,7 @@ const ReservationList = () => {
       }
 
       const response = await fetch(
-        `${URL.FETCH_USERS}/${userId}/reservations`,  // Assurez-vous que cette URL est correcte
+        `${URL.FETCH_BOOKINGS}/${userId}/reservations`,  // Assurez-vous que cette URL est correcte
         { method: "GET" }
       );
 

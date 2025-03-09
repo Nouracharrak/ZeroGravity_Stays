@@ -20,7 +20,7 @@ const WishList = () => {
 
       try {
         setLoading(true);
-        const response = await fetch(`${URL.FETCH_USERS}/${userId}/wishlist`);
+        const response = await fetch(`${URL.FETCH_USERS}/${userId}`);
         if (!response.ok) throw new Error("Erreur lors de la récupération de la wishlist");
         
         const wishListData = await response.json();
@@ -41,7 +41,7 @@ const WishList = () => {
     if (!userId) return;
 
     try {
-      const response = await fetch(`${URL.FETCH_USERS}/${userId}/wishlist/${listingId}`, {
+      const response = await fetch(`${URL.FETCH_USERS}/${userId}/${listingId}`, {
         method: 'PATCH',
         headers: { "Content-Type": "application/json" }
       });

@@ -20,7 +20,7 @@ const PropertyList = () => {
       const token = localStorage.getItem("token"); // Récupérer le token
       if (!token) throw new Error("Aucun token trouvé !");
   
-      const response = await fetch(`${URL.FETCH_USERS}/${user._id}/properties`, {
+      const response = await fetch(`${URL.FETCH_LISTINGS}/${user._id}/listings`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
