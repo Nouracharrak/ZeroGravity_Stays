@@ -192,6 +192,8 @@ const LoginPage = () => {
     setError("");
     setIsLoading(true);
     
+    console.log("Tentative de connexion avec :", { email });
+    
     try {
       const response = await fetch(URL.AUTHENTIFICATION, {
         method: "POST",
@@ -200,16 +202,43 @@ const LoginPage = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
+      // Vérifier le statut de la réponse
+      console.log("Statut de la réponse:", response.status);
+      
       const data = await response.json();
-
+      console.log("Données reçues:", data);
+  
       if (response.ok) {
+        // Vérifier si le token est présent dans la réponse
+        if (!data.token) {
+          console.error("Erreur: Token manquant dans la réponse du serveur", data);
+          setError("La réponse du serveur ne contient pas de token d'authentification");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Stocker le token
+        localStorage.setItem('authToken', data.token);
+        
+        // Vérifier que le token a bien été stocké
+        const storedToken = localStorage.getItem('authToken');
+        console.log("Token stocké avec succès:", storedToken ? "Oui" : "Non");
+        
+        if (storedToken) {
+          console.log("Premier caractères du token:", storedToken.substring(0, 10) + "...");
+        }
+  
+        // Continuer avec le dispatch et la navigation
         dispatch(
           setLogin({
             user: data.user,
             token: data.token,
           })
         );
+        
+        // Navigation réussie
+        console.log("Login réussi, redirection vers la page d'accueil");
         navigate("/");
       } else {
         // Vérifier si l'email n'est pas vérifié
