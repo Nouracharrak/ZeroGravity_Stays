@@ -4,6 +4,7 @@ const initialState = {
   user: null,
   token: null,
   listings: [],
+  tripList: [],
   wishList: []
 };
 
@@ -13,11 +14,32 @@ export const userSlice = createSlice({
   reducers: {
     setLogin: (state, action) => {
       state.user = action.payload.user;
+      state._id = action.payload.user._id;
       state.token = action.payload.token;
+      
+      // Persistez dans localStorage également
+      try {
+        localStorage.setItem('authToken', action.payload.token);
+        localStorage.setItem('userId', action.payload.user._id);
+        console.log("Token et userId stockés dans localStorage via Redux");
+      } catch (e) {
+        console.error("Erreur de stockage local dans Redux:", e);
+      }
     },
-    setLogout: (state) => {
+    logout: (state) => {
       state.user = null;
+      state._id = null;
       state.token = null;
+      state.tripList = [];
+      
+      // Nettoyez localStorage
+      try {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+        console.log("Token et userId supprimés de localStorage");
+      } catch (e) {
+        console.error("Erreur lors du nettoyage du stockage local:", e);
+      }
     },
     setListings: (state, action) => {
       state.listings = action.payload.listings;
