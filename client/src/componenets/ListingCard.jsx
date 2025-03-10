@@ -37,20 +37,18 @@ const ListingCard = ({
   const checkIsInWishlist = () => {
     if (!wishList || !listingId || !user) return false;
     
-    if (Array.isArray(wishList)) {
-      if (wishList.length > 0) {
-        if (typeof wishList[0] === 'object') {
-          // Si wishList contient des objets complets
-          return wishList.some(item => item && item._id === listingId);
-        } else {
-          // Si wishList contient juste des IDs
-          return wishList.includes(listingId);
-        }
+    return wishList.some(item => {
+      // Si l'item est un string (ID)
+      if (typeof item === 'string') {
+        return item === listingId;
       }
-    }
-    return false;
+      // Si l'item est un objet avec un _id
+      else if (item && item._id) {
+        return item._id === listingId;
+      }
+      return false;
+    });
   };
-  
   // État local pour l'affichage du cœur
   const [liked, setLiked] = useState(checkIsInWishlist());
 
@@ -63,55 +61,63 @@ const ListingCard = ({
   const patchWishList = async (e) => {
     e.stopPropagation(); // Empêcher la propagation pour ne pas naviguer
     
-    if (!user || !user._id) {
+    if (!user || !user?._id) {
       console.log("Utilisateur non connecté");
       return;
     }
     
-    if (creator && user._id === creator._id) {
+    if (creator && user?._id === creator._id) {
       console.log("L'utilisateur est le créateur du listing");
       return;
     }
     
     try {
-      console.log(`Envoi requête PATCH à: ${URL.FETCH_USERS}/${user._id}/${listingId}`);
+      // Ajoutez des logs pour mieux déboguer
+      console.log("URL appelée:", `${URL.FETCH_USERS}/${user?._id}/${listingId}`);
+      console.log("ID utilisateur:", user?._id);
+      console.log("ID listing:", listingId);
       
-      const token = localStorage.getItem("authToken"); // Récupérer le token si nécessaire
+      const token = localStorage.getItem("authToken");
       
       const response = await fetch(
-        `${URL.FETCH_USERS}/${user._id}/${listingId}`,
+        `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
         {
           method: "PATCH",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": token ? `Bearer ${token}` : "",
+            "Authorization": token ? `Bearer ${token}` : ""
           },
         }
       );
-  
+
       console.log("Statut réponse:", response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Erreur ${response.status}:`, errorText);
-        return;
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
       console.log("Données reçues:", data);
       
-      // Utiliser la propriété correcte de la réponse
+      // Utiliser la bonne propriété de la réponse (minuscule)
       if (data.wishlist) {
+        // Mettre à jour Redux
         dispatch(setWishList(data.wishlist));
-        // Mettre à jour l'état local
+        // Inverser l'état local du cœur
         setLiked(!liked);
       } else {
-        console.error("La réponse ne contient pas la propriété wishlist attendue:", data);
+        console.warn("La réponse ne contient pas wishlist:", data);
+        // Essayer d'autres propriétés possibles
+        const newWishList = data.wishList || data.wish_list || [];
+        dispatch(setWishList(newWishList));
+        setLiked(!liked);
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la wishlist:", error);
     }
-  };  
+};
   // Fonctions pour le slider
   const goToPrevSlide = (e) => {
     e.stopPropagation();
