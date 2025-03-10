@@ -37,16 +37,20 @@ const ListingCard = ({
   const checkIsInWishlist = () => {
     if (!wishList || !listingId || !user) return false;
     
-    // Si wishList contient des objets complets
-    if (wishList.length > 0 && typeof wishList[0] === 'object') {
-      return wishList.some(item => item?._id === listingId);
-    } 
-    // Si wishList contient juste des IDs (strings)
-    else {
-      return wishList.some(id => id === listingId);
+    if (Array.isArray(wishList)) {
+      if (wishList.length > 0) {
+        if (typeof wishList[0] === 'object') {
+          // Si wishList contient des objets complets
+          return wishList.some(item => item && item._id === listingId);
+        } else {
+          // Si wishList contient juste des IDs
+          return wishList.includes(listingId);
+        }
+      }
     }
+    return false;
   };
-
+  
   // État local pour l'affichage du cœur
   const [liked, setLiked] = useState(checkIsInWishlist());
 
@@ -59,34 +63,55 @@ const ListingCard = ({
   const patchWishList = async (e) => {
     e.stopPropagation(); // Empêcher la propagation pour ne pas naviguer
     
-    if (!user || user?._id === creator._id) {
-      console.log("Utilisateur non connecté ou créateur du listing");
+    if (!user || !user._id) {
+      console.log("Utilisateur non connecté");
+      return;
+    }
+    
+    if (creator && user._id === creator._id) {
+      console.log("L'utilisateur est le créateur du listing");
       return;
     }
     
     try {
+      console.log(`Envoi requête PATCH à: ${URL.FETCH_USERS}/${user._id}/${listingId}`);
+      
+      const token = localStorage.getItem("authToken"); // Récupérer le token si nécessaire
+      
       const response = await fetch(
-        `${URL.FETCH_USERS}/${user?._id}/${listingId}`,
+        `${URL.FETCH_USERS}/${user._id}/${listingId}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : "",
+          },
         }
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Wishlist update response:", data);
-        
-        // Mettre à jour Redux avec les nouvelles données
-        dispatch(setWishList(data.wishList));
+  
+      console.log("Statut réponse:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Erreur ${response.status}:`, errorText);
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("Données reçues:", data);
+      
+      // Utiliser la propriété correcte de la réponse
+      if (data.wishlist) {
+        dispatch(setWishList(data.wishlist));
+        // Mettre à jour l'état local
+        setLiked(!liked);
       } else {
-        console.error("Erreur lors de la mise à jour de la wishlist:", response.statusText);
+        console.error("La réponse ne contient pas la propriété wishlist attendue:", data);
       }
     } catch (error) {
-      console.error("Error in fetch:", error);
+      console.error("Erreur lors de la mise à jour de la wishlist:", error);
     }
-  };
-
+  };  
   // Fonctions pour le slider
   const goToPrevSlide = (e) => {
     e.stopPropagation();
