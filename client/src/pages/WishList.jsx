@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import "../styles/ListingCard.scss";
+import "../styles/listingCard.scss";
 import ListingCard from "../componenets/ListingCard";
 import Navbar from "../componenets/Navbar"; 
 import Footer from "../componenets/Footer"; 
