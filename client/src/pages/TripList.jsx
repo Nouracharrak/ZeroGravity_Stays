@@ -23,9 +23,17 @@ const TripList = () => {
 
   const getTripList = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Aucun token trouvé !");
+      const token = localStorage.getItem("authToken");
+      console.log("Token utilisé:", token ? "Oui (longueur: " + token.length + ")" : "Non");
+      
+      if (!token) {
+        console.error("Aucun token trouvé dans localStorage");
+        setError("Session expirée. Veuillez vous reconnecter.");
+        return;
+      }
   
+      console.log("Tentative d'appel API:", `${URL.FETCH_BOOKINGS}/${userId}/trips`);
+      
       const response = await fetch(`${URL.FETCH_BOOKINGS}/${userId}/trips`, {
         method: "GET",
         headers: {
@@ -33,16 +41,34 @@ const TripList = () => {
           "Authorization": `Bearer ${token}`,
         },
       });
-  
-      if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-  
-      const data = await response.json();
-      if (data && Array.isArray(data)) {
-        dispatch(setTripList(data));
-      } else {
-        throw new Error("Invalid data format received.");
+      
+      console.log("Statut de la réponse:", response.status);
+      
+      // Récupérer le corps de la réponse en texte pour le débogage
+      const responseText = await response.text();
+      console.log("Réponse brute:", responseText);
+      
+      // Essayer de parser en JSON pour le traitement normal
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Erreur de parsing JSON:", parseError);
+        throw new Error(`La réponse n'est pas au format JSON: ${responseText}`);
       }
   
+      if (!response.ok) {
+        console.error("Réponse d'erreur du serveur:", data);
+        throw new Error(`Erreur ${response.status}: ${data.error || response.statusText}`);
+      }
+  
+      if (!Array.isArray(data)) {
+        console.error("Format de données inattendu:", data);
+        throw new Error("Les données retournées ne sont pas un tableau");
+      }
+  
+      console.log("Données reçues:", data);
+      dispatch(setTripList(data));
       // Charger les statuts de paiement depuis localStorage
       const storedPaidTrips = localStorage.getItem("paidTrips");
       if (storedPaidTrips) {
