@@ -20,73 +20,82 @@ const TripList = () => {
   const tripList = useSelector((state) => state.user.tripList) || [];
   const [paidTrips, setPaidTrips] = useState({});
   const dispatch = useDispatch();
-
   const getTripList = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      console.log("Token utilisé:", token ? "Oui (longueur: " + token.length + ")" : "Non");
+      setLoading(true);
+      setError("");
       
-      if (!token) {
-        console.error("Aucun token trouvé dans localStorage");
-        setError("Session expirée. Veuillez vous reconnecter.");
+      // Vérification des données nécessaires
+      if (!userId) {
+        console.error("Erreur: userId manquant");
+        setError("Information utilisateur manquante. Veuillez vous reconnecter.");
+        setLoading(false);
         return;
       }
-  
-      console.log("Tentative d'appel API:", `${URL.FETCH_BOOKINGS}/${userId}/trips`);
       
-      const response = await fetch(`${URL.FETCH_BOOKINGS}/${userId}/trips`, {
+      // Récupération du token
+      const token = localStorage.getItem("authToken");
+      
+      if (!token) {
+        console.error("Erreur: Token manquant");
+        setError("Vous devez vous reconnecter pour accéder à vos voyages.");
+        setLoading(false);
+        return;
+      }
+      
+      // URL correcte selon la définition du backend
+      const endpoint = `${URL.FETCH_BOOKINGS}/${userId}/trips`;
+      console.log("URL appelée:", endpoint);
+      
+      const response = await fetch(endpoint, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
-        },
+          "Content-Type": "application/json",
+        }
       });
       
-      console.log("Statut de la réponse:", response.status);
+      console.log("Statut de réponse:", response.status);
       
-      // Récupérer le corps de la réponse en texte pour le débogage
-      const responseText = await response.text();
-      console.log("Réponse brute:", responseText);
-      
-      // Essayer de parser en JSON pour le traitement normal
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("Erreur de parsing JSON:", parseError);
-        throw new Error(`La réponse n'est pas au format JSON: ${responseText}`);
-      }
-  
       if (!response.ok) {
-        console.error("Réponse d'erreur du serveur:", data);
-        throw new Error(`Erreur ${response.status}: ${data.error || response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Erreur ${response.status}:`, errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || errorData.message || `Erreur ${response.status}`);
+        } catch (e) {
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+        }
       }
-  
-      if (!Array.isArray(data)) {
-        console.error("Format de données inattendu:", data);
-        throw new Error("Les données retournées ne sont pas un tableau");
-      }
-  
+      
+      const data = await response.json();
       console.log("Données reçues:", data);
-      dispatch(setTripList(data));
-      // Charger les statuts de paiement depuis localStorage
-      const storedPaidTrips = localStorage.getItem("paidTrips");
-      if (storedPaidTrips) {
-        setPaidTrips(JSON.parse(storedPaidTrips));
+      
+      // Vérification que data est un tableau
+      if (!Array.isArray(data)) {
+        console.warn("Les données reçues ne sont pas un tableau:", data);
+        // Si c'est un objet avec une propriété qui contient le tableau, adaptez le code
+        const tripsArray = Array.isArray(data.trips) ? data.trips : 
+                          (data.bookings ? data.bookings : []);
+        
+        setTripList(tripsArray);
+        dispatch(setTripList(tripsArray));
       } else {
-        const paidStatus = {};
-        data.forEach((trip) => {
-          paidStatus[trip.listingId] = trip.isPaid || false;
-        });
-        setPaidTrips(paidStatus);
+        // Si c'est déjà un tableau
+        setTripList(data);
+        dispatch(setTripList(data));
       }
+      
     } catch (err) {
-      console.log("Fetch Trip List Failed", err.message);
-      setError("Failed to fetch trip list. Please try again later.");
+      console.error("Erreur lors de la récupération des voyages:", err);
+      setError(err.message || "Une erreur est survenue lors du chargement des voyages");
     } finally {
       setLoading(false);
     }
   };
+  
+
   useEffect(() => {
     if (userId) getTripList();
   }, [userId]);
