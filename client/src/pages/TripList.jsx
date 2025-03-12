@@ -104,6 +104,17 @@ const TripList = () => {
   };
 
   useEffect(() => {
+    // Récupérer les voyages payés depuis le localStorage
+    try {
+      const storedPaidTrips = localStorage.getItem('paidTrips');
+      if (storedPaidTrips) {
+        setPaidTrips(JSON.parse(storedPaidTrips));
+      }
+    } catch (error) {
+      console.error("Error loading paid trips from localStorage:", error);
+    }
+  
+    // Récupérer la liste des voyages si l'utilisateur est connecté
     if (userId) getTripList();
   }, [userId]);
 
