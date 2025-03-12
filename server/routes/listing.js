@@ -8,5 +8,6 @@ router.get("/", listingController.getListings);
 router.get("/:listingId", listingController.getListingById);
 router.put("/:listingId", listingController.updateListing);
 router.delete("/:listingId", listingController.deleteListing);
+router.get("/:userId/listings", listingController.getUserListings);
 
 module.exports = router;

@@ -90,83 +90,51 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
-// ===== Méthodes pour les fonctionnalités spécifiques =====
-
-// Récupérer les voyages d'un utilisateur
-exports.getUserTrips = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const bookings = await Booking.find({ customerId: userId });
-
-        const tripsWithDetails = await Promise.all(bookings.map(async (booking) => {
-            const listingDetails = await Listing.findById(booking.listingId);
-            return {
-                ...booking.toObject(),
-                listingDetails: listingDetails || {}
-            };
-        }));
-
-        res.status(200).json(tripsWithDetails);
-    } catch (err) {
-        console.error("Erreur lors de la récupération des voyages:", err);
-        res.status(404).json({ message: 'Cannot find the trips!', error: err.message });
-    }
-};
-
-// Ajouter/retirer un hébergement de la liste de souhaits
+/*ADD LISTING TO WISHLIST */
 exports.toggleWishlistItem = async (req, res) => {
     try {
-      const { userId, listingId } = req.params;
-  
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
-  
-      // Vérification que listingId est bien une chaîne de caractères
-      if (typeof listingId !== 'string') {
-        return res.status(400).json({ message: "ID de listing invalide" });
-      }
-  
-      const isInWishlist = user.wishList.some(id => id.toString() === listingId);
-      if (isInWishlist) {
-        user.wishList = user.wishList.filter(id => id.toString() !== listingId);
-      } else {
-        user.wishList.push(listingId);
-      }
-  
-      await user.save();
-      return res.status(200).json({ 
-        message: isInWishlist ? "Listing retiré de la wishList" : "Listing ajouté à la wishList", 
-        wishList: user.wishList 
-      });
-  
+        const { userId, listingId } = req.params
+    
+        // Check if the user and listing exist
+        const user = await User.findById(userId);
+        const listing = await Listing.findById(listingId);
+        
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        if (!listing) {
+          return res.status(404).json({ message: "Listing not found" });
+        }
+    
+        // Vérifier si le listingId est déjà dans la wishlist
+        // Note: Nous recherchons maintenant le listingId directement ou l'objet avec cet ID
+        const isInWishlist = user.wishList.some(item => 
+            (typeof item === 'string' && item === listingId) || 
+            (item._id && item._id.toString() === listingId)
+        );
+      
+        if (isInWishlist) {
+          // Option 1: si wishList contient des chaînes (IDs)
+          user.wishList = user.wishList.filter(item => 
+            (typeof item === 'string' && item !== listingId) || 
+            (item._id && item._id.toString() !== listingId)
+          );
+          await user.save();
+          res.status(200).json({ 
+            message: "Listing removed from wishlist", 
+            wishlist: user.wishList 
+          });
+        } else {
+          // Option 2: stocker seulement l'ID (recommandé)
+          user.wishList.push(listingId);
+          await user.save();
+          res.status(200).json({ 
+            message: "Listing added to wishlist",  
+            wishlist: user.wishList 
+          });
+        }
     } catch (err) {
-      console.error("Erreur:", err);
-      return res.status(500).json({ error: err.message });
-    }
-  };
-  
-// Récupérer les propriétés d'un utilisateur
-exports.getUserProperties = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const properties = await Listing.find({ creator: userId }).populate("creator");
-        res.status(200).json(properties); 
-    } catch (err) {
-        console.error("Erreur lors de la récupération des propriétés:", err);
-        res.status(404).json({ message: 'Cannot find the properties!', error: err.message });
-    }
-};
-
-// Récupérer les réservations pour les propriétés de l'utilisateur (en tant qu'hôte)
-exports.getUserReservations = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const reservations = await Booking.find({ hostId: userId })
-            .populate("customerId hostId listingId"); // Peupler les informations du client et du listing
-        res.status(200).json(reservations);
-    } catch (err) {
-        console.error("Erreur lors de la récupération des réservations:", err);
-        res.status(404).json({ message: 'Cannot find the reservations!', error: err.message });
+        console.log(err);
+        res.status(404).json({ error: err.message });
     }
 };

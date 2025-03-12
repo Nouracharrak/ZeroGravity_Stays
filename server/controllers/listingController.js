@@ -203,3 +203,15 @@ exports.deleteListing = async (req, res) => {
       .json({ message: "Failed to delete listing", error: err.message });
   }
 };
+
+// Récupérer les propriétés d'un utilisateur
+  exports.getUserListings = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const userListings = await Listing.find({ userId }).populate("creator");
+        res.status(200).json(userListings);
+    } catch (err) {
+        console.error("Erreur lors de la récupération des propriétés:", err);
+        res.status(404).json({ message: 'Cannot find the properties!', error: err.message });
+    }
+};

@@ -171,3 +171,62 @@ exports.deleteBooking = async (req, res) => {
     }
 };
 
+// / Récupérer les voyages d'un utilisateur
+    exports.getUserTrips = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        console.log("Récupération des voyages pour l'utilisateur:", userId);
+        
+        // Récupérer toutes les réservations pour cet utilisateur
+        const bookings = await Booking.find({ customerId: userId });
+        
+        if (bookings.length === 0) {
+            return res.status(200).json([]); // Retourner un tableau vide si pas de réservations
+        }
+        
+        // Extraire tous les IDs de propriétés des réservations
+        const listingIds = bookings.map(booking => booking.listingId);
+        
+        // Récupérer toutes les propriétés correspondantes
+        const listings = await Listing.find({ _id: { $in: listingIds } });
+        
+        // Créer un Map pour faciliter la recherche des propriétés par ID
+        const listingMap = new Map(listings.map(listing => [listing._id.toString(), listing]));
+        
+        // Fusionner les données
+        const mergedData = bookings.map(booking => {
+            const listingId = booking.listingId.toString();
+            const listing = listingMap.get(listingId);
+            
+            // Si on ne trouve pas la propriété correspondante
+            if (!listing) {
+                return {
+                    ...booking.toObject(),
+                    listingDetails: null // Indiquer que les détails manquent
+                };
+            }
+            
+            return {
+                ...booking.toObject(),
+                listingDetails: listing.toObject() // Mettre les détails dans un sous-objet
+            };
+        });
+        
+        res.status(200).json(mergedData); // Utiliser 200 au lieu de 202
+    } catch (err) {
+        console.error("Erreur lors de la récupération des voyages:", err);
+        res.status(500).json({ error: err.message }); // Utiliser 500 au lieu de 404 pour une erreur serveur
+    }
+};
+/* GET RESERVATION */
+exports.getUserReservations = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const reservations = await Booking.find({ hostId: userId })
+            .populate("customerId hostId listingId"); // Peupler les informations du client et du listing
+        res.status(200).json(reservations);
+    } catch (err) {
+        console.error("Erreur lors de la récupération des réservations:", err);
+        res.status(404).json({ message: 'Cannot find the reservations!', error: err.message });
+    }
+};
