@@ -93,48 +93,66 @@ exports.deleteUser = async (req, res) => {
 /*ADD LISTING TO WISHLIST */
 exports.toggleWishlistItem = async (req, res) => {
     try {
-        const { userId, listingId } = req.params
-    
-        // Check if the user and listing exist
-        const user = await User.findById(userId);
-        const listing = await Listing.findById(listingId);
+        const { userId, listingId } = req.params;
         
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-        if (!listing) {
-          return res.status(404).json({ message: "Listing not found" });
+        // Vérifiez que les params sont valides avant de continuer
+        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(listingId)) {
+            return res.status(400).json({ message: "Invalid user or listing ID format" });
         }
     
-        // Vérifier si le listingId est déjà dans la wishlist
-        // Note: Nous recherchons maintenant le listingId directement ou l'objet avec cet ID
-        const isInWishlist = user.wishList.some(item => 
-            (typeof item === 'string' && item === listingId) || 
-            (item._id && item._id.toString() === listingId)
-        );
-      
-        if (isInWishlist) {
-          // Option 1: si wishList contient des chaînes (IDs)
-          user.wishList = user.wishList.filter(item => 
-            (typeof item === 'string' && item !== listingId) || 
-            (item._id && item._id.toString() !== listingId)
-          );
-          await user.save();
-          res.status(200).json({ 
-            message: "Listing removed from wishlist", 
-            wishlist: user.wishList 
-          });
-        } else {
-          // Option 2: stocker seulement l'ID (recommandé)
-          user.wishList.push(listingId);
-          await user.save();
-          res.status(200).json({ 
-            message: "Listing added to wishlist",  
-            wishlist: user.wishList 
-          });
+        // Récupérer l'utilisateur avec sa liste de souhaits
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
         }
+        
+        // Vérifier si le listing existe
+        const listing = await Listing.findById(listingId);
+        if (!listing) {
+            return res.status(404).json({ message: "Listing not found" });
+        }
+        
+        // S'assurer que wishList est initialisée
+        if (!user.wishList) {
+            user.wishList = [];
+        }
+        
+        // Convertir tous les éléments en chaînes pour une comparaison cohérente
+        const wishListIds = user.wishList.map(item => 
+            typeof item === 'string' ? item : item.toString()
+        );
+        
+        // Vérifier si le listing est dans la wishlist
+        const index = wishListIds.indexOf(listingId.toString());
+        
+        if (index !== -1) {
+            // Supprimer de la wishlist
+            user.wishList.splice(index, 1);
+            console.log(`Removed listing ${listingId} from wishlist`);
+        } else {
+            // Ajouter à la wishlist
+            user.wishList.push(listingId);
+            console.log(`Added listing ${listingId} to wishlist`);
+        }
+        
+        // Sauvegarder les changements
+        await user.save();
+        
+        // Assurez-vous de renvoyer au client une liste cohérente d'IDs
+        const updatedWishList = user.wishList.map(item => 
+            typeof item === 'string' ? item : item.toString()
+        );
+        
+        console.log("Updated wishlist:", updatedWishList);
+        
+        // Renvoyer la wishlist mise à jour
+        res.status(200).json({
+            message: index !== -1 ? "Listing removed from wishlist" : "Listing added to wishlist",
+            wishlist: updatedWishList
+        });
+        
     } catch (err) {
-        console.log(err);
-        res.status(404).json({ error: err.message });
+        console.error("Error toggling wishlist item:", err);
+        res.status(500).json({ error: err.message });
     }
 };

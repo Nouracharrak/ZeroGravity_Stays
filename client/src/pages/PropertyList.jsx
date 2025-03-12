@@ -118,7 +118,7 @@ const PropertyList = () => {
         <Navbar />
         <div style={{ textAlign: "center", padding: "50px 0" }}>
           <Loader />
-          <p style={{ marginTop: "20px" }}>Chargement de vos propriétés...</p>
+          <p style={{ marginTop: "20px" }}>Downloading your properties...</p>
         </div>
         <Footer />
       </>
@@ -128,7 +128,7 @@ const PropertyList = () => {
   return (
     <>
       <Navbar />
-      <h1 className="title-list">Vos propriétés</h1>
+      <h1 className="title-list">Your properties</h1>
       
       {error && (
         <div className="error-message" style={{ 
@@ -184,26 +184,12 @@ const PropertyList = () => {
             backgroundColor: "#f9f9f9"
           }}>
             <p className="empty-list-message">No Properties found.</p>
-            <button 
-              onClick={() => window.location.href = "/create-listing"} 
-              style={{ 
-                backgroundColor: "#FF385C", 
-                color: "white", 
-                border: "none", 
-                padding: "10px 20px", 
-                borderRadius: "5px", 
-                marginTop: "15px",
-                cursor: "pointer"
-              }}
-            >
-              Ajouter une propriété
-            </button>
           </div>
         )}
       </div>
       
       {/* Section de débogage */}
-      <div style={{ margin: "30px auto", padding: "15px", border: "1px solid #ddd", maxWidth: "800px", borderRadius: "5px" }}>
+      {/* <div style={{ margin: "30px auto", padding: "15px", border: "1px solid #ddd", maxWidth: "800px", borderRadius: "5px" }}>
         <h3>Informations de débogage:</h3>
         <p>État de chargement: {loading ? "En cours" : "Terminé"}</p>
         <p>Nombre de propriétés (Redux): {propertyList.length}</p>
@@ -211,7 +197,7 @@ const PropertyList = () => {
         <p>Nombre de propriétés affichées: {displayProperties.length}</p>
         
         {/* Afficher les 2 premières propriétés pour exemple */}
-        {displayProperties.length > 0 && (
+        {/* {displayProperties.length > 0 && (
           <div>
             <h4>Exemple de propriété:</h4>
             <pre style={{ overflowX: "auto" }}>
@@ -219,7 +205,7 @@ const PropertyList = () => {
             </pre>
           </div>
         )}
-      </div>
+      </div> */}
       
       <Footer />
     </>

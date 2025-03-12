@@ -33,22 +33,29 @@ const ListingCard = ({
   const user = useSelector((state) => state.user);
   const wishList = user?.wishList || [];
 
-  // Fonction pour vérifier si cet élément est dans la wishList
-  const checkIsInWishlist = () => {
-    if (!wishList || !listingId || !user) return false;
-    
-    return wishList.some(item => {
-      // Si l'item est un string (ID)
-      if (typeof item === 'string') {
-        return item === listingId;
-      }
-      // Si l'item est un objet avec un _id
-      else if (item && item._id) {
-        return item._id === listingId;
-      }
-      return false;
-    });
-  };
+  // Fonction améliorée pour vérifier si un élément est dans la wishlist
+const checkIsInWishlist = () => {
+  if (!wishList || !listingId || wishList.length === 0) return false;
+  
+  // Normaliser l'ID du listing pour la comparaison
+  const normalizedListingId = listingId.toString();
+  
+  return wishList.some(item => {
+    // Si l'item est une chaîne
+    if (typeof item === 'string') {
+      return item === normalizedListingId;
+    }
+    // Si l'item est un objet avec _id
+    else if (item && item._id) {
+      return item._id.toString() === normalizedListingId;
+    }
+    // Si l'item est directement un ObjectId
+    else if (item && typeof item.toString === 'function') {
+      return item.toString() === normalizedListingId;
+    }
+    return false;
+  });
+};
   // État local pour l'affichage du cœur
   const [liked, setLiked] = useState(checkIsInWishlist());
 
