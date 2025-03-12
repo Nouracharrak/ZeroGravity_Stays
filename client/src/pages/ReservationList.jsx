@@ -137,7 +137,7 @@ const ReservationList = () => {
               );
             })
           ) : (
-            <p className="empty-list-message">Vous n'avez reçu aucune réservation pour le moment.</p>
+            <p className="empty-list-message">No reservation found for the moment.</p>
           )}
         </div>
       )}

@@ -205,13 +205,34 @@ exports.deleteListing = async (req, res) => {
 };
 
 // Récupérer les propriétés d'un utilisateur
-  exports.getUserListings = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const userListings = await Listing.find({ userId }).populate("creator");
-        res.status(200).json(userListings);
-    } catch (err) {
-        console.error("Erreur lors de la récupération des propriétés:", err);
-        res.status(404).json({ message: 'Cannot find the properties!', error: err.message });
-    }
+exports.getUserListings = async (req, res) => {
+  try {
+      const { userId } = req.params;
+      
+      // Validation du paramètre
+      if (!userId) {
+          return res.status(400).json({ message: 'ID utilisateur manquant' });
+      }
+
+      console.log(`Recherche des propriétés pour l'utilisateur ${userId}`);
+      
+      // Utilisez l'opérateur $or pour chercher dans les deux champs
+      const userListings = await Listing.find({ 
+          $or: [
+              { creator: userId },
+              { userId: userId }
+          ]
+      }).populate("creator");
+
+      console.log(`${userListings.length} propriétés trouvées pour l'utilisateur ${userId}`);
+      
+      res.status(200).json(userListings);
+  } catch (err) {
+      console.error("Erreur lors de la récupération des propriétés:", err);
+      res.status(500).json({ 
+          message: 'Erreur lors de la récupération des propriétés', 
+          error: err.message 
+      });
+  }
 };
+
