@@ -114,40 +114,61 @@ const TripList = () => {
 
   const handlePaymentSuccess = async (paymentDetails) => {
     try {
+      console.log("Payment successful, details:", paymentDetails);
+      
+      const token = localStorage.getItem("authToken");
+      
+      if (!token) {
+        console.error("Authentication token missing");
+        alert("Authentication token missing. Please log in again.");
+        return;
+      }
+      
+      // Utiliser la bonne URL backend
       const response = await fetch(URL.SEND_CONFIRMATION, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ paymentIntentId: paymentDetails.id }),
+        body: JSON.stringify({ 
+          paymentIntentId: paymentDetails.id 
+        }),
       });
-
+      
+      console.log("Email confirmation response status:", response.status);
+      
       if (!response.ok) {
-        throw new Error("Failed to send payment confirmation email");
+        const errorText = await response.text();
+        console.error("Email confirmation error details:", errorText);
+        throw new Error(`Failed to send confirmation email: ${errorText}`);
       }
-
+      
       // Mettre à jour l'état local des paiements
       const updatedPaidTrips = {
         ...paidTrips,
-        [selectedTrip.listingId]: true,
+        [selectedTrip._id]: true  // Utiliser _id ou listingId selon votre modèle
       };
-
+      
       setPaidTrips(updatedPaidTrips);
-
-      // Sauvegarder dans localStorage pour persistance
-      localStorage.setItem("paidTrips", JSON.stringify(updatedPaidTrips));
+      localStorage.setItem('paidTrips', JSON.stringify(updatedPaidTrips));
       setPaymentSuccess(true);
       setOpenCheckout(false);
     } catch (error) {
-      console.error("Error sending email confirmation:", error);
-      alert("Failed to send email confirmation. Please try again.");
+      console.error("Error in payment confirmation process:", error);
+      
+      // Même en cas d'erreur d'email, confirmer le paiement côté utilisateur
+      alert("Payment was successful, but there was an issue with the confirmation email. Your booking is still confirmed.");
+      
+      // Mettre à jour l'état pour montrer que le paiement a réussi
+      setPaidTrips({
+        ...paidTrips,
+        [selectedTrip._id]: true
+      });
+      setPaymentSuccess(true);
+      setOpenCheckout(false);
     }
-  };
-
-  const handlePaymentFailure = (errorMessage) => {
-    setPaymentSuccess(false);
-    alert("Payment failed: " + errorMessage);
-  };
+  };  
 
   return loading ? (
     <Loader />
@@ -198,7 +219,6 @@ const TripList = () => {
               tripDetails={selectedTrip}
               onClose={() => setOpenCheckout(false)}
               onPaymentSuccess={handlePaymentSuccess}
-              onPaymentFailure={handlePaymentFailure}
             />
           </div>
         </div>
