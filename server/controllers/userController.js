@@ -1,6 +1,7 @@
 const User = require('../models/user.js');
 const Booking = require('../models/Booking.js');
 const Listing = require('../models/Listing.js');
+const mongoose = require('mongoose');
 
 // ===== Méthodes pour les opérations CRUD basiques =====
 
