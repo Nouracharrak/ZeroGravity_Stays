@@ -219,15 +219,36 @@ exports.deleteBooking = async (req, res) => {
         res.status(500).json({ error: err.message }); // Utiliser 500 au lieu de 404 pour une erreur serveur
     }
 };
-/* GET RESERVATION */
+/* GET RESERVATIONS RECEIVED BY HOST */
 exports.getUserReservations = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const reservations = await Booking.find({ hostId: userId })
-            .populate("customerId hostId listingId"); // Peupler les informations du client et du listing
+        const { hostId } = req.params; // Changé de userId à hostId pour correspondre à la route
+        
+        // Validation du paramètre
+        if (!hostId) {
+            return res.status(400).json({ message: 'ID hôte manquant' });
+        }
+
+        // Recherche des réservations où l'utilisateur est l'hôte
+        const reservations = await Booking.find({ hostId: hostId })
+            .populate({
+                path: "listingId",
+                select: "_id city province country category listingPhotosPaths price"
+            })
+            .populate({
+                path: "customerId", 
+                select: "_id firstName lastName email"
+            });
+
+        console.log(`Réservations trouvées pour l'hôte ${hostId}:`, reservations.length);
+        
         res.status(200).json(reservations);
     } catch (err) {
         console.error("Erreur lors de la récupération des réservations:", err);
-        res.status(404).json({ message: 'Cannot find the reservations!', error: err.message });
+        res.status(500).json({ 
+            message: 'Erreur lors de la récupération des réservations', 
+            error: err.message 
+        });
     }
 };
+

@@ -10,84 +10,146 @@ import URL from "../constants/api";
 
 const ReservationList = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const userId = useSelector((state) => state.user?._id);
-  const reservationList = useSelector((state) => state.user?.reservationList); // Utilisation de l'opérateur optional chaining pour éviter des erreurs si user ou reservationList sont undefined.
+  const reservationList = useSelector((state) => state.user?.reservationList || []); 
 
   const dispatch = useDispatch();
 
   // Fonction pour récupérer la liste des réservations
   const getReservationList = async () => {
     try {
+      setLoading(true);
+      setError("");
+      
       if (!userId) {
-        console.log("User ID is missing!");  // Vérification si userId est bien récupéré
+        console.error("User ID is missing!");
+        setError("Utilisateur non identifié. Veuillez vous connecter.");
+        setLoading(false);
         return;
       }
 
-      const response = await fetch(
-        `${URL.FETCH_BOOKINGS}/${userId}/reservations`,  // Assurez-vous que cette URL est correcte
-        { method: "GET" }
-      );
+      // Récupération du token d'authentification
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        console.error("Token d'authentification manquant");
+        setError("Session expirée. Veuillez vous reconnecter.");
+        setLoading(false);
+        return;
+      }
+
+      // Construction de l'URL avec le bon paramètre (hostId)
+      const endpoint = `${URL.FETCH_BOOKINGS}/${userId}/reservations`;
+      console.log("Endpoint called:", endpoint);
+
+      const response = await fetch(endpoint, { 
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      console.log("Response status:", response.status);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch reservations");  // Gestion des erreurs réseau
+        const errorText = await response.text();
+        console.error(`Error ${response.status}:`, errorText);
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log("Fetched reservation list:", data); // Vérification de la réponse
+      console.log("Raw reservation data:", data);
 
-      // Assurez-vous que les données sont un tableau valide
+      // Vérifier et transformer les données si nécessaire
       if (Array.isArray(data)) {
-        dispatch(setReservationList(data)); // Mise à jour du state
+        console.log(`${data.length} réservations trouvées`);
+        dispatch(setReservationList(data));
       } else {
-        console.error("La réponse de l'API n'est pas un tableau valide");
+        console.warn("Les données reçues ne sont pas un tableau:", data);
+        // Si c'est un objet, essayer de trouver un tableau à l'intérieur
+        const reservationsArray = data.reservations || [];
+        console.log(`${reservationsArray.length} réservations extraites de l'objet`);
+        dispatch(setReservationList(reservationsArray));
       }
-
-      setLoading(false);
     } catch (err) {
-      console.log("Fetch Reservation List failed!", err.message);
+      console.error("Fetch Reservation List failed!", err);
+      setError("Impossible de récupérer vos réservations: " + err.message);
+    } finally {
       setLoading(false);
     }
   };
 
-  // Assurez-vous que la requête est effectuée une fois que `userId` est disponible
   useEffect(() => {
-    console.log("userId:", userId);  // Ajout de journalisation pour vérifier si userId est bien défini
     if (userId) {
       getReservationList();
     } else {
-      console.log("User ID is missing, skipping fetch.");
+      setLoading(false);
     }
-  }, [userId]); // Ajout de userId comme dépendance pour relancer l'effet si nécessaire
+  }, [userId]);
 
-  // Vérification du contenu de reservationList avant de l'afficher
-  if (loading) return <Loader />;
+  // Console.log pour déboguer
+  useEffect(() => {
+    console.log("Current reservation list from Redux:", reservationList);
+  }, [reservationList]);
 
+  // Rendu du composant
   return (
     <>
       <Navbar />
-      <h1 className="title-list">Your Reservation List</h1>
-      <div className="list">
-        {reservationList?.length > 0 ? (
-          reservationList.map(({ listingId, hostId, startDate, endDate, totalPrice, booking = true }) => (
-            <ListingCard
-              key={listingId?._id || listingId}  // Assurez-vous que listingId est valide
-              listingId={listingId?._id || listingId}
-              creator={hostId?._id || hostId}
-              listingPhotosPaths={listingId?.listingPhotosPaths || []}
-              city={listingId?.city}
-              province={listingId?.province}
-              country={listingId?.country}
-              category={listingId?.category}
-              startDate={startDate}
-              endDate={endDate}
-              totalPrice={totalPrice}
-              booking={booking}
-            />
-          ))
-        ) : (
-          <p>No reservations found.</p>
-        )}
-      </div>
+      <h1 className="title-list">Reservations You've Received</h1>
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      {loading ? (
+        <Loader />
+      ) : (
+        <div className="list">
+          {reservationList && reservationList.length > 0 ? (
+            reservationList.map((reservation) => {
+              // Extraction sécurisée des propriétés
+              const listingInfo = reservation.listingId || {};
+              const customerInfo = reservation.customerId || {};
+              
+              return (
+                <div key={reservation._id} className="reservation-item">
+                  <div className="reservation-details">
+                    <h3>Réservation de {customerInfo.firstName || 'Client'} {customerInfo.lastName || ''}</h3>
+                    <p>Email: {customerInfo.email || 'Non disponible'}</p>
+                    <p>Dates: {new Date(reservation.startDate).toLocaleDateString()} - {new Date(reservation.endDate).toLocaleDateString()}</p>
+                    <p>Prix total: {reservation.totalPrice}€</p>
+                  </div>
+                  
+                  {listingInfo._id && (
+                    <ListingCard
+                      listingId={listingInfo._id}
+                      creator={userId}
+                      listingPhotosPaths={listingInfo.listingPhotosPaths || []}
+                      city={listingInfo.city || "N/A"}
+                      province={listingInfo.province || ""}
+                      country={listingInfo.country || ""}
+                      category={listingInfo.category || ""}
+                      price={listingInfo.price || 0}
+                      booking={true}
+                    />
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <p className="empty-list-message">Vous n'avez reçu aucune réservation pour le moment.</p>
+          )}
+        </div>
+      )}
+      
+      {/* Section de débogage (à supprimer en production) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="debug-section">
+          <h3>Données brutes (débogage):</h3>
+          <pre>{JSON.stringify(reservationList, null, 2)}</pre>
+        </div>
+      )}
+      
       <Footer />
     </>
   );
