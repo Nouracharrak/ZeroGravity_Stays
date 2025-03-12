@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking.js');
 const User = require('../models/user.js');
+const Listing = require('../models/Listing.js');
 
 // Créer une réservation
 exports.createBooking = async (req, res) => {
