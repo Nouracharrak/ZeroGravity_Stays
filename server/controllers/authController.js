@@ -7,7 +7,6 @@ const { sendConfirmationEmail, sendPasswordResetEmail } = require('../config/mai
 require("dotenv").config();
 
 // Contrôleur d'inscription
-// Contrôleur d'inscription
 exports.register = async (req, res) => {
   try {
     console.log("Requête reçue avec le body :", req.body);

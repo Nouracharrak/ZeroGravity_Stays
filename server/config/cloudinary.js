@@ -20,7 +20,9 @@ const storage = new CloudinaryStorage({
   },
 });
 
+// MODIFIÉ : Exporter l'instance Multer plutôt qu'un middleware préconfigurée
 const upload = multer({ storage });
 
 module.exports = { cloudinary, upload };
+
 
