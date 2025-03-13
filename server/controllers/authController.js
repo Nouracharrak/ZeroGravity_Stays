@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
     console.log("Requête reçue avec le body :", req.body);
     console.log("Fichier reçu de Multer :", req.file);
 
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, role } = req.body;
 
     // Vérification des champs obligatoires
     if (!firstName || !lastName || !email || !password) {
@@ -44,6 +44,11 @@ exports.register = async (req, res) => {
     const tokenExpiration = new Date();
     tokenExpiration.setHours(tokenExpiration.getHours() + 24); // Token valide 24h
 
+    // Déterminer si l'utilisateur est un administrateur
+    const isAdmin = role === 'admin';
+    console.log("Role demandé:", role);
+    console.log("isAdmin sera défini à:", isAdmin);
+
     // Création du nouvel utilisateur
     const newUser = new User({
       firstName,
@@ -52,7 +57,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       profileImagePath: req.file.path, // chemin de l'image
       isVerified: false,
-      isAdmin: false, // Valeur par défaut à false
+      isAdmin: isAdmin, // Définir isAdmin en fonction du rôle
       verificationToken,
       verificationTokenExpires: tokenExpiration
     });
@@ -79,7 +84,7 @@ exports.register = async (req, res) => {
         email: newUser.email,
         profileImagePath: newUser.profileImagePath,
         isVerified: newUser.isVerified,
-        isAdmin: newUser.isAdmin, // Retourner la valeur de isAdmin
+        isAdmin: newUser.isAdmin,
         verificationTokenExpires: newUser.verificationTokenExpires // Ajout de l'expiration du token
       }
     });
@@ -88,6 +93,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Registration failed", error: err.message });
   }
 };
+
 // Contrôleur de connexion
 exports.login = async (req, res) => {
   try {
