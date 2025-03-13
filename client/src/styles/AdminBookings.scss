@@ -1,0 +1,33 @@
+/* src/pages/admin/AdminBookings.css */
+.admin-bookings {
+    color: #333;
+  }
+  
+  .status-badge.confirmed {
+    background-color: #2ecc71;
+    color: #176437;
+  }
+  
+  .status-badge.pending {
+    background-color: #f1c40f;
+    color: #7d6608;
+  }
+  
+  .status-badge.cancelled {
+    background-color: #e74c3c;
+    color: #7b1a11;
+  }
+  
+  .action-buttons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    transition: transform 0.2s;
+  }
+  
+  .action-buttons button:hover {
+    transform: scale(1.2);
+  }
+  

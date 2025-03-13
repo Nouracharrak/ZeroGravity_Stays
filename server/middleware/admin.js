@@ -11,8 +11,9 @@ const adminAuth = async (req, res, next) => {
       });
     }
     
-    // Vérifier si l'utilisateur est un admin
-    if (!req.user.isAdmin) {
+    // Vérifier si l'utilisateur est un admin - soit par isAdmin soit par role
+    // Dépendant de votre modèle User
+    if (!req.user.isAdmin && req.user.role !== 'admin') {
       return res.status(403).json({ 
         success: false, 
         message: 'Accès refusé: privilèges administrateur requis' 

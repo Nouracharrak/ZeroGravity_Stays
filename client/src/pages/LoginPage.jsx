@@ -210,6 +210,8 @@ const LoginPage = () => {
       console.log("Données reçues:", data);
   
       if (response.ok) {
+        console.log("Réponse complète:", data);
+        console.log("Type du token:", typeof data.token);
         // Vérifier si le token est présent dans la réponse
         if (!data.token) {
           console.error("Erreur: Token manquant dans la réponse du serveur", data);
@@ -223,7 +225,9 @@ const LoginPage = () => {
         
         // Vérifier que le token a bien été stocké
         const storedToken = localStorage.getItem('authToken');
-        console.log("Token stocké avec succès:", storedToken ? "Oui" : "Non");
+    
+        console.log("Token stocké avec succès:", !!storedToken);
+        console.log("Token stocké:", storedToken ? storedToken.substring(0, 20) + "..." : "NONE");
         
         if (storedToken) {
           console.log("Premier caractères du token:", storedToken.substring(0, 10) + "...");
@@ -249,8 +253,8 @@ const LoginPage = () => {
           setError(data.message || "Échec de la connexion. Vérifiez vos identifiants.");
         }
       }
-    } catch (err) {
-      setError("Problème de connexion au serveur");
+    } catch (storageError) {
+      console.error("Erreur lors du stockage du token:", storageError);
     } finally {
       setIsLoading(false);
     }

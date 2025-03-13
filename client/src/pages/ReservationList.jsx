@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import "../styles/list.scss";
-import Loader from "../componenets/Loader";
-import Navbar from "../componenets/Navbar";
-import Footer from "../componenets/Footer";
+import Loader from "../components/Loader";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { useDispatch, useSelector } from "react-redux";
 import { setReservationList } from "../redux/state";
-import ListingCard from "../componenets/ListingCard";
+import ListingCard from "../components/ListingCard";
 import URL from "../constants/api";
 
 const ReservationList = () => {

@@ -5,9 +5,9 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { DateRange } from "react-date-range";
 import "../styles/listingDetails.scss";
-import Navbar from "../componenets/Navbar";
-import Loader from "../componenets/Loader";
-import Footer from "../componenets/Footer";
+import Navbar from "../components/Navbar";
+import Loader from "../components/Loader";
+import Footer from "../components/Footer";
 import { useSelector } from "react-redux";
 import URL from "../constants/api";
 

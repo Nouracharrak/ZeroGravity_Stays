@@ -3,10 +3,10 @@ import "../styles/list.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { setListings } from "../redux/state";
 import { useState, useEffect } from "react";
-import ListingCard from "../componenets/ListingCard";
-import Navbar from "../componenets/Navbar";
-import Loader from "../componenets/Loader";
-import Footer from "../componenets/Footer";
+import ListingCard from "../components/ListingCard";
+import Navbar from "../components/Navbar";
+import Loader from "../components/Loader";
+import Footer from "../components/Footer";
 import URL from "../constants/api";
 
 const SearchPage = () => {

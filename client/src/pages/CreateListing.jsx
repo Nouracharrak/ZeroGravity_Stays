@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import variables from "../styles/variables.scss";
 import "../styles/createListing.scss";
-import Navbar from "../componenets/Navbar";
-import Footer from "../componenets/Footer";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { categories, types, facilities } from "../data";
 import { RemoveCircleOutline, AddCircleOutline } from "@mui/icons-material";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";

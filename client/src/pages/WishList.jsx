@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../styles/listingCard.scss";
-import ListingCard from "../componenets/ListingCard";
-import Navbar from "../componenets/Navbar"; 
-import Footer from "../componenets/Footer"; 
+import ListingCard from "../components/ListingCard";
+import Navbar from "../components/Navbar"; 
+import Footer from "../components/Footer"; 
 import URL from "../constants/api";
-import Loader from "../componenets/Loader"; // Assurez-vous d'importer ce composant
+import Loader from "../components/Loader"; // Assurez-vous d'importer ce composant
 
 const Wishlist = () => {
   const wishList = useSelector((state) => state.user?.wishList || []);

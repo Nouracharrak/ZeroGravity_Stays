@@ -1,11 +1,11 @@
 import "../styles/list.scss";
 import { useDispatch, useSelector } from "react-redux";
-import Navbar from "../componenets/Navbar";
-import ListingCard from "../componenets/ListingCard";
+import Navbar from "../components/Navbar";
+import ListingCard from "../components/ListingCard";
 import { useEffect, useState } from "react";
 import { setPropertyList } from "../redux/state";
-import Loader from "../componenets/Loader";
-import Footer from "../componenets/Footer"
+import Loader from "../components/Loader";
+import Footer from "../components/Footer"
 import URL from "../constants/api"
 
 const PropertyList = () => {

@@ -1,13 +1,13 @@
-import Loader from "../componenets/Loader";
-import Navbar from "../componenets/Navbar";
-import Footer from "../componenets/Footer";
+import Loader from "../components/Loader";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "../styles/list.scss";
 import React, { useEffect, useState } from "react";
 import { setTripList } from "../redux/state";
 import { useDispatch, useSelector } from "react-redux";
-import ListingCard from "../componenets/ListingCard";
+import ListingCard from "../components/ListingCard";
 import URL from "../constants/api";
-import CheckoutForm from "../componenets/ChekoutForm";
+import CheckoutForm from "../components/ChekoutForm";
 
 const TripList = () => {
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,6 @@ const TripList = () => {
         return;
       }
 
-      // URL correcte selon la définition du backend
       const endpoint = `${URL.FETCH_BOOKINGS}/${userId}/trips`;
       console.log("URL appelée:", endpoint);
 
